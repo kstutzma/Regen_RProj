@@ -1,0 +1,12 @@
+---
+title: "Initial webpage set up"
+author: "Kathleen Stutzman"
+date: "2023-10-02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Setting up a git repo and following the steps from BIO 381 last semester
