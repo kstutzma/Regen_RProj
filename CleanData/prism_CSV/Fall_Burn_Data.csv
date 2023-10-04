@@ -1,0 +1,339 @@
+﻿Site,Region,Plot#,Species_Code,Latin_Name,Live_Total,Dead_Total
+TNCO_B1,NH,257,PIRI,Pinus rigida,5,0
+TNCO_B1,NH,258,PIRI,Pinus rigida,5,0
+TNCO_B1,NH,259,PIRI,Pinus rigida,2,0
+TNCO_B1,NH,260,PIRI,Pinus rigida,3,0
+TNCO_B1,NH,261,PIRI,Pinus rigida,2,0
+TNCO_B1,NH,261,ACRU,Acer rubrum,1,0
+TNCO_B1,NH,262,PIRI,Pinus rigida,3,0
+TNCO_B1,NH,263,PIRI,Pinus rigida,1,0
+TNCO_B1,NH,264,PIRI,Pinus rigida,4,0
+TNCO_B1,NH,265,PIRI,Pinus rigida,2,0
+TNCO_B1,NH,266,PIRI,Pinus rigida,4,0
+TNCO_B1,NH,267,PIRI,Pinus rigida,3,0
+TNCO_B1,NH,268,PIRI,Pinus rigida,3,0
+TNCO_B1,NH,269,PIRI,Pinus rigida,3,0
+TNCO_B1,NH,269,ACRU,Acer rubrum,2,0
+TNCO_B1,NH,270,PIRI,Pinus rigida,4,0
+TNCO_B1,NH,271,PIRI,Pinus rigida,3,0
+TNCO_B1,NH,272,PIRI,Pinus rigida,4,0
+TNCO_B1,NH,273,PIRI,Pinus rigida,3,0
+TNCO_B1,NH,274,PIRI,Pinus rigida,1,0
+TNCO_B1,NH,274,QURU,Quercus rubra,1,0
+TNCO_B1,NH,275,PIRI,Pinus rigida,3,0
+TNCO_B1,NH,276,PIRI,Pinus rigida,6,0
+TNCO_B1,NH,277,PIRI,Pinus rigida,6,0
+TNCO_B1,NH,277,TSCA,Tsuga canadensis,NA,1
+TNCO_B1,NH,278,PIRI,Pinus rigida,4,0
+TNCO_B1,NH,279,PIRI,Pinus rigida,2,0
+TNCO_B1,NH,280,PIRI,Pinus rigida,3,0
+Mashpee_B1,MA,369,PIRI,Pinus rigida,6,0
+Mashpee_B1,MA,370,PIRI,Pinus rigida,7,0
+Mashpee_B1,MA,371,PIRI,Pinus rigida,8,0
+Mashpee_B1,MA,371,QUAL,Quercus alba,1,0
+Mashpee_B1,MA,372,PIRI,Pinus rigida,6,0
+Mashpee_B1,MA,372,QUCO,Quercus coccinea,1,0
+Mashpee_B1,MA,373,PIRI,Pinus rigida,5,0
+Mashpee_B1,MA,373,QUAL,Quercus alba,1,0
+Mashpee_B1,MA,374,PIRI,Pinus rigida,4,1
+Mashpee_B1,MA,374,QUAL,Quercus alba,2,0
+Mashpee_B1,MA,375,PIRI,Pinus rigida,8,0
+Mashpee_B1,MA,376,PIRI,Pinus rigida,3,0
+Mashpee_B1,MA,376,QUCO,Quercus coccinea,1,0
+Mashpee_B1,MA,377,QUAL,Quercus alba,1,0
+Mashpee_B1,MA,377,PIRI,Pinus rigida,5,0
+Mashpee_B1,MA,377,QUCO,Quercus coccinea,1,0
+Mashpee_B1,MA,378,PIRI,Pinus rigida,5,0
+Mashpee_B1,MA,378,POGR,Populus grandidentata,1,0
+Mashpee_B1,MA,378,QUCO,Quercus coccinea,4,0
+Mashpee_B1,MA,379,PIRI,Pinus rigida,5,0
+Mashpee_B1,MA,379,QUCO,Quercus coccinea,3,0
+Mashpee_B1,MA,379,QUAL,Quercus alba,1,0
+Mashpee_B1,MA,380,PIRI,Pinus rigida,5,0
+Mashpee_B1,MA,380,QUCO,Quercus coccinea,1,0
+Mashpee_B1,MA,381,PIRI,Pinus rigida,2,0
+Mashpee_B1,MA,381,QUCO,Quercus coccinea,2,0
+Mashpee_B1,MA,381,SAAL,Sassafras albidum,0,1
+Mashpee_B1,MA,382,QUCO,Quercus coccinea,1,0
+Mashpee_B1,MA,382,PIRI,Pinus rigida,3,0
+Mashpee_B1,MA,383,PIRI,Pinus rigida,4,0
+Mashpee_B1,MA,383,QUCO,Quercus coccinea,1,0
+Mashpee_B1,MA,384,PIRI,Pinus rigida,3,0
+Mashpee_B1,MA,384,QUCO,Quercus coccinea,2,0
+Mashpee_B1,MA,385,QUAL,Quercus alba,1,0
+Mashpee_B1,MA,385,QUCO,Quercus coccinea,2,0
+Mashpee_B1,MA,385,PIRI,Pinus rigida,2,0
+Mashpee_B1,MA,386,QUAL,Quercus alba,1,0
+Mashpee_B1,MA,386,PIRI,Pinus rigida,5,0
+Mashpee_B1,MA,386,QUCO,Quercus coccinea,1,1
+Mashpee_B1,MA,387,PIRI,Pinus rigida,4,0
+Mashpee_B1,MA,387,PIST,Pinus strobus,1,0
+Mashpee_B1,MA,388,PIRI,Pinus rigida,3,0
+Mashpee_B1,MA,388,QUCO,Quercus coccinea,2,0
+Mashpee_B1,MA,388,QUAL,Quercus alba,1,0
+Mashpee_B1,MA,389,PIRI,Pinus rigida,2,0
+Mashpee_B1,MA,389,QUAL,Quercus alba,4,0
+Mashpee_B1,MA,389,QUCO,Quercus coccinea,1,0
+Mashpee_B1,MA,390,PIRI,Pinus rigida,3,0
+Mashpee_B1,MA,390,QUCO,Quercus coccinea,2,0
+Mashpee_B1,MA,390,QUAL,Quercus alba,1,0
+TNCO_Hobbs5,NH,980,PIRI,Pinus rigida,9,0
+TNCO_Hobbs5,NH,979,PIRI,Pinus rigida,5,0
+TNCO_Hobbs5,NH,978,PIRI,Pinus rigida,5,1
+TNCO_Hobbs5,NH,977,PIRI,Pinus rigida,8,0
+TNCO_Hobbs5,NH,976,PIRI,Pinus rigida,8,0
+TNCO_Hobbs5,NH,975,PIRI,Pinus rigida,8,1
+TNCO_Hobbs5,NH,974,PIRI,Pinus rigida,8,0
+TNCO_Hobbs5,NH,973,PIRI,Pinus rigida,7,2
+TNCO_Hobbs5,NH,972,PIRI,Pinus rigida,7,0
+TNCO_Hobbs5,NH,971,PIRI,Pinus rigida,7,0
+TNCO_Hobbs5,NH,970,PIRI,Pinus rigida,5,0
+TNCO_Hobbs5,NH,969,PIRI,Pinus rigida,4,0
+TNCO_Hobbs5,NH,968,PIRI,Pinus rigida,9,0
+TNCO_Hobbs5,NH,967,PIRI,Pinus rigida,7,0
+TNCO_Hobbs5,NH,966,PIRI,Pinus rigida,12,1
+TNCO_Hobbs5,NH,965,PIRI,Pinus rigida,5,0
+TNCO_Hobbs5,NH,964,PIRI,Pinus rigida,12,0
+TNCO_Hobbs5,NH,963,PIRI,Pinus rigida,9,1
+TNCO_Hobbs5,NH,962,PIRI,Pinus rigida,7,1
+TNCO_Hobbs5,NH,961,PIRI,Pinus rigida,6,0
+TNCO_Hobbs5,NH,960,PIRI,Pinus rigida,8,0
+TNCO_Hobbs5,NH,959,PIRI,Pinus rigida,7,1
+TNCO_Hobbs5,NH,958,PIRI,Pinus rigida,8,0
+SPNHF_Harmon,NH,1143,PIST,Pinus strobus,2,0
+SPNHF_Harmon,NH,1143,PIRI,Pinus rigida,2,0
+SPNHF_Harmon,NH,1142,PIRI,Pinus rigida,2,0
+SPNHF_Harmon,NH,1141,PIRI,Pinus rigida,1,0
+SPNHF_Harmon,NH,1140,PIRI,Pinus rigida,1,0
+SPNHF_Harmon,NH,1140,BEPO,Betula populifolia,1,0
+SPNHF_Harmon,NH,1139,PIRI,Pinus rigida,3,0
+SPNHF_Harmon,NH,1139,ACRU,Acer rubrum,1,0
+SPNHF_Harmon,NH,1139,QURU,Quercus rubra,1,0
+SPNHF_Harmon,NH,1138,QURU,Quercus rubra,1,0
+SPNHF_Harmon,NH,1138,PIRI,Pinus rigida,1,0
+SPNHF_Harmon,NH,1137,PIRI,Pinus rigida,2,0
+SPNHF_Harmon,NH,1136,PIRI,Pinus rigida,3,0
+SPNHF_Harmon,NH,1135,PIRI,Pinus rigida,10,0
+SPNHF_Harmon,NH,1134,NA,No species found,0,0
+SPNHF_Harmon,NH,1133,NA,No species found,0,0
+SPNHF_Harmon,NH,1132,PIST,Pinus strobus,2,0
+SPNHF_Harmon,NH,1132,BEPO,Betula populifolia,1,0
+SPNHF_Harmon,NH,1131,PIRI,Pinus rigida,1,0
+SPNHF_Harmon,NH,1130,PIRI,Pinus rigida,1,0
+SPNHF_Harmon,NH,1130,QURU,Quercus rubra,1,0
+SPNHF_Harmon,NH,1130,PIST,Pinus strobus,1,0
+SPNHF_Harmon,NH,1129,NA,No species found,0,0
+SPNHF_Harmon,NH,1128,QURU,Quercus rubra,2,0
+SPNHF_Harmon,NH,1128,PIRI,Pinus rigida,2,0
+SPNHF_Harmon,NH,1127,QUAL,Quercus alba,1,0
+SPNHF_Harmon,NH,1126,PIRI,Pinus rigida,4,0
+SPNHF_Harmon,NH,1126,ACRU,Acer rubrum,1,0
+SPNHF_Harmon,NH,1126,PIST,Pinus strobus,1,0
+SPNHF_Harmon,NH,1125,PIRI,Pinus rigida,5,0
+SPNHF_Harmon,NH,1124,PIRI,Pinus rigida,6,0
+SPNHF_Harmon,NH,1123,PIRI,Pinus rigida,1,0
+SPNHF_Harmon,NH,1122,PIRI,Pinus rigida,5,0
+SPNHF_Harmon,NH,1122,QUIL,Quercus ilicifolia,1,0
+SPNHF_Harmon,NH,1121,PIRI,Pinus rigida,2,0
+SPNHF_Harmon,NH,1121,ACRU,Acer rubrum,0,1
+SPNHF_Harmon,NH,1120,PIRI,Pinus rigida,1,0
+ TNCW_7SW,ME,1009,PIRI,Pinus rigida,4,0
+ TNCW_7SW,ME,1009,BEPO,Betula populifolia,5,0
+ TNCW_7SW,ME,1009,QUIL,Quercus ilicifolia,1,0
+ TNCW_7SW,ME,1008,PIRI,Pinus rigida,6,0
+ TNCW_7SW,ME,1008,QUIL,Quercus ilicifolia,2,0
+ TNCW_7SW,ME,1007,PIRI,Pinus rigida,9,1
+ TNCW_7SW,ME,1007,QUVE,Quercus velutina,2,0
+ TNCW_7SW,ME,1007,PIST,Pinus strobus,1,0
+ TNCW_7SW,ME,1006,PIRI,Pinus rigida,4,0
+ TNCW_7SW,ME,1006,BEPO,Betula populifolia,4,1
+ TNCW_7SW,ME,1005,PIRI,Pinus rigida,8,0
+ TNCW_7SW,ME,1005,BEPO,Betula populifolia,2,1
+ TNCW_7SW,ME,1004,PIRI,Pinus rigida,8,0
+ TNCW_7SW,ME,1004,QUIL,Quercus ilicifolia,1,0
+ TNCW_7SW,ME,1003,PIRI,Pinus rigida,15,0
+ TNCW_7SW,ME,1003,PIST,Pinus strobus,1,0
+ TNCW_7SW,ME,1003,QUIL,Quercus ilicifolia,1,0
+ TNCW_7SW,ME,1002,PIRI,Pinus rigida,10,0
+ TNCW_7SW,ME,1001,PIRI,Pinus rigida,10,0
+ TNCW_7SW,ME,1001,BEPO,Betula populifolia,1,0
+ TNCW_7SW,ME,1001,PIST,Pinus strobus,2,0
+ TNCW_7SW,ME,1000,PIRI,Pinus rigida,4,0
+ TNCW_7SW,ME,999,PIRI,Pinus rigida,4,0
+ TNCW_7SW,ME,999,BEPO,Betula populifolia,3,0
+ TNCW_7SW,ME,998,PIST,Pinus strobus,1,0
+ TNCW_7SW,ME,998,PIRI,Pinus rigida,2,0
+ TNCW_7SW,ME,998,PRSE,Prunus serotina,1,0
+ TNCW_7SW,ME,997,PIRI,Pinus rigida,3,0
+ TNCW_7SW,ME,997,BEPO,Betula populifolia,2,0
+ TNCW_7SW,ME,996,BEPO,Betula populifolia,8,1
+ TNCW_7SW,ME,996,PIRI,Pinus rigida,2,0
+ TNCW_7SW,ME,995,BEPO,Betula populifolia,1,2
+ TNCW_7SW,ME,995,PIRI,Pinus rigida,1,0
+ TNCW_7SW,ME,994,PIRI,Pinus rigida,2,0
+ TNCW_7SW,ME,993,PIRI,Pinus rigida,3,0
+ TNCW_7SW,ME,992,PIRI,Pinus rigida,1,0
+ TNCW_7SW,ME,992,PRSE,Prunus serotina,1,0
+ TNCW_7SW,ME,991,PIRI,Pinus rigida,2,0
+ TNCW_7SW,ME,990,PIRI,Pinus rigida,2,0
+ TNCW_7SW,ME,990,PIST,Pinus strobus,1,0
+ TNCW_7SW,ME,990,POTR,Populus tremuloides,1,0
+ TNCW_7SW,ME,989,PIRI,Pinus rigida,2,0
+ TNCW_7SW,ME,988,PIRI,Pinus rigida,4,0
+ TNCW_7SW,ME,987,PIRI,Pinus rigida,11,0
+ TNCW_7SW,ME,987,PIST,Pinus strobus,1,0
+TNCW_18,ME,1073,PIRI,Pinus rigida,11,0
+TNCW_18,ME,1072,PIRI,Pinus rigida,10,0
+TNCW_18,ME,1071,PIRI,Pinus rigida,13,1
+TNCW_18,ME,1067,PIRI,Pinus rigida,5,0
+TNCW_18,ME,1066,PIRI,Pinus rigida,12,0
+TNCW_18,ME,1065,PIRI,Pinus rigida,14,0
+TNCW_18,ME,1046,PIRI,Pinus rigida,11,1
+TNCW_18,ME,1046,ACRU,Acer rubrum,1,0
+TNCW_18,ME,1045,PIRI,Pinus rigida,12,0
+TNCW_18,ME,1044,PIRI,Pinus rigida,10,0
+TNCW_18,ME,1043,PIRI,Pinus rigida,18,0
+TNCW_18,ME,1043,QUIL,Quercus ilicifolia,1,0
+TNCW_18,ME,1042,PIRI,Pinus rigida,14,2
+TNCW_18,ME,1041,PIRI,Pinus rigida,13,3
+TNCW_18,ME,1040,PIRI,Pinus rigida,13,1
+TNCW_18,ME,1039,PIRI,Pinus rigida,8,2
+TNCW_18,ME,1038,PIRI,Pinus rigida,8,0
+TNCW_18,ME,1037,PIRI,Pinus rigida,14,2
+TNCW_18,ME,1036,PIRI,Pinus rigida,11,0
+TNCW_18,ME,1036,PIST,Pinus strobus,1,0
+TNCW_18,ME,1035,PIRI,Pinus rigida,14,0
+TNCW_18,ME,1035,PIST,Pinus strobus,3,0
+TNCW_18,ME,1034,PIRI,Pinus rigida,15,0
+TNCW_18,ME,1033,PIRI,Pinus rigida,14,0
+TNCW_10SE,ME,1031,PIRI,Pinus rigida,19,0
+TNCW_10SE,ME,1030,PIRI,Pinus rigida,16,0
+TNCW_10SE,ME,1029,PIRI,Pinus rigida,7,0
+TNCW_10SE,ME,1028,PIRI,Pinus rigida,16,1
+TNCW_10SE,ME,1028,QUIL,Quercus ilicifolia,1,0
+TNCW_10SE,ME,1027,PIRI,Pinus rigida,17,1
+TNCW_10SE,ME,1026,PIRI,Pinus rigida,10,0
+TNCW_10SE,ME,1025,PIRI,Pinus rigida,18,1
+TNCW_10SE,ME,1024,PIRI,Pinus rigida,15,0
+TNCW_10SE,ME,1023,PIRI,Pinus rigida,8,0
+TNCW_10SE,ME,1023,PIST,Pinus strobus,1,0
+TNCW_10SE,ME,1022,PIRI,Pinus rigida,13,0
+TNCW_10SE,ME,1022,PIST,Pinus strobus,1,0
+TNCW_10SE,ME,1021,PIRI,Pinus rigida,9,0
+TNCW_10SE,ME,1021,PIST,Pinus strobus,1,0
+TNCW_10SE,ME,1021,ACRU,Acer rubrum,2,0
+TNCW_10SE,ME,1020,PIRI,Pinus rigida,7,0
+TNCW_10SE,ME,1019,PIRI,Pinus rigida,15,0
+TNCW_10SE,ME,1019,PIST,Pinus strobus,1,0
+TNCW_10SE,ME,1018,PIRI,Pinus rigida,15,0
+TNCW_10SE,ME,1017,PIRI,Pinus rigida,13,2
+TNCW_10SE,ME,1016,QUIL,Quercus ilicifolia,1,0
+TNCW_10SE,ME,1016,PIRI,Pinus rigida,12,0
+TNCW_10SE,ME,1015,PIRI,Pinus rigida,18,0
+TNCW_10SE,ME,1015,PIST,Pinus strobus,1,0
+TNCW_10SE,ME,1014,PIRI,Pinus rigida,16,1
+TNCW_10SE,ME,1014,PIST,Pinus strobus,1,0
+TNCW_10SE,ME,1013,PIRI,Pinus rigida,6,0
+TNCW_10SE,ME,1013,BEPO,Betula populifolia,1,1
+TNCW_10SE,ME,1013,PIST,Pinus strobus,1,0
+TNCW_10SE,ME,1012,PIRI,Pinus rigida,17,0
+TNCW_10SE,ME,1011,PIRI,Pinus rigida,11,0
+TNCW_10SE,ME,1010,PIRI,Pinus rigida,9,0
+CE_B7_C,MA,499,PIST,Pinus strobus,1,0
+CE_B7_C,MA,499,PIRI,Pinus rigida,1,0
+CE_B7_C,MA,499,QUCO,Quercus coccinea,1,0
+CE_B7_C,MA,499,SAAL,Sassafras albidum,0,1
+CE_B7_C,MA,498,PIRI,Pinus rigida,4,0
+CE_B7_C,MA,498,QUCO,Quercus coccinea,4,4
+CE_B7_C,MA,497,PIRI,Pinus rigida,5,1
+CE_B7_C,MA,497,QUAL,Quercus alba,1,0
+CE_B7_C,MA,497,QUCO,Quercus coccinea,2,0
+CE_B7_C,MA,496,QUCO,Quercus coccinea,4,0
+CE_B7_C,MA,496,PIRI,Pinus rigida,1,0
+CE_B7_C,MA,495,PIRI,Pinus rigida,7,0
+CE_B7_C,MA,494,QUCO,Quercus coccinea,4,0
+CE_B7_C,MA,494,PIRI,Pinus rigida,2,0
+CE_B7_C,MA,493,QUCO,Quercus coccinea,5,2
+CE_B7_C,MA,493,QUAL,Quercus alba,2,0
+CE_B7_C,MA,493,ACRU,Acer rubrum,2,0
+CE_B7_C,MA,492,QUCO,Quercus coccinea,2,2
+CE_B7_C,MA,492,QUAL,Quercus alba,0,1
+CE_B7_C,MA,492,PIRI,Pinus rigida,3,0
+CE_B7_C,MA,491,QUCO,Quercus coccinea,3,1
+CE_B7_C,MA,491,PIRI,Pinus rigida,3,0
+CE_B7_C,MA,490,PIRI,Pinus rigida,3,0
+CE_B7_C,MA,490,QUCO,Quercus coccinea,4,2
+CE_B7_C,MA,489,QUCO,Quercus coccinea,4,2
+CE_B7_C,MA,489,PIRI,Pinus rigida,3,1
+CE_B7_C,MA,488,ACRU,Acer rubrum,1,0
+CE_B7_C,MA,488,PIRI,Pinus rigida,12,0
+CE_B7_C,MA,488,QUAL,Quercus alba,1,0
+CE_B7_C,MA,487,PIRI,Pinus rigida,6,1
+CE_B7_C,MA,487,QUCO,Quercus coccinea,3,0
+CE_B7_C,MA,486,PIRI,Pinus rigida,5,1
+CE_B7_C,MA,486,QUCO,Quercus coccinea,6,1
+CE_B7_C,MA,485,PIRI,Pinus rigida,5,0
+CE_B7_C,MA,485,QUCO,Quercus coccinea,4,3
+CE_B7_C,MA,484,PIRI,Pinus rigida,6,0
+CE_B7_C,MA,484,QUCO,Quercus coccinea,1,1
+CE_B7_C,MA,483,PIRI,Pinus rigida,2,0
+CE_B7_C,MA,483,QUAL,Quercus alba,1,0
+CE_B7_C,MA,483,QUCO,Quercus coccinea,5,0
+CE_B7_C,MA,482,QUCO,Quercus coccinea,2,2
+CE_B7_C,MA,482,PIRI,Pinus rigida,5,0
+CE_B7_C,MA,481,QUCO,Quercus coccinea,4,2
+CE_B7_C,MA,481,PIRI,Pinus rigida,5,0
+CE_B7_C,MA,481,PIST,Pinus strobus,2,0
+CE_B7_C,MA,480,QUCO,Quercus coccinea,4,1
+CE_B7_C,MA,480,PIRI,Pinus rigida,1,0
+CE_B7_C,MA,479,QUCO,Quercus coccinea,9,0
+CE_B7_C,MA,479,PIRI,Pinus rigida,1,0
+CE_B7_B,MA,478,QUCO,Quercus coccinea,3,1
+CE_B7_B,MA,478,PIRI,Pinus rigida,6,0
+CE_B7_B,MA,477,PIRI,Pinus rigida,9,0
+CE_B7_B,MA,477,QUCO,Quercus coccinea,3,0
+CE_B7_B,MA,476,PIRI,Pinus rigida,8,1
+CE_B7_B,MA,476,QUCO,Quercus coccinea,1,0
+CE_B7_B,MA,475,PIRI,Pinus rigida,7,1
+CE_B7_B,MA,475,QUCO,Quercus coccinea,1,0
+CE_B7_B,MA,474,PIRI,Pinus rigida,7,1
+CE_B7_B,MA,474,QUCO,Quercus coccinea,6,1
+CE_B7_B,MA,474,QUAL,Quercus alba,1,0
+CE_B7_B,MA,474,SAAL,Sassafras albidum,1,0
+CE_B7_B,MA,473,QUCO,Quercus coccinea,1,2
+CE_B7_B,MA,473,PIRI,Pinus rigida,4,0
+CE_B7_B,MA,472,PIRI,Pinus rigida,9,0
+CE_B7_B,MA,472,QUCO,Quercus coccinea,2,0
+CE_B7_B,MA,471,PIRI,Pinus rigida,15,0
+CE_B7_B,MA,471,QUCO,Quercus coccinea,1,0
+CE_B7_B,MA,470,QUCO,Quercus coccinea,2,0
+CE_B7_B,MA,470,PIRI,Pinus rigida,7,2
+CE_B7_B,MA,469,PIRI,Pinus rigida,2,0
+CE_B7_B,MA,469,NYSY,Nyssa sylvatica,5,0
+CE_B7_B,MA,469,QUCO,Quercus coccinea,3,0
+CE_B7_B,MA,468,PIRI,Pinus rigida,2,0
+CE_B7_B,MA,468,QUCO,Quercus coccinea,3,1
+CE_B7_B,MA,467,PIRI,Pinus rigida,12,2
+CE_B7_B,MA,466,PIRI,Pinus rigida,8,1
+CE_B7_B,MA,465,PIRI,Pinus rigida,10,0
+CE_B7_B,MA,464,PIRI,Pinus rigida,7,0
+CE_B7_B,MA,464,QUCO,Quercus coccinea,2,0
+CE_B7_B,MA,463,PIRI,Pinus rigida,14,1
+CE_B7_B,MA,462,QUCO,Quercus coccinea,2,0
+CE_B7_B,MA,462,PIRI,Pinus rigida,6,0
+CE_B7_B,MA,461,QUCO,Quercus coccinea,10,0
+CE_B7_B,MA,461,PIRI,Pinus rigida,4,0
+CE_B7_B,MA,460,PIRI,Pinus rigida,4,0
+CE_B7_B,MA,460,QUCO,Quercus coccinea,3,1
+CE_B7_B,MA,460,ACRU,Acer rubrum,1,0
+CE_B7_B,MA,459,PIRI,Pinus rigida,5,1
+CE_B7_B,MA,459,QUCO,Quercus coccinea,7,1
+CE_B7_B,MA,458,QUCO,Quercus coccinea,2,0
+CE_B7_B,MA,458,PIRI,Pinus rigida,3,2
+CE_B7_B,MA,457,QUCO,Quercus coccinea,7,0
+CE_B7_B,MA,457,PIRI,Pinus rigida,1,0
+CE_B7_B,MA,456,QUCO,Quercus coccinea,8,1
+CE_B7_B,MA,455,PIRI,Pinus rigida,6,0
+CE_B7_B,MA,455,QUCO,Quercus coccinea,3,0
+CE_B7_B,MA,454,PIRI,Pinus rigida,8,0
+CE_B7_B,MA,454,QUCO,Quercus coccinea,1,0

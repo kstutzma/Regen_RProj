@@ -1,0 +1,641 @@
+﻿Site,Region,Plot#,Species_Code,Latin_Name,SP_Total_Cover
+TNCO_B1,NH,257,KAAN,Kalmia angustifolium,2
+TNCO_B1,NH,257,CAPE,Carex pensylvanica,6
+TNCO_B1,NH,257,PTAQ,Pteridium aquilinum,4
+TNCO_B1,NH,257,GAPR,Gaultheria procumbens,2
+TNCO_B1,NH,257,ACRU,Acer rubrum,2
+TNCO_B1,NH,257,PIRI,Pinus rigida,2
+TNCO_B1,NH,257,QUIL,Quercus ilicifolia,1
+TNCO_B1,NH,257,COPE,Comptonia peregrina,4
+TNCO_B1,NH,257,VAAN,Vaccinium angustifolium,4
+TNCO_B1,NH,259,KAAN,Kalmia angustifolium,4
+TNCO_B1,NH,259,QUIL,Quercus ilicifolia,4
+TNCO_B1,NH,259,PIRI,Pinus rigida,1
+TNCO_B1,NH,259,PTAQ,Pteridium aquilinum,4
+TNCO_B1,NH,259,CAPE,Carex pensylvanica,6
+TNCO_B1,NH,259,VAAN,Vaccinium angustifolium,3
+TNCO_B1,NH,259,GAPR,Gaultheria procumbens,2
+TNCO_B1,NH,259,ARME,Aronia melanocarpa,1
+TNCO_B1,NH,261,VAAN,Vaccinium angustifolium,3
+TNCO_B1,NH,261,GAPR,Gaultheria procumbens,3
+TNCO_B1,NH,261,KAAN,Kalmia angustifolium,2
+TNCO_B1,NH,261,PTAQ,Pteridium aquilinum,3
+TNCO_B1,NH,261,QUIL,Quercus ilicifolia,4
+TNCO_B1,NH,261,CAPE,Carex pensylvanica,1
+TNCO_B1,NH,261,ARME,Aronia melanocarpa,2
+TNCO_B1,NH,261,VAMY,Vaccinium myrtilloides,2
+TNCO_B1,NH,263,VAAN,Vaccinium angustifolium,4
+TNCO_B1,NH,263,PTAQ,Pteridium aquilinum,4
+TNCO_B1,NH,263,KAAN,Kalmia angustifolium,3
+TNCO_B1,NH,263,QUIL,Quercus ilicifolia,2
+TNCO_B1,NH,263,GAPR,Gaultheria procumbens,3
+TNCO_B1,NH,265,QUIL,Quercus ilicifolia,5
+TNCO_B1,NH,265,PTAQ,Pteridium aquilinum,3
+TNCO_B1,NH,265,CAPE,Carex pensylvanica,3
+TNCO_B1,NH,265,VAAN,Vaccinium angustifolium,3
+TNCO_B1,NH,265,GAPR,Gaultheria procumbens,2
+TNCO_B1,NH,267,VAAN,Vaccinium angustifolium,3
+TNCO_B1,NH,267,PTAQ,Pteridium aquilinum,3
+TNCO_B1,NH,267,PIRI,Pinus rigida,2
+TNCO_B1,NH,267,KAAN,Kalmia angustifolium,2
+TNCO_B1,NH,267,CAPE,Carex pensylvanica,1
+TNCO_B1,NH,267,QUIL,Quercus ilicifolia,2
+TNCO_B1,NH,267,GAPR,Gaultheria procumbens,1
+TNCO_B1,NH,268,PTAQ,Pteridium aquilinum,3
+TNCO_B1,NH,268,CAPE,Carex pensylvanica,3
+TNCO_B1,NH,268,VAAN,Vaccinium angustifolium,3
+TNCO_B1,NH,268,GAPR,Gaultheria procumbens,2
+TNCO_B1,NH,268,QUIL,Quercus ilicifolia,4
+TNCO_B1,NH,270,CAPE,Carex pensylvanica,6
+TNCO_B1,NH,270,VAAN,Vaccinium angustifolium,3
+TNCO_B1,NH,270,COPE,Comptonia peregrina,3
+TNCO_B1,NH,270,QUIL,Quercus ilicifolia,4
+TNCO_B1,NH,270,PIRI,Pinus rigida,2
+TNCO_B1,NH,270,GAPR,Gaultheria procumbens,1
+TNCO_B1,NH,270,KAAN,Kalmia angustifolium,1
+TNCO_B1,NH,272,VAAN,Vaccinium angustifolium,3
+TNCO_B1,NH,272,CAPE,Carex pensylvanica,2
+TNCO_B1,NH,272,PTAQ,Pteridium aquilinum,3
+TNCO_B1,NH,272,KAAN,Kalmia angustifolium,2
+TNCO_B1,NH,272,QUIL,Quercus ilicifolia,2
+TNCO_B1,NH,272,ACRU,Acer rubrum,3
+TNCO_B1,NH,272,GAPR,Gaultheria procumbens,2
+TNCO_B1,NH,274,QUIL,Quercus ilicifolia,7
+TNCO_B1,NH,274,PTAQ,Pteridium aquilinum,4
+TNCO_B1,NH,274,KAAN,Kalmia angustifolium,2
+TNCO_B1,NH,274,VAAN,Vaccinium angustifolium,3
+TNCO_B1,NH,274,GAPR,Gaultheria procumbens,2
+TNCO_B1,NH,274,CAPE,Carex pensylvanica,2
+TNCO_B1,NH,274,ARME,Aronia melanocarpa,1
+TNCO_B1,NH,276,QUIL,Quercus ilicifolia,2
+TNCO_B1,NH,276,KAAN,Kalmia angustifolium,2
+TNCO_B1,NH,276,CAPE,Carex pensylvanica,2
+TNCO_B1,NH,276,PTAQ,Pteridium aquilinum,2
+TNCO_B1,NH,276,GAPR,Gaultheria procumbens,2
+TNCO_B1,NH,276,VAAN,Vaccinium angustifolium,2
+TNCO_B1,NH,278,CAPE,Carex pensylvanica,4
+TNCO_B1,NH,278,PTAQ,Pteridium aquilinum,2
+TNCO_B1,NH,278,VAAN,Vaccinium angustifolium,2
+TNCO_B1,NH,278,GAPR,Gaultheria procumbens,2
+TNCO_B1,NH,278,PIST,Pinus strobus,2
+TNCO_B1,NH,278,KAAN,Kalmia angustifolium,1
+TNCO_B1,NH,278,PIRI,Pinus rigida,1
+TNCO_B1,NH,278,QUIL,Quercus ilicifolia,1
+TNCO_B1,NH,280,GAPR,Gaultheria procumbens,2
+TNCO_B1,NH,280,CAPE,Carex pensylvanica,3
+TNCO_B1,NH,280,QUIL,Quercus ilicifolia,4
+TNCO_B1,NH,280,PIRI,Pinus rigida,1
+TNCO_B1,NH,280,PTAQ,Pteridium aquilinum,3
+TNCO_B1,NH,280,COPE,Comptonia peregrina,3
+TNCO_B1,NH,280,VAAN,Vaccinium angustifolium,2
+Mashpee_B1,MA,369,QUIL,Quercus ilicifolia,7
+Mashpee_B1,MA,369,VAPA,Vaccinium pallidum,6
+Mashpee_B1,MA,369,GAPR,Gaultheria procumbens,2
+Mashpee_B1,MA,369,GABA,Gaylussacia baccata,2
+Mashpee_B1,MA,371,QUIL,Quercus ilicifolia,6
+Mashpee_B1,MA,371,GABA,Gaylussacia baccata,4
+Mashpee_B1,MA,371,VAPA,Vaccinium pallidum,3
+Mashpee_B1,MA,371,GAPR,Gaultheria procumbens,2
+Mashpee_B1,MA,373,QUPR,Quercus prinoides,3
+Mashpee_B1,MA,373,VAPA,Vaccinium pallidum,5
+Mashpee_B1,MA,373,QUIL,Quercus ilicifolia,4
+Mashpee_B1,MA,373,GABA,Gaylussacia baccata,2
+Mashpee_B1,MA,373,GAPR,Gaultheria procumbens,2
+Mashpee_B1,MA,375,KAAN,Kalmia angustifolium,2
+Mashpee_B1,MA,375,VAPA,Vaccinium pallidum,3
+Mashpee_B1,MA,375,QUIL,Quercus ilicifolia,4
+Mashpee_B1,MA,375,GAPR,Gaultheria procumbens,2
+Mashpee_B1,MA,375,CLAL,Clethra alnifolia,2
+Mashpee_B1,MA,375,ILGL,Ilex glabra,2
+Mashpee_B1,MA,375,GABA,Gaylussacia baccata,3
+Mashpee_B1,MA,377,QUIL,Quercus ilicifolia,4
+Mashpee_B1,MA,377,KAAN,Kalmia angustifolium,2
+Mashpee_B1,MA,377,GABA,Gaylussacia baccata,2
+Mashpee_B1,MA,377,VAPA,Vaccinium pallidum,3
+Mashpee_B1,MA,377,SAAL,Sassafras albidum,3
+Mashpee_B1,MA,377,GAPR,Gaultheria procumbens,2
+Mashpee_B1,MA,377,PTAQ,Pteridium aquilinum,2
+Mashpee_B1,MA,377,ILGL,Ilex glabra,3
+Mashpee_B1,MA,379,GABA,Gaylussacia baccata,3
+Mashpee_B1,MA,379,PIRI,Pinus rigida,1
+Mashpee_B1,MA,379,KAAN,Kalmia angustifolium,3
+Mashpee_B1,MA,379,GAPR,Gaultheria procumbens,3
+Mashpee_B1,MA,379,VAPA,Vaccinium pallidum,3
+Mashpee_B1,MA,381,VAPA,Vaccinium pallidum,5
+Mashpee_B1,MA,381,GABA,Gaylussacia baccata,3
+Mashpee_B1,MA,381,VAAN,Vaccinium angustifolium,2
+Mashpee_B1,MA,381,GAPR,Gaultheria procumbens,2
+Mashpee_B1,MA,381,CLAL,Clethra alnifolia,1
+Mashpee_B1,MA,381,QUCO,Quercus coccinea,2
+Mashpee_B1,MA,383,QUPR,Quercus prinoides,4
+Mashpee_B1,MA,383,GABA,Gaylussacia baccata,2
+Mashpee_B1,MA,383,VAPA,Vaccinium pallidum,2
+Mashpee_B1,MA,383,VAAN,Vaccinium angustifolium,2
+Mashpee_B1,MA,383,GAPR,Gaultheria procumbens,2
+Mashpee_B1,MA,383,QUIL,Quercus ilicifolia,3
+Mashpee_B1,MA,385,PIRI,Pinus rigida,1
+Mashpee_B1,MA,385,VAPA,Vaccinium pallidum,4
+Mashpee_B1,MA,385,GABA,Gaylussacia baccata,3
+Mashpee_B1,MA,385,QUPR,Quercus prinoides,1
+Mashpee_B1,MA,387,PIRI,Pinus rigida,1
+Mashpee_B1,MA,387,MOCA,Morella caroliniensis,2
+Mashpee_B1,MA,387,GABA,Gaylussacia baccata,2
+Mashpee_B1,MA,387,VAPA,Vaccinium pallidum,3
+Mashpee_B1,MA,387,LYBO,Lysimachia borealis,1
+Mashpee_B1,MA,387,GAPR,Gaultheria procumbens,2
+Mashpee_B1,MA,387,VAAN,Vaccinium angustifolium,2
+Mashpee_B1,MA,387,FRSP,Fragaria species,1
+Mashpee_B1,MA,387,ILMU,Ilex mucronata,2
+Mashpee_B1,MA,389,ACRU,Acer rubrum,1
+Mashpee_B1,MA,389,VAPA,Vaccinium pallidum,4
+Mashpee_B1,MA,389,GAPR,Gaultheria procumbens,2
+Mashpee_B1,MA,389,LYBO,Lysimachia borealis,2
+Mashpee_B1,MA,389,SMGL,Smilax glauca,1
+Mashpee_B1,MA,389,KAAN,Kalmia angustifolium,2
+Mashpee_B1,MA,389,MICA,Maianthemum canadense,2
+Mashpee_B1,MA,389,PIRI,Pinus rigida,1
+Mashpee_B1,MA,389,QUAL,Quercus alba,1
+TNCO_Hobbs5,NH,979,QUIL,Quercus ilicifolia,8
+TNCO_Hobbs5,NH,979,GAPR,Gaultheria procumbens,5
+TNCO_Hobbs5,NH,979,VAAN,Vaccinium angustifolium,3
+TNCO_Hobbs5,NH,979,CAPE,Carex pensylvanica,2
+TNCO_Hobbs5,NH,979,KAAN,Kalmia angustifolium,4
+TNCO_Hobbs5,NH,977,PTAQ,Pteridium aquilinum,4
+TNCO_Hobbs5,NH,977,VAAN,Vaccinium angustifolium,4
+TNCO_Hobbs5,NH,977,GAPR,Gaultheria procumbens,4
+TNCO_Hobbs5,NH,977,CAPE,Carex pensylvanica,3
+TNCO_Hobbs5,NH,977,KAAN,Kalmia angustifolium,2
+TNCO_Hobbs5,NH,977,DEFL,Deschampsia flexuosa,1
+TNCO_Hobbs5,NH,977,LYQU,Lysimachia quadrifolia,1
+TNCO_Hobbs5,NH,977,LYBO,Lysimachia borealis,1
+TNCO_Hobbs5,NH,975,PTAQ,Pteridium aquilinum,4
+TNCO_Hobbs5,NH,975,VAAN,Vaccinium angustifolium,7
+TNCO_Hobbs5,NH,975,GAPR,Gaultheria procumbens,4
+TNCO_Hobbs5,NH,975,CAPE,Carex pensylvanica,2
+TNCO_Hobbs5,NH,973,PIRI,Pinus rigida,2
+TNCO_Hobbs5,NH,973,GAPR,Gaultheria procumbens,5
+TNCO_Hobbs5,NH,973,CAPE,Carex pensylvanica,2
+TNCO_Hobbs5,NH,973,VAAN,Vaccinium angustifolium,2
+TNCO_Hobbs5,NH,973,VAMY,Vaccinium myrtilloides,4
+TNCO_Hobbs5,NH,973,KAAN,Kalmia angustifolium,3
+TNCO_Hobbs5,NH,973,PTAQ,Pteridium aquilinum,4
+TNCO_Hobbs5,NH,971,QUIL,Quercus ilicifolia,4
+TNCO_Hobbs5,NH,971,GAPR,Gaultheria procumbens,3
+TNCO_Hobbs5,NH,971,VAAN,Vaccinium angustifolium,2
+TNCO_Hobbs5,NH,971,CAPE,Carex pensylvanica,2
+TNCO_Hobbs5,NH,971,KAAN,Kalmia angustifolium,3
+TNCO_Hobbs5,NH,971,GOTE,Goodyera tesselata,1
+TNCO_Hobbs5,NH,971,PTAQ,Pteridium aquilinum,3
+TNCO_Hobbs5,NH,969,PTAQ,Pteridium aquilinum,5
+TNCO_Hobbs5,NH,969,COPE,Comptonia peregrina,4
+TNCO_Hobbs5,NH,969,ACRU,Acer rubrum,2
+TNCO_Hobbs5,NH,969,VAAN,Vaccinium angustifolium,7
+TNCO_Hobbs5,NH,969,GAPR,Gaultheria procumbens,4
+TNCO_Hobbs5,NH,969,CAPE,Carex pensylvanica,3
+TNCO_Hobbs5,NH,969,LYQU,Lysimachia quadrifolia,2
+TNCO_Hobbs5,NH,967,QUIL,Quercus ilicifolia,6
+TNCO_Hobbs5,NH,967,GAPR,Gaultheria procumbens,3
+TNCO_Hobbs5,NH,967,VAAN,Vaccinium angustifolium,3
+TNCO_Hobbs5,NH,967,PTAQ,Pteridium aquilinum,4
+TNCO_Hobbs5,NH,967,CAPE,Carex pensylvanica,4
+TNCO_Hobbs5,NH,965,PIRI,Pinus rigida,1
+TNCO_Hobbs5,NH,965,ACRU,Acer rubrum,2
+TNCO_Hobbs5,NH,965,PTAQ,Pteridium aquilinum,4
+TNCO_Hobbs5,NH,965,GAPR,Gaultheria procumbens,5
+TNCO_Hobbs5,NH,965,VAAN,Vaccinium angustifolium,4
+TNCO_Hobbs5,NH,965,CAPE,Carex pensylvanica,3
+TNCO_Hobbs5,NH,965,COPE,Comptonia peregrina,1
+TNCO_Hobbs5,NH,965,KAAN,Kalmia angustifolium,2
+TNCO_Hobbs5,NH,963,QUIL,Quercus ilicifolia,4
+TNCO_Hobbs5,NH,963,ACRU,Acer rubrum,1
+TNCO_Hobbs5,NH,963,VAAN,Vaccinium angustifolium,4
+TNCO_Hobbs5,NH,963,KAAN,Kalmia angustifolium,4
+TNCO_Hobbs5,NH,963,CAPE,Carex pensylvanica,3
+TNCO_Hobbs5,NH,963,GAPR,Gaultheria procumbens,4
+TNCO_Hobbs5,NH,963,LYBO,Lysimachia borealis,2
+TNCO_Hobbs5,NH,963,PTAQ,Pteridium aquilinum,4
+TNCO_Hobbs5,NH,961,PIRI,Pinus rigida,2
+TNCO_Hobbs5,NH,961,VAAN,Vaccinium angustifolium,3
+TNCO_Hobbs5,NH,961,CAPE,Carex pensylvanica,2
+TNCO_Hobbs5,NH,961,COPE,Comptonia peregrina,6
+TNCO_Hobbs5,NH,961,GAPR,Gaultheria procumbens,1
+TNCO_Hobbs5,NH,961,PTAQ,Pteridium aquilinum,4
+TNCO_Hobbs5,NH,959,VAAN,Vaccinium angustifolium,4
+TNCO_Hobbs5,NH,959,ACRU,Acer rubrum,1
+TNCO_Hobbs5,NH,959,GAPR,Gaultheria procumbens,4
+TNCO_Hobbs5,NH,959,KAAN,Kalmia angustifolium,3
+TNCO_Hobbs5,NH,959,GABA,Gaylussacia baccata,4
+TNCO_Hobbs5,NH,959,PTAQ,Pteridium aquilinum,3
+TNCO_Hobbs5,NH,959,MELI,Melampyrum lineare,1
+SPNHF_Harmon,NH,1143,QUIL,Quercus ilicifolia,2
+SPNHF_Harmon,NH,1143,VAAN,Vaccinium angustifolium,3
+SPNHF_Harmon,NH,1143,VAMY,Vaccinium myrtilloides,5
+SPNHF_Harmon,NH,1143,GAPR,Gaultheria procumbens,6
+SPNHF_Harmon,NH,1141,QUIL,Quercus ilicifolia,3
+SPNHF_Harmon,NH,1141,VAAN,Vaccinium angustifolium,5
+SPNHF_Harmon,NH,1141,CAPE,Carex pensylvanica,2
+SPNHF_Harmon,NH,1141,PTAQ,Pteridium aquilinum,3
+SPNHF_Harmon,NH,1141,GAPR,Gaultheria procumbens,3
+SPNHF_Harmon,NH,1141,VINU,Viburnum nudum var cassinoides,2
+SPNHF_Harmon,NH,1139,VAAN,Vaccinium angustifolium,6
+SPNHF_Harmon,NH,1139,PTAQ,Pteridium aquilinum,4
+SPNHF_Harmon,NH,1139,CAPE,Carex pensylvanica,2
+SPNHF_Harmon,NH,1139,GAPR,Gaultheria procumbens,3
+SPNHF_Harmon,NH,1139,LYBO,Lysimachia borealis,1
+SPNHF_Harmon,NH,1137,QUIL,Quercus ilicifolia,5
+SPNHF_Harmon,NH,1137,ACRU,Acer rubrum,5
+SPNHF_Harmon,NH,1137,VAAN,Vaccinium angustifolium,3
+SPNHF_Harmon,NH,1137,CAPE,Carex pensylvanica,2
+SPNHF_Harmon,NH,1137,GAPR,Gaultheria procumbens,4
+SPNHF_Harmon,NH,1137,PTAQ,Pteridium aquilinum,6
+SPNHF_Harmon,NH,1137,VAMY,Vaccinium myrtilloides,3
+SPNHF_Harmon,NH,1135,QUIL,Quercus ilicifolia,2
+SPNHF_Harmon,NH,1135,ACRU,Acer rubrum,1
+SPNHF_Harmon,NH,1135,PTAQ,Pteridium aquilinum,3
+SPNHF_Harmon,NH,1135,VAAN,Vaccinium angustifolium,5
+SPNHF_Harmon,NH,1135,GAPR,Gaultheria procumbens,3
+SPNHF_Harmon,NH,1135,CAPE,Carex pensylvanica,3
+SPNHF_Harmon,NH,1135,MELI,Melampyrum lineare,1
+SPNHF_Harmon,NH,1133,QUIL,Quercus ilicifolia,3
+SPNHF_Harmon,NH,1133,ACRU,Acer rubrum,2
+SPNHF_Harmon,NH,1133,PTAQ,Pteridium aquilinum,5
+SPNHF_Harmon,NH,1133,VAAN,Vaccinium angustifolium,4
+SPNHF_Harmon,NH,1133,GAPR,Gaultheria procumbens,4
+SPNHF_Harmon,NH,1133,ARME,Aronia melanocarpa,2
+SPNHF_Harmon,NH,1133,VAMY,Vaccinium myrtilloides,2
+SPNHF_Harmon,NH,1133,COPE,Comptonia peregrina,2
+SPNHF_Harmon,NH,1131,ARME,Aronia melanocarpa,2
+SPNHF_Harmon,NH,1131,PTAQ,Pteridium aquilinum,5
+SPNHF_Harmon,NH,1131,CAPE,Carex pensylvanica,3
+SPNHF_Harmon,NH,1131,COPE,Comptonia peregrina,3
+SPNHF_Harmon,NH,1131,VAAN,Vaccinium angustifolium,3
+SPNHF_Harmon,NH,1131,GAPR,Gaultheria procumbens,3
+SPNHF_Harmon,NH,1131,ACRU,Acer rubrum,2
+SPNHF_Harmon,NH,1129,ARME,Aronia melanocarpa,1
+SPNHF_Harmon,NH,1129,GABA,Gaylussacia baccata,5
+SPNHF_Harmon,NH,1129,VAAN,Vaccinium angustifolium,3
+SPNHF_Harmon,NH,1129,PTAQ,Pteridium aquilinum,5
+SPNHF_Harmon,NH,1129,GAPR,Gaultheria procumbens,2
+SPNHF_Harmon,NH,1127,QUIL,Quercus ilicifolia,5
+SPNHF_Harmon,NH,1127,PTAQ,Pteridium aquilinum,6
+SPNHF_Harmon,NH,1127,VAAN,Vaccinium angustifolium,5
+SPNHF_Harmon,NH,1127,GAPR,Gaultheria procumbens,8
+SPNHF_Harmon,NH,1125,QUIL,Quercus ilicifolia,4
+SPNHF_Harmon,NH,1125,VAAN,Vaccinium angustifolium,4
+SPNHF_Harmon,NH,1125,GAPR,Gaultheria procumbens,2
+SPNHF_Harmon,NH,1125,ACRU,Acer rubrum,5
+SPNHF_Harmon,NH,1123,QUIL,Quercus ilicifolia,3
+SPNHF_Harmon,NH,1123,PTAQ,Pteridium aquilinum,5
+SPNHF_Harmon,NH,1123,VAAN,Vaccinium angustifolium,7
+SPNHF_Harmon,NH,1123,GAPR,Gaultheria procumbens,4
+SPNHF_Harmon,NH,1123,COPE,Comptonia peregrina,2
+SPNHF_Harmon,NH,1121,QUIL,Quercus ilicifolia,6
+SPNHF_Harmon,NH,1121,COPE,Comptonia peregrina,2
+SPNHF_Harmon,NH,1121,VAAN,Vaccinium angustifolium,3
+SPNHF_Harmon,NH,1121,KAAN,Kalmia angustifolium,3
+SPNHF_Harmon,NH,1121,MELI,Melampyrum lineare,1
+SPNHF_Harmon,NH,1121,LYBO,Lysimachia borealis,1
+SPNHF_Harmon,NH,1121,GAPR,Gaultheria procumbens,4
+SPNHF_Harmon,NH,1121,CAPE,Carex pensylvanica,1
+ TNCW_7SW,ME,1008,QUIL,Quercus ilicifolia,6
+ TNCW_7SW,ME,1008,VAAN,Vaccinium angustifolium,3
+ TNCW_7SW,ME,1008,CAPE,Carex pensylvanica,2
+ TNCW_7SW,ME,1006,PIST,Pinus strobus,1
+ TNCW_7SW,ME,1006,QUIL,Quercus ilicifolia,5
+ TNCW_7SW,ME,1006,LYBO,Lysimachia borealis,2
+ TNCW_7SW,ME,1006,GAPR,Gaultheria procumbens,2
+ TNCW_7SW,ME,1006,CAPE,Carex pensylvanica,2
+ TNCW_7SW,ME,1006,VAMY,Vaccinium myrtilloides,4
+ TNCW_7SW,ME,1006,BEPO,Betula populifolia,3
+ TNCW_7SW,ME,1006,ACRU,Acer rubrum,1
+ TNCW_7SW,ME,1004,QUIL,Quercus ilicifolia,6
+ TNCW_7SW,ME,1004,ACRU,Acer rubrum,1
+ TNCW_7SW,ME,1004,BEPO,Betula populifolia,1
+ TNCW_7SW,ME,1004,VAAN,Vaccinium angustifolium,4
+ TNCW_7SW,ME,1004,CAPE,Carex pensylvanica,3
+ TNCW_7SW,ME,1004,GAPR,Gaultheria procumbens,1
+ TNCW_7SW,ME,1002,QUIL,Quercus ilicifolia,4
+ TNCW_7SW,ME,1002,VAMY,Vaccinium myrtilloides,5
+ TNCW_7SW,ME,1002,GAPR,Gaultheria procumbens,2
+ TNCW_7SW,ME,1002,CAPE,Carex pensylvanica,4
+ TNCW_7SW,ME,1000,QUIL,Quercus ilicifolia,2
+ TNCW_7SW,ME,1000,ACRU,Acer rubrum,2
+ TNCW_7SW,ME,1000,AMSP,Amelanchier spp.,1
+ TNCW_7SW,ME,1000,VAAN,Vaccinium angustifolium,5
+ TNCW_7SW,ME,1000,RUSP,Rubus species,2
+ TNCW_7SW,ME,1000,ARME,Aronia melanocarpa,2
+ TNCW_7SW,ME,1000,CAPE,Carex pensylvanica,2
+ TNCW_7SW,ME,1000,PTAQ,Pteridium aquilinum,3
+ TNCW_7SW,ME,1000,GAPR,Gaultheria procumbens,2
+ TNCW_7SW,ME,1000,MELI,Melampyrum lineare,1
+ TNCW_7SW,ME,998,QUIL,Quercus ilicifolia,5
+ TNCW_7SW,ME,998,ACRU,Acer rubrum,1
+ TNCW_7SW,ME,998,PRSE,Prunus serotina,1
+ TNCW_7SW,ME,998,VAAN,Vaccinium angustifolium,3
+ TNCW_7SW,ME,998,GAPR,Gaultheria procumbens,4
+ TNCW_7SW,ME,998,CAPE,Carex pensylvanica,1
+ TNCW_7SW,ME,998,PTAQ,Pteridium aquilinum,4
+ TNCW_7SW,ME,996,ACRU,Acer rubrum,1
+ TNCW_7SW,ME,996,KAAN,Kalmia angustifolium,3
+ TNCW_7SW,ME,996,VAAN,Vaccinium angustifolium,3
+ TNCW_7SW,ME,996,VAMY,Vaccinium myrtilloides,3
+ TNCW_7SW,ME,996,RUSP,Rubus species,2
+ TNCW_7SW,ME,996,LYQU,Lysimachia quadrifolia,2
+ TNCW_7SW,ME,996,CAPE,Carex pensylvanica,1
+ TNCW_7SW,ME,996,LYBO,Lysimachia borealis,2
+ TNCW_7SW,ME,996,GAPR,Gaultheria procumbens,2
+ TNCW_7SW,ME,996,VINU,Viburnum nudum var cassinoides,1
+ TNCW_7SW,ME,994,QUIL,Quercus ilicifolia,4
+ TNCW_7SW,ME,994,GAPR,Gaultheria procumbens,4
+ TNCW_7SW,ME,994,MELI,Melampyrum lineare,1
+ TNCW_7SW,ME,994,VAAN,Vaccinium angustifolium,2
+ TNCW_7SW,ME,994,CAPE,Carex pensylvanica,1
+ TNCW_7SW,ME,992,QUIL,Quercus ilicifolia,6
+ TNCW_7SW,ME,992,ACRU,Acer rubrum,2
+ TNCW_7SW,ME,992,PRSE,Prunus serotina,1
+ TNCW_7SW,ME,992,ARME,Aronia melanocarpa,1
+ TNCW_7SW,ME,992,GAPR,Gaultheria procumbens,5
+ TNCW_7SW,ME,992,CAPE,Carex pensylvanica,3
+ TNCW_7SW,ME,992,LYBO,Lysimachia borealis,1
+ TNCW_7SW,ME,992,LYQU,Lysimachia quadrifolia,2
+ TNCW_7SW,ME,992,VAAN,Vaccinium angustifolium,3
+ TNCW_7SW,ME,992,PTAQ,Pteridium aquilinum,3
+ TNCW_7SW,ME,990,QUIL,Quercus ilicifolia,3
+ TNCW_7SW,ME,990,PIST,Pinus strobus,1
+ TNCW_7SW,ME,990,CAPE,Carex pensylvanica,5
+ TNCW_7SW,ME,990,GAPR,Gaultheria procumbens,3
+ TNCW_7SW,ME,990,VAMY,Vaccinium myrtilloides,2
+ TNCW_7SW,ME,990,PTAQ,Pteridium aquilinum,2
+ TNCW_7SW,ME,988,QUIL,Quercus ilicifolia,4
+ TNCW_7SW,ME,988,VAAN,Vaccinium angustifolium,4
+ TNCW_7SW,ME,988,CAPE,Carex pensylvanica,4
+ TNCW_7SW,ME,988,GABA,Gaylussacia baccata,1
+TNCW_18,ME,1073,ACRU,Acer rubrum,2
+TNCW_18,ME,1073,PTAQ,Pteridium aquilinum,4
+TNCW_18,ME,1073,VAAN,Vaccinium angustifolium,5
+TNCW_18,ME,1073,CAPE,Carex pensylvanica,4
+TNCW_18,ME,1073,COPE,Comptonia peregrina,2
+TNCW_18,ME,1071,QUIL,Quercus ilicifolia,3
+TNCW_18,ME,1071,ACRU,Acer rubrum,2
+TNCW_18,ME,1071,PRSE,Prunus serotina,1
+TNCW_18,ME,1071,VAAN,Vaccinium angustifolium,5
+TNCW_18,ME,1071,MICA,Maianthemum canadense,2
+TNCW_18,ME,1071,LYBO,Lysimachia borealis,2
+TNCW_18,ME,1071,DRIN,Dryopteris intermedia,2
+TNCW_18,ME,1071,CAPE,Carex pensylvanica,3
+TNCW_18,ME,1071,PTAQ,Pteridium aquilinum,3
+TNCW_18,ME,1067,PTAQ,Pteridium aquilinum,7
+TNCW_18,ME,1067,VAAN,Vaccinium angustifolium,5
+TNCW_18,ME,1067,CAPE,Carex pensylvanica,3
+TNCW_18,ME,1067,ARME,Aronia melanocarpa,2
+TNCW_18,ME,1067,AMSP,Amelanchier spp.,1
+TNCW_18,ME,1067,LYBO,Lysimachia borealis,1
+TNCW_18,ME,1067,ACRU,Acer rubrum,1
+TNCW_18,ME,1065,QUIL,Quercus ilicifolia,6
+TNCW_18,ME,1065,PTAQ,Pteridium aquilinum,5
+TNCW_18,ME,1065,COPE,Comptonia peregrina,3
+TNCW_18,ME,1065,VAAN,Vaccinium angustifolium,4
+TNCW_18,ME,1065,CAPE,Carex pensylvanica,2
+TNCW_18,ME,1045,PIRI,Pinus rigida,1
+TNCW_18,ME,1045,CAPE,Carex pensylvanica,7
+TNCW_18,ME,1045,VAAN,Vaccinium angustifolium,3
+TNCW_18,ME,1043,VAAN,Vaccinium angustifolium,5
+TNCW_18,ME,1043,PTAQ,Pteridium aquilinum,4
+TNCW_18,ME,1043,GAPR,Gaultheria procumbens,3
+TNCW_18,ME,1043,LYBO,Lysimachia borealis,2
+TNCW_18,ME,1043,CAPE,Carex pensylvanica,2
+TNCW_18,ME,1041,PIRI,Pinus rigida,1
+TNCW_18,ME,1041,COPE,Comptonia peregrina,4
+TNCW_18,ME,1041,VAAN,Vaccinium angustifolium,7
+TNCW_18,ME,1041,DEFL,Deschampsia flexuosa,2
+TNCW_18,ME,1039,VAAN,Vaccinium angustifolium,4
+TNCW_18,ME,1039,PTAQ,Pteridium aquilinum,5
+TNCW_18,ME,1039,QUIL,Quercus ilicifolia,4
+TNCW_18,ME,1039,GAPR,Gaultheria procumbens,2
+TNCW_18,ME,1039,COPE,Comptonia peregrina,4
+TNCW_18,ME,1039,CAPE,Carex pensylvanica,2
+TNCW_18,ME,1039,LYQU,Lysimachia quadrifolia,2
+TNCW_18,ME,1039,UVSE,Uvularia sessilifolia,1
+TNCW_18,ME,1039,VAMY,Vaccinium myrtilloides,2
+TNCW_18,ME,1039,DEFL,Deschampsia flexuosa,3
+TNCW_18,ME,1039,PIRI,Pinus rigida,2
+TNCW_18,ME,1039,FOUN6,Forb unknown 6,1
+TNCW_18,ME,1039,POUN21,Poacaea sp. 21,1
+TNCW_18,ME,1037,QUIL,Quercus ilicifolia,5
+TNCW_18,ME,1037,PIRI,Pinus rigida,1
+TNCW_18,ME,1037,CAPE,Carex pensylvanica,2
+TNCW_18,ME,1037,VAAN,Vaccinium angustifolium,4
+TNCW_18,ME,1037,PTAQ,Pteridium aquilinum,4
+TNCW_18,ME,1037,GABA,Gaylussacia baccata,4
+TNCW_18,ME,1035,QUIL,Quercus ilicifolia,1
+TNCW_18,ME,1035,VAAN,Vaccinium angustifolium,6
+TNCW_18,ME,1035,PTAQ,Pteridium aquilinum,4
+TNCW_18,ME,1035,CAPE,Carex pensylvanica,2
+TNCW_18,ME,1033,VAAN,Vaccinium angustifolium,5
+TNCW_18,ME,1033,PTAQ,Pteridium aquilinum,5
+TNCW_18,ME,1033,KAAN,Kalmia angustifolium,1
+TNCW_18,ME,1033,GAPR,Gaultheria procumbens,2
+TNCW_18,ME,1033,PYAM,Pyrola americana,1
+TNCW_18,ME,1033,CAPE,Carex pensylvanica,3
+TNCW_10SE,ME,1031,QUIL,Quercus ilicifolia,3
+TNCW_10SE,ME,1031,VAAN,Vaccinium angustifolium,4
+TNCW_10SE,ME,1031,CAPE,Carex pensylvanica,4
+TNCW_10SE,ME,1031,PTAQ,Pteridium aquilinum,2
+TNCW_10SE,ME,1029,QUIL,Quercus ilicifolia,4
+TNCW_10SE,ME,1029,CAPE,Carex pensylvanica,2
+TNCW_10SE,ME,1029,VAAN,Vaccinium angustifolium,4
+TNCW_10SE,ME,1027,QUIL,Quercus ilicifolia,1
+TNCW_10SE,ME,1027,ACRU,Acer rubrum,1
+TNCW_10SE,ME,1027,VAMY,Vaccinium myrtilloides,2
+TNCW_10SE,ME,1027,CAPE,Carex pensylvanica,4
+TNCW_10SE,ME,1027,GAPR,Gaultheria procumbens,1
+TNCW_10SE,ME,1027,ARME,Aronia melanocarpa,1
+TNCW_10SE,ME,1027,VAAN,Vaccinium angustifolium,2
+TNCW_10SE,ME,1025,QUIL,Quercus ilicifolia,2
+TNCW_10SE,ME,1025,VAMY,Vaccinium myrtilloides,3
+TNCW_10SE,ME,1025,VAAN,Vaccinium angustifolium,2
+TNCW_10SE,ME,1025,CAPE,Carex pensylvanica,1
+TNCW_10SE,ME,1023,QUIL,Quercus ilicifolia,1
+TNCW_10SE,ME,1023,ACRU,Acer rubrum,1
+TNCW_10SE,ME,1023,VAAN,Vaccinium angustifolium,4
+TNCW_10SE,ME,1023,KAAN,Kalmia angustifolium,3
+TNCW_10SE,ME,1023,GAPR,Gaultheria procumbens,2
+TNCW_10SE,ME,1023,CAPE,Carex pensylvanica,1
+TNCW_10SE,ME,1021,QUIL,Quercus ilicifolia,2
+TNCW_10SE,ME,1021,ACRU,Acer rubrum,1
+TNCW_10SE,ME,1021,VAAN,Vaccinium angustifolium,4
+TNCW_10SE,ME,1021,GAPR,Gaultheria procumbens,3
+TNCW_10SE,ME,1021,KAAN,Kalmia angustifolium,1
+TNCW_10SE,ME,1021,LYBO,Lysimachia borealis,1
+TNCW_10SE,ME,1021,CAPE,Carex pensylvanica,1
+TNCW_10SE,ME,1019,QUIL,Quercus ilicifolia,2
+TNCW_10SE,ME,1019,VAAN,Vaccinium angustifolium,4
+TNCW_10SE,ME,1019,CAPE,Carex pensylvanica,2
+TNCW_10SE,ME,1019,GAPR,Gaultheria procumbens,1
+TNCW_10SE,ME,1017,QUIL,Quercus ilicifolia,3
+TNCW_10SE,ME,1017,VAAN,Vaccinium angustifolium,5
+TNCW_10SE,ME,1017,CAPE,Carex pensylvanica,4
+TNCW_10SE,ME,1015,ACRU,Acer rubrum,1
+TNCW_10SE,ME,1015,QUIL,Quercus ilicifolia,3
+TNCW_10SE,ME,1015,PRSE,Prunus serotina,1
+TNCW_10SE,ME,1015,VAAN,Vaccinium angustifolium,3
+TNCW_10SE,ME,1015,LYBO,Lysimachia borealis,2
+TNCW_10SE,ME,1015,CAPE,Carex pensylvanica,4
+TNCW_10SE,ME,1015,MICA,Maianthemum canadense,1
+TNCW_10SE,ME,1013,VAMY,Vaccinium myrtilloides,6
+TNCW_10SE,ME,1013,PTAQ,Pteridium aquilinum,4
+TNCW_10SE,ME,1013,KAAN,Kalmia angustifolium,2
+TNCW_10SE,ME,1013,RUSP,Rubus species,3
+TNCW_10SE,ME,1013,CAPE,Carex pensylvanica,4
+TNCW_10SE,ME,1013,NASP1,Nabalus species 1,2
+TNCW_10SE,ME,1013,ACRU,Acer rubrum,1
+TNCW_10SE,ME,1013,VAAN,Vaccinium angustifolium,2
+TNCW_10SE,ME,1013,POUN21,Poacaea sp. 21,1
+TNCW_10SE,ME,1013,LYBO,Lysimachia borealis,2
+TNCW_10SE,ME,1013,ARME,Aronia melanocarpa,1
+TNCW_10SE,ME,1011,QUIL,Quercus ilicifolia,2
+TNCW_10SE,ME,1011,PRSE,Prunus serotina,1
+TNCW_10SE,ME,1011,PTAQ,Pteridium aquilinum,2
+TNCW_10SE,ME,1011,VAAN,Vaccinium angustifolium,5
+TNCW_10SE,ME,1011,GAPR,Gaultheria procumbens,2
+TNCW_10SE,ME,1011,CAPE,Carex pensylvanica,1
+CE_B7_C,MA,498,PIRI,Pinus rigida,2
+CE_B7_C,MA,498,QUIL,Quercus ilicifolia,2
+CE_B7_C,MA,498,QUAL,Quercus alba,4
+CE_B7_C,MA,498,QUCO,Quercus coccinea,2
+CE_B7_C,MA,498,GABA,Gaylussacia baccata,4
+CE_B7_C,MA,498,VAPA,Vaccinium pallidum,4
+CE_B7_C,MA,498,GAPR,Gaultheria procumbens,3
+CE_B7_C,MA,496,PTAQ,Pteridium aquilinum,5
+CE_B7_C,MA,496,GABA,Gaylussacia baccata,5
+CE_B7_C,MA,496,VAPA,Vaccinium pallidum,3
+CE_B7_C,MA,496,GAPR,Gaultheria procumbens,2
+CE_B7_C,MA,496,KAAN,Kalmia angustifolium,3
+CE_B7_C,MA,496,VAAN,Vaccinium angustifolium,2
+CE_B7_C,MA,496,PRVI,Prunus virginiana,1
+CE_B7_C,MA,494,QUIL,Quercus ilicifolia,3
+CE_B7_C,MA,494,GABA,Gaylussacia baccata,4
+CE_B7_C,MA,494,PTAQ,Pteridium aquilinum,5
+CE_B7_C,MA,494,VAPA,Vaccinium pallidum,4
+CE_B7_C,MA,494,GAPR,Gaultheria procumbens,4
+CE_B7_C,MA,494,KAAN,Kalmia angustifolium,2
+CE_B7_C,MA,494,ARNU,Aralia nudicaulis,2
+CE_B7_C,MA,494,CAPE,Carex pensylvanica,1
+CE_B7_C,MA,492,PTAQ,Pteridium aquilinum,5
+CE_B7_C,MA,492,GABA,Gaylussacia baccata,7
+CE_B7_C,MA,492,GAPR,Gaultheria procumbens,2
+CE_B7_C,MA,492,QUIL,Quercus ilicifolia,2
+CE_B7_C,MA,492,PIRI,Pinus rigida,1
+CE_B7_C,MA,492,VAPA,Vaccinium pallidum,2
+CE_B7_C,MA,492,ARAR,Aronia arbutifolia,2
+CE_B7_C,MA,490,PTAQ,Pteridium aquilinum,6
+CE_B7_C,MA,490,GABA,Gaylussacia baccata,6
+CE_B7_C,MA,490,VAPA,Vaccinium pallidum,3
+CE_B7_C,MA,490,GAPR,Gaultheria procumbens,3
+CE_B7_C,MA,490,MELI,Melampyrum lineare,1
+CE_B7_C,MA,488,MOPE,Morella pensylvanica,4
+CE_B7_C,MA,488,VAAN,Vaccinium angustifolium,2
+CE_B7_C,MA,488,GABA,Gaylussacia baccata,4
+CE_B7_C,MA,488,GAPR,Gaultheria procumbens,3
+CE_B7_C,MA,488,PTAQ,Pteridium aquilinum,5
+CE_B7_C,MA,488,VAPA,Vaccinium pallidum,3
+CE_B7_C,MA,488,ARNU,Aralia nudicaulis,2
+CE_B7_C,MA,486,PTAQ,Pteridium aquilinum,5
+CE_B7_C,MA,486,GABA,Gaylussacia baccata,5
+CE_B7_C,MA,486,VAPA,Vaccinium pallidum,4
+CE_B7_C,MA,486,KAAN,Kalmia angustifolium,3
+CE_B7_C,MA,486,GAPR,Gaultheria procumbens,2
+CE_B7_C,MA,484,PIRI,Pinus rigida,2
+CE_B7_C,MA,484,VAAN,Vaccinium angustifolium,7
+CE_B7_C,MA,484,GABA,Gaylussacia baccata,5
+CE_B7_C,MA,484,KAAN,Kalmia angustifolium,3
+CE_B7_C,MA,484,GAPR,Gaultheria procumbens,4
+CE_B7_C,MA,484,VAPA,Vaccinium pallidum,3
+CE_B7_C,MA,484,PTAQ,Pteridium aquilinum,3
+CE_B7_C,MA,482,QUCO,Quercus coccinea,2
+CE_B7_C,MA,482,PTAQ,Pteridium aquilinum,4
+CE_B7_C,MA,482,GABA,Gaylussacia baccata,5
+CE_B7_C,MA,482,VAPA,Vaccinium pallidum,4
+CE_B7_C,MA,482,VAAN,Vaccinium angustifolium,4
+CE_B7_C,MA,482,GAPR,Gaultheria procumbens,4
+CE_B7_C,MA,480,GABA,Gaylussacia baccata,5
+CE_B7_C,MA,480,PIRI,Pinus rigida,2
+CE_B7_C,MA,480,QUCO,Quercus coccinea,2
+CE_B7_C,MA,480,GAPR,Gaultheria procumbens,4
+CE_B7_C,MA,480,VAPA,Vaccinium pallidum,4
+CE_B7_C,MA,480,VAAN,Vaccinium angustifolium,2
+CE_B7_C,MA,480,ARAR,Aronia arbutifolia,1
+CE_B7_C,MA,480,MICA,Maianthemum canadense,2
+CE_B7_C,MA,480,MELI,Melampyrum lineare,1
+CE_B7_B,MA,477,GABA,Gaylussacia baccata,8
+CE_B7_B,MA,477,GAPR,Gaultheria procumbens,2
+CE_B7_B,MA,477,VAPA,Vaccinium pallidum,4
+CE_B7_B,MA,477,VAAN,Vaccinium angustifolium,2
+CE_B7_B,MA,477,PTAQ,Pteridium aquilinum,4
+CE_B7_B,MA,477,SMGL,Smilax glauca,2
+CE_B7_B,MA,475,VAAN,Vaccinium angustifolium,2
+CE_B7_B,MA,475,GABA,Gaylussacia baccata,3
+CE_B7_B,MA,475,KAAN,Kalmia angustifolium,2
+CE_B7_B,MA,475,VAPA,Vaccinium pallidum,4
+CE_B7_B,MA,475,ACRU,Acer rubrum,1
+CE_B7_B,MA,475,QUIL,Quercus ilicifolia,2
+CE_B7_B,MA,475,MELI,Melampyrum lineare,1
+CE_B7_B,MA,475,GAPR,Gaultheria procumbens,3
+CE_B7_B,MA,473,UVSE,Uvularia sessilifolia,1
+CE_B7_B,MA,473,QUIL,Quercus ilicifolia,2
+CE_B7_B,MA,473,PIRI,Pinus rigida,1
+CE_B7_B,MA,473,PTAQ,Pteridium aquilinum,7
+CE_B7_B,MA,473,GABA,Gaylussacia baccata,6
+CE_B7_B,MA,473,VAPA,Vaccinium pallidum,5
+CE_B7_B,MA,473,GAPR,Gaultheria procumbens,2
+CE_B7_B,MA,473,KAAN,Kalmia angustifolium,2
+CE_B7_B,MA,471,PTAQ,Pteridium aquilinum,3
+CE_B7_B,MA,471,UVSE,Uvularia sessilifolia,1
+CE_B7_B,MA,471,GABA,Gaylussacia baccata,4
+CE_B7_B,MA,471,QUIL,Quercus ilicifolia,3
+CE_B7_B,MA,471,GAPR,Gaultheria procumbens,2
+CE_B7_B,MA,471,KAAN,Kalmia angustifolium,2
+CE_B7_B,MA,471,ARAR,Aronia arbutifolia,1
+CE_B7_B,MA,469,PIRI,Pinus rigida,1
+CE_B7_B,MA,469,GABA,Gaylussacia baccata,5
+CE_B7_B,MA,469,VAAN,Vaccinium angustifolium,3
+CE_B7_B,MA,469,GAPR,Gaultheria procumbens,4
+CE_B7_B,MA,467,SAAL,Sassafras albidum,3
+CE_B7_B,MA,467,PTAQ,Pteridium aquilinum,4
+CE_B7_B,MA,467,GAPR,Gaultheria procumbens,2
+CE_B7_B,MA,467,GABA,Gaylussacia baccata,5
+CE_B7_B,MA,467,VAPA,Vaccinium pallidum,4
+CE_B7_B,MA,465,GABA,Gaylussacia baccata,8
+CE_B7_B,MA,465,PTAQ,Pteridium aquilinum,5
+CE_B7_B,MA,465,ARNU,Aralia nudicaulis,3
+CE_B7_B,MA,463,QUIL,Quercus ilicifolia,4
+CE_B7_B,MA,463,QUCO,Quercus coccinea,3
+CE_B7_B,MA,463,VAPA,Vaccinium pallidum,6
+CE_B7_B,MA,463,GABA,Gaylussacia baccata,4
+CE_B7_B,MA,463,PTAQ,Pteridium aquilinum,4
+CE_B7_B,MA,463,GAPR,Gaultheria procumbens,3
+CE_B7_B,MA,461,VAAN,Vaccinium angustifolium,3
+CE_B7_B,MA,461,VAPA,Vaccinium pallidum,4
+CE_B7_B,MA,461,GABA,Gaylussacia baccata,5
+CE_B7_B,MA,461,GAPR,Gaultheria procumbens,2
+CE_B7_B,MA,461,PIRI,Pinus rigida,1
+CE_B7_B,MA,461,PTAQ,Pteridium aquilinum,4
+CE_B7_B,MA,461,ARAR,Aronia arbutifolia,1
+CE_B7_B,MA,459,QUIL,Quercus ilicifolia,2
+CE_B7_B,MA,459,ACRU,Acer rubrum,2
+CE_B7_B,MA,459,GABA,Gaylussacia baccata,5
+CE_B7_B,MA,459,VAPA,Vaccinium pallidum,4
+CE_B7_B,MA,459,KAAN,Kalmia angustifolium,3
+CE_B7_B,MA,459,ARAR,Aronia arbutifolia,1
+CE_B7_B,MA,459,PTAQ,Pteridium aquilinum,4
+CE_B7_B,MA,459,VAAN,Vaccinium angustifolium,2
+CE_B7_B,MA,459,GAPR,Gaultheria procumbens,3
+CE_B7_B,MA,457,PIRI,Pinus rigida,2
+CE_B7_B,MA,457,VAPA,Vaccinium pallidum,3
+CE_B7_B,MA,457,GABA,Gaylussacia baccata,5
+CE_B7_B,MA,457,GAPR,Gaultheria procumbens,3
+CE_B7_B,MA,457,PTAQ,Pteridium aquilinum,4
+CE_B7_B,MA,455,VAPA,Vaccinium pallidum,4
+CE_B7_B,MA,455,GABA,Gaylussacia baccata,4
+CE_B7_B,MA,455,GAPR,Gaultheria procumbens,3
+CE_B7_B,MA,455,PIRI,Pinus rigida,1

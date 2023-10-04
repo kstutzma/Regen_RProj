@@ -1,0 +1,177 @@
+﻿Site,Region,Plot#,Species_Code,Latin_Name,Live_Total,Dead_Total
+APB_Humdinger,ALB,705,PIRI,Pinus rigida,4,0
+APB_Humdinger,ALB,705,QUCO,Quercus coccinea,1,0
+APB_Humdinger,ALB,704,PIRI,Pinus rigida,5,0
+APB_Humdinger,ALB,703,PIRI,Pinus rigida,2,0
+APB_Humdinger,ALB,703,QUCO,Quercus coccinea,1,0
+APB_Humdinger,ALB,702,PIRI,Pinus rigida,1,0
+APB_Humdinger,ALB,702,QUCO,Quercus coccinea,1,0
+APB_Humdinger,ALB,701,PIRI,Pinus rigida,5,1
+APB_Humdinger,ALB,700,PIRI,Pinus rigida,2,0
+APB_Humdinger,ALB,699,PIRI,Pinus rigida,2,0
+APB_Humdinger,ALB,698,PIRI,Pinus rigida,3,0
+APB_Humdinger,ALB,697,PIRI,Pinus rigida,1,0
+APB_Humdinger,ALB,696,PIRI,Pinus rigida,2,1
+APB_Humdinger,ALB,695,PIRI,Pinus rigida,2,1
+APB_Humdinger,ALB,694,PIRI,Pinus rigida,3,1
+APB_Humdinger,ALB,693,PIRI,Pinus rigida,3,0
+APB_Humdinger,ALB,692,PIRI,Pinus rigida,3,0
+APB_Humdinger,ALB,691,PIRI,Pinus rigida,4,0
+APB_Humdinger,ALB,690,PIRI,Pinus rigida,4,0
+APB_Humdinger,ALB,689,PIRI,Pinus rigida,5,0
+APB_Humdinger,ALB,688,PIRI,Pinus rigida,7,0
+APB_Humdinger,ALB,687,QUCO,Quercus coccinea,1,1
+APB_Humdinger,ALB,687,PIRI,Pinus rigida,0,1
+APB_Humdinger,ALB,686,PIRI,Pinus rigida,3,0
+APB_Humdinger,ALB,685,PIRI,Pinus rigida,1,1
+APB_Humdinger,ALB,684,NA,No species found,0,0
+APB_Humdinger,ALB,683,PIRI,Pinus rigida,5,0
+APB_Humdinger,ALB,682,PIRI,Pinus rigida,8,0
+APB_Humdinger,ALB,682,QUVE,Quercus velutina,1,0
+APB_Bivy,ALB,750,PIRI,Pinus rigida,5,0
+APB_Bivy,ALB,749,PIRI,Pinus rigida,1,0
+APB_Bivy,ALB,748,NA,No species found,0,0
+APB_Bivy,ALB,747,PIRI,Pinus rigida,3,0
+APB_Bivy,ALB,746,PIRI,Pinus rigida,1,1
+APB_Bivy,ALB,745,NA,No species found,0,0
+APB_Bivy,ALB,744,NA,No species found,0,0
+APB_Bivy,ALB,743,PIRI,Pinus rigida,2,0
+APB_Bivy,ALB,742,PIRI,Pinus rigida,1,0
+APB_Bivy,ALB,741,PIRI,Pinus rigida,8,0
+APB_Bivy,ALB,740,PIRI,Pinus rigida,1,0
+APB_Bivy,ALB,739,PIRI,Pinus rigida,1,0
+APB_Bivy,ALB,738,PIRI,Pinus rigida,1,0
+APB_Bivy,ALB,737,PIRI,Pinus rigida,2,0
+APB_Bivy,ALB,736,PIRI,Pinus rigida,3,0
+APB_Bivy,ALB,735,PIRI,Pinus rigida,7,0
+APB_Bivy,ALB,734,PIRI,Pinus rigida,9,0
+APB_Bivy,ALB,733,NA,No species found,0,0
+APB_Bivy,ALB,732,PIRI,Pinus rigida,3,0
+APB_Bivy,ALB,731,PIRI,Pinus rigida,1,0
+APB_Bivy,ALB,730,NA,No species found,0,0
+APB_Bivy,ALB,729,NA,No species found,0,0
+APB_Alleycat,ALB,866,PIRI,Pinus rigida,3,0
+APB_Alleycat,ALB,865,PIRI,Pinus rigida,2,0
+APB_Alleycat,ALB,864,PRSE,Prunus serotina,1,0
+APB_Alleycat,ALB,864,PIRI,Pinus rigida,4,0
+APB_Alleycat,ALB,863,PIRI,Pinus rigida,5,0
+APB_Alleycat,ALB,863,PRSE,Prunus serotina,3,0
+APB_Alleycat,ALB,862,PIRI,Pinus rigida,4,0
+APB_Alleycat,ALB,861,PIRI,Pinus rigida,6,2
+APB_Alleycat,ALB,860,PIRI,Pinus rigida,6,0
+APB_Alleycat,ALB,859,PIRI,Pinus rigida,9,0
+APB_Alleycat,ALB,858,PIRI,Pinus rigida,1,0
+APB_Alleycat,ALB,857,NA,No species found,0,0
+APB_Alleycat,ALB,856,PIRI,Pinus rigida,1,0
+APB_Alleycat,ALB,855,PIRI,Pinus rigida,4,0
+APB_Alleycat,ALB,855,PRSE,Prunus serotina,4,0
+APB_Alleycat,ALB,854,PIRI,Pinus rigida,2,1
+APB_Alleycat,ALB,853,PIRI,Pinus rigida,3,0
+APB_Alleycat,ALB,852,NA,No species found,0,0
+APB_Alleycat,ALB,851,NA,No species found,0,0
+APB_Alleycat,ALB,850,NA,No species found,0,0
+APB_Alleycat,ALB,849,NA,No species found,0,0
+APB_Alleycat,ALB,848,NA,No species found,0,0
+APB_Alleycat,ALB,847,NA,No species found,0,0
+APB_Alleycat,ALB,846,NA,No species found,0,0
+APB_Alleycat,ALB,845,NA,No species found,0,0
+APB_Alleycat,ALB,844,NA,No species found,0,0
+APB_Alleycat,ALB,843,NA,No species found,0,0
+CE_BA3,MA,590,PIRI,Pinus rigida,5,0
+CE_BA3,MA,590,QUCO,Quercus coccinea,1,0
+CE_BA3,MA,589,PIRI,Pinus rigida,1,0
+CE_BA3,MA,588,PIRI,Pinus rigida,5,0
+CE_BA3,MA,587,QUCO,Quercus coccinea,6,1
+CE_BA3,MA,587,PIRI,Pinus rigida,2,0
+CE_BA3,MA,586,QUAL,Quercus alba,2,0
+CE_BA3,MA,586,PIRI,Pinus rigida,5,0
+CE_BA3,MA,585,PIRI,Pinus rigida,8,0
+CE_BA3,MA,585,QUCO,Quercus coccinea,1,0
+CE_BA3,MA,584,QUCO,Quercus coccinea,3,0
+CE_BA3,MA,584,PIRI,Pinus rigida,5,0
+CE_BA3,MA,584,QUAL,Quercus alba,1,0
+CE_BA3,MA,583,PIRI,Pinus rigida,10,0
+CE_BA3,MA,582,PIRI,Pinus rigida,13,0
+CE_BA3,MA,582,PIST,Pinus strobus,1,0
+CE_BA3,MA,581,PIRI,Pinus rigida,9,1
+CE_BA3,MA,580,PIRI,Pinus rigida,6,0
+CE_BA3,MA,579,PIRI,Pinus rigida,6,0
+CE_BA3,MA,579,QUAL,Quercus alba,1,0
+CE_BA3,MA,578,PIRI,Pinus rigida,7,0
+CE_BA3,MA,578,QUAL,Quercus alba,1,0
+CE_BA3,MA,577,PIRI,Pinus rigida,9,0
+CE_BA3,MA,576,PIRI,Pinus rigida,7,0
+CE_BA3,MA,575,PIRI,Pinus rigida,9,0
+CE_BA3,MA,574,QUCO,Quercus coccinea,3,0
+CE_BA3,MA,574,PIRI,Pinus rigida,4,0
+CE_BA3,MA,574,QUAL,Quercus alba,1,0
+CE_BA3,MA,573,PIRI,Pinus rigida,9,0
+CE_BA3,MA,573,QUAL,Quercus alba,1,0
+CE_BA3,MA,572,PIRI,Pinus rigida,10,0
+CE_BA3,MA,571,PIRI,Pinus rigida,7,0
+CE_BA3,MA,570,PIRI,Pinus rigida,1,0
+CE_SWB_S,MA,430,QUAL,Quercus alba,1,0
+CE_SWB_S,MA,430,PIRI,Pinus rigida,1,1
+CE_SWB_S,MA,429,QUAL,Quercus alba,3,0
+CE_SWB_S,MA,428,QUAL,Quercus alba,2,0
+CE_SWB_S,MA,428,PIRI,Pinus rigida,2,0
+CE_SWB_S,MA,427,QUAL,Quercus alba,1,0
+CE_SWB_S,MA,427,PIRI,Pinus rigida,2,0
+CE_SWB_S,MA,426,PIRI,Pinus rigida,3,0
+CE_SWB_S,MA,425,PIRI,Pinus rigida,2,0
+CE_SWB_S,MA,424,PIRI,Pinus rigida,3,0
+CE_SWB_S,MA,423,PIRI,Pinus rigida,3,0
+CE_SWB_S,MA,423,QUAL,Quercus alba,2,0
+CE_SWB_S,MA,422,QUAL,Quercus alba,2,0
+CE_SWB_S,MA,422,PIRI,Pinus rigida,2,0
+CE_SWB_S,MA,421,PIRI,Pinus rigida,4,0
+CE_SWB_S,MA,421,QUCO,Quercus coccinea,2,0
+CE_SWB_S,MA,420,QUAL,Quercus alba,1,0
+CE_SWB_S,MA,420,PIRI,Pinus rigida,1,0
+CE_SWB_S,MA,419,PIRI,Pinus rigida,1,0
+CE_SWB_S,MA,419,QUCO,Quercus coccinea,1,0
+CE_SWB_S,MA,418,PIRI,Pinus rigida,2,0
+CE_SWB_S,MA,418,QUAL,Quercus alba,1,0
+CE_SWB_S,MA,417,NA,No species found,0,0
+CE_SWB_S,MA,416,QUAL,Quercus alba,1,0
+CE_SWB_S,MA,416,QUCO,Quercus coccinea,1,0
+CE_SWB_S,MA,415,PIRI,Pinus rigida,1,0
+CE_SWB_S,MA,415,QUCO,Quercus coccinea,1,0
+CE_SWB_S,MA,414,QUCO,Quercus coccinea,1,0
+CE_SWB_S,MA,414,PIRI,Pinus rigida,1,0
+CE_SWB_S,MA,413,QUCO,Quercus coccinea,1,0
+CE_SWB_S,MA,413,PIRI,Pinus rigida,4,0
+CE_SWB_S,MA,412,QUAL,Quercus alba,2,0
+CE_SWB_S,MA,412,PIRI,Pinus rigida,0,1
+CE_SWB_S,MA,411,PIRI,Pinus rigida,3,0
+CE_SWB_S,MA,411,QUAL,Quercus alba,1,0
+CE_SWB_S,MA,410,PIRI,Pinus rigida,1,0
+CE_SWB_S,MA,410,QUAL,Quercus alba,1,0
+CE_SWB_S,MA,409,PIRI,Pinus rigida,3,0
+CE_SWB_S,MA,409,QUAL,Quercus alba,1,0
+CE_SWB_S,MA,409,QUCO,Quercus coccinea,2,0
+CE_SWB_S,MA,408,PIRI,Pinus rigida,2,0
+CE_SWB_S,MA,408,QUAL,Quercus alba,3,0
+CE_SWB_N,MA,453,NA,No species found,0,0
+CE_SWB_N,MA,452,NA,No species found,0,0
+CE_SWB_N,MA,451,PIRI,Pinus rigida,0,1
+CE_SWB_N,MA,450,NA,No species found,0,0
+CE_SWB_N,MA,449,NA,No species found,0,0
+CE_SWB_N,MA,448,NA,No species found,0,0
+CE_SWB_N,MA,447,NA,No species found,0,0
+CE_SWB_N,MA,446,QUAL,Quercus alba,0,1
+CE_SWB_N,MA,445,NA,No species found,0,0
+CE_SWB_N,MA,444,PIRI,Pinus rigida,2,0
+CE_SWB_N,MA,443,NA,No species found,0,0
+CE_SWB_N,MA,442,NA,No species found,0,0
+CE_SWB_N,MA,441,NA,No species found,0,0
+CE_SWB_N,MA,440,PIRI,Pinus rigida,1,0
+CE_SWB_N,MA,439,NA,No species found,0,0
+CE_SWB_N,MA,438,NA,No species found,0,0
+CE_SWB_N,MA,437,PIRI,Pinus rigida,3,0
+CE_SWB_N,MA,436,NA,No species found,0,0
+CE_SWB_N,MA,435,PIRI,Pinus rigida,1,0
+CE_SWB_N,MA,434,NA,No species found,0,0
+CE_SWB_N,MA,433,NA,No species found,0,0
+CE_SWB_N,MA,432,PIRI,Pinus rigida,2,0
+CE_SWB_N,MA,431,PIRI,Pinus rigida,4,2

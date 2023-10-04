@@ -1,0 +1,153 @@
+﻿Site ,Region,Plot_No,Species_Code,Latin_Name,Total,Browsed,StumpSprout,Germinate
+RPD2_B4,LI,106,QUAL,Quercus alba,1,0,0,0
+RPD2_B4,LI,107,QUCO,Quercus coccinea,1,0,0,0
+RPD2_B4,LI,108,NA,No species found,0,0,0,0
+RPD2_B4,LI,109,QUCO,Quercus coccinea,1,0,0,0
+RPD2_B4,LI,110,NA,No species found,0,0,0,0
+RPD2_B4,LI,111,QUCO,Quercus coccinea,4,0,0,0
+RPD2_B4,LI,111,QUAL,Quercus alba,1,0,0,0
+RPD2_B4,LI,112,PIRI,Pinus rigida,4,0,0,0
+RPD2_B4,LI,112,QUAL,Quercus alba,1,0,0,0
+RPD2_B4,LI,113,QUCO,Quercus coccinea,1,0,0,0
+RPD2_B4,LI,114,QUCO,Quercus coccinea,1,0,0,0
+RPD2_B4,LI,115,PIRI,Pinus rigida,1,0,0,0
+RPD2_B4,LI,116,QUCO,Quercus coccinea,3,0,0,0
+RPD2_B4,LI,117,NA,No species found,0,0,0,0
+RPD2_B4,LI,118,QUCO,Quercus coccinea,3,0,0,0
+RPD2_B4,LI,119,NA,No species found,0,0,0,0
+RPD2_B4,LI,120,PIRI,Pinus rigida,1,0,0,0
+RPD2_B4,LI,120,QUAL,Quercus alba,1,0,0,0
+RPD2_B4,LI,121,NA,No species found,0,0,0,0
+RPD2_B4,LI,122,QUIL,Quercus ilicifolia,5,0,0,0
+RPD2_B4,LI,123,NA,No species found,0,0,0,0
+RPD2_B2,LI,70,PIRI,Pinus rigida,3,0,0,3
+RPD2_B2,LI,70,SAAL,Sassafras albidum,1,0,0,1
+RPD2_B2,LI,71,QUIL,Quercus ilicifolia,2,0,0,0
+RPD2_B2,LI,71,PIRI,Pinus rigida,4,0,0,0
+RPD2_B2,LI,72,PIRI,Pinus rigida,1,0,0,0
+RPD2_B2,LI,73,QUAL,Quercus alba,1,0,0,0
+RPD2_B2,LI,73,QUCO,Quercus coccinea,1,0,0,0
+RPD2_B2,LI,73,QUIL,Quercus ilicifolia,1,0,0,0
+RPD2_B2,LI,73,AMSP,Amelanchier spp.,1,0,0,0
+RPD2_B2,LI,74,QUAL,Quercus alba,1,0,0,0
+RPD2_B2,LI,75,PIRI,Pinus rigida,3,2,0,1
+RPD2_B2,LI,76,QUCO,Quercus coccinea,1,0,0,0
+RPD2_B2,LI,76,PIRI,Pinus rigida,1,0,0,0
+RPD2_B2,LI,77,PIRI,Pinus rigida,1,0,0,0
+RPD2_B2,LI,77,QUCO,Quercus coccinea,1,0,0,0
+RPD2_B2,LI,77,QUIL,Quercus ilicifolia,1,0,0,0
+RPD2_B2,LI,78,QUCO,Quercus coccinea,1,0,0,0
+RPD2_B2,LI,79,PIRI,Pinus rigida,1,0,0,0
+RPD2_B2,LI,80,QUIL,Quercus ilicifolia,9,0,0,0
+RPD2_B2,LI,81,QUAL,Quercus alba,2,0,2,0
+RPD2_B2,LI,81,QUCO,Quercus coccinea,1,0,0,0
+RPD2_B2,LI,82,SAAL,Sassafras albidum,1,0,0,0
+RPD2_B2,LI,82,QUAL,Quercus alba,1,0,0,0
+RPD2_B2,LI,82,PIRI,Pinus rigida,3,0,0,0
+RPD2_B2,LI,83,QUIL,Quercus ilicifolia,3,0,0,0
+RPD2_B2,LI,84,QUVE,Quercus velutina,1,0,0,0
+RPD2_B2,LI,84,QUCO,Quercus coccinea,1,0,0,0
+RPD2_B2,LI,85,QUIL,Quercus ilicifolia,4,0,0,0
+RPD2_B2,LI,85,QUCO,Quercus coccinea,2,0,0,0
+RPD2_B2,LI,86,QUCO,Quercus coccinea,3,0,0,1
+RPD2_B2,LI,86,QUIL,Quercus ilicifolia,2,0,0,0
+RPD2_B2,LI,87,ACRU,Acer rubrum,1,0,0,0
+RPD2_B9,LI,187,QUIL,Quercus ilicifolia,3,0,0,0
+RPD2_B9,LI,187,PIRI,Pinus rigida,1,0,0,0
+RPD2_B9,LI,188,PIRI,Pinus rigida,5,0,0,0
+RPD2_B9,LI,188,QUAL,Quercus alba,1,0,0,0
+RPD2_B9,LI,189,QUIL,Quercus ilicifolia,1,0,0,0
+RPD2_B9,LI,189,QUVE,Quercus velutina,2,0,0,0
+RPD2_B9,LI,190,PIRI,Pinus rigida,1,0,0,0
+RPD2_B9,LI,191,QUCO,Quercus coccinea,2,0,0,0
+RPD2_B9,LI,192,QUIL,Quercus ilicifolia,3,0,0,0
+RPD2_B9,LI,193,QUIL,Quercus ilicifolia,4,0,0,0
+RPD2_B9,LI,194,PIRI,Pinus rigida,1,0,0,0
+RPD2_B9,LI,195,QUCO,Quercus coccinea,2,0,0,1
+Maspee_G3,MA,329,QUIL,Quercus ilicifolia,2,0,0,0
+Maspee_G3,MA,330,NA,No species found,0,0,0,0
+Maspee_G3,MA,331,NA,No species found,0,0,0,0
+Maspee_G3,MA,332,NA,No species found,0,0,0,0
+Maspee_G3,MA,333,QUIL,Quercus ilicifolia,4,0,0,0
+Maspee_G3,MA,333,QUCO,Quercus coccinea,4,0,0,0
+Maspee_G3,MA,334,QUIL,Quercus ilicifolia,4,0,0,0
+Maspee_G3,MA,335,QUIL,Quercus ilicifolia,2,0,0,0
+Maspee_G3,MA,336,QUIL,Quercus ilicifolia,6,0,0,0
+Maspee_G3,MA,336,QUCO,Quercus coccinea,1,0,0,0
+Maspee_G3,MA,337,NA,No species found,0,0,0,0
+Maspee_G3,MA,338,QUIL,Quercus ilicifolia,2,0,0,0
+Maspee_G3,MA,339,QUIL,Quercus ilicifolia,2,0,0,0
+Maspee_G3,MA,340,QUIL,Quercus ilicifolia,2,0,0,0
+Maspee_G3,MA,340,QUPR,Quercus prinoides,3,0,0,0
+Maspee_G3,MA,341,QUIL,Quercus ilicifolia,9,0,0,0
+Maspee_G3,MA,342,QUIL,Quercus ilicifolia,5,0,0,0
+Maspee_G3,MA,343,QUIL,Quercus ilicifolia,5,0,0,0
+Maspee_G3,MA,344,QUCO,Quercus coccinea,1,0,0,0
+Maspee_G3,MA,345,QUCO,Quercus coccinea,1,0,0,0
+Maspee_G3,MA,345,QUIL,Quercus ilicifolia,2,0,0,0
+Maspee_G3,MA,346,QUIL,Quercus ilicifolia,2,0,0,0
+Maspee_G3,MA,347,QUIL,Quercus ilicifolia,5,0,0,0
+Maspee_G3,MA,347,QUCO,Quercus coccinea,1,0,0,0
+Maspee_G3,MA,348,NA,No species found,0,0,0,0
+Maspee_G3,MA,349,NA,No species found,0,0,0,0
+Maspee_G3,MA,350,NA,No species found,0,0,0,0
+CE_BP20,MA,569,PIRI,Pinus rigida,2,1,0,0
+CE_BP20,MA,568,NA,No species found,0,0,0,0
+CE_BP20,MA,567,NA,No species found,0,0,0,0
+CE_BP20,MA,566,NA,No species found,0,0,0,0
+CE_BP20,MA,565,SAAL,Sassafras albidum,1,0,0,0
+CE_BP20,MA,565,QUPR,Quercus prinoides,8,0,0,0
+CE_BP20,MA,564,NA,No species found,0,0,0,0
+CE_BP20,MA,563,QUCO,Quercus coccinea,2,0,0,0
+CE_BP20,MA,562,SAAL,Sassafras albidum,1,0,0,0
+CE_BP20,MA,562,PIRI,Pinus rigida,1,1,0,0
+CE_BP20,MA,562,AMSP,Amelanchier spp.,1,0,0,0
+CE_BP20,MA,561,PIRI,Pinus rigida,16,2,12,1
+CE_BP20,MA,560,PIRI,Pinus rigida,3,2,0,0
+CE_BP20,MA,560,SAAL,Sassafras albidum,11,0,17,0
+CE_BP20,MA,559,QUAL,Quercus alba,7,0,0,0
+CE_BP20,MA,558,PIRI,Pinus rigida,2,0,0,0
+CE_BP20,MA,557,QUIL,Quercus ilicifolia,1,0,0,0
+CE_BP20,MA,556,NA,No species found,0,0,0,0
+CE_BP20,MA,555,ACRU,Acer rubrum,2,0,0,0
+CE_BP20,MA,555,SAAL,Sassafras albidum,1,0,0,0
+CE_BP20,MA,554,PIRI,Pinus rigida,1,1,0,0
+CE_BP20,MA,553,PIRI,Pinus rigida,2,1,0,0
+CE_BP20,MA,553,ACRU,Acer rubrum,2,0,0,0
+CE_BP20,MA,552,PIRI,Pinus rigida,3,2,0,0
+CE_BP20,MA,551,SAAL,Sassafras albidum,10,0,5,0
+CE_BP20,MA,551,PIRI,Pinus rigida,5,4,0,1
+CE_BP20,MA,550,PIRI,Pinus rigida,1,1,0,0
+CE_BP20,MA,549,PIRI,Pinus rigida,4,0,0,1
+CE_BP20,MA,548,QUCO,Quercus coccinea,1,0,0,0
+CE_BP20,MA,548,SAAL,Sassafras albidum,1,0,0,0
+CE_BP20,MA,547,PIRI,Pinus rigida,3,0,0,0
+CE_Wheelock,MA,546,QUCO,Quercus coccinea,2,2,0,0
+CE_Wheelock,MA,546,PIRI,Pinus rigida,2,1,0,0
+CE_Wheelock,MA,545,NA,No species found,0,0,0,0
+CE_Wheelock,MA,544,PIRI,Pinus rigida,3,2,0,0
+CE_Wheelock,MA,543,NA,No species found,0,0,0,0
+CE_Wheelock,MA,542,NA,No species found,0,0,0,0
+CE_Wheelock,MA,541,NA,No species found,0,0,0,0
+CE_Wheelock,MA,540,QUIL,Quercus ilicifolia,2,0,0,0
+CE_Wheelock,MA,540,AMSP,Amelanchier spp.,3,0,0,0
+CE_Wheelock,MA,540,PIRI,Pinus rigida,1,0,0,0
+CE_Wheelock,MA,539,NA,No species found,0,0,0,0
+CE_Wheelock,MA,538,SAAL,Sassafras albidum,5,0,0,0
+CE_Wheelock,MA,537,NA,No species found,0,0,0,0
+CE_Wheelock,MA,536,QUCO,Quercus coccinea,1,0,1,0
+CE_Wheelock,MA,535,PIRI,Pinus rigida,4,1,0,0
+CE_Wheelock,MA,535,SAAL,Sassafras albidum,2,0,0,0
+CE_Wheelock,MA,535,QUIL,Quercus ilicifolia,1,0,0,0
+CE_Wheelock,MA,534,QUIL,Quercus ilicifolia,2,0,0,0
+CE_Wheelock,MA,534,PIRI,Pinus rigida,1,0,0,0
+CE_Wheelock,MA,533,NA,No species found,0,0,0,0
+CE_Wheelock,MA,532,NA,No species found,0,0,0,0
+CE_Wheelock,MA,531,PIRI,Pinus rigida,3,1,0,0
+CE_Wheelock,MA,530,NA,No species found,0,0,0,0
+CE_Wheelock,MA,529,QUCO,Quercus coccinea,1,0,0,0
+CE_Wheelock,MA,528,NA,No species found,0,0,0,0
+CE_Wheelock,MA,527,SAAL,Sassafras albidum,15,0,5,0
+CE_Wheelock,MA,526,NA,No species found,0,0,0,0
+CE_Wheelock,MA,525,NA,No species found,0,0,0,0
+CE_Wheelock,MA,524,PIRI,Pinus rigida,2,0,0,0

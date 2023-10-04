@@ -1,0 +1,131 @@
+﻿Site,Region,Plot#,Species_Code,Latin_Name,SP_Total_Cover
+SHCP_1,LI,214,ACRU,Acer rubrum,1
+SHCP_1,LI,214,GABA,Gaylussacia baccata,2
+SHCP_1,LI,216,GAFR,Gaylussacia frondosa,4
+SHCP_1,LI,216,ACRU,Acer rubrum,1
+SHCP_1,LI,216,MICA,Maianthemum canadense,1
+SHCP_1,LI,216,GAPR,Gaultheria procumbens,1
+SHCP_1,LI,216,CLAL,Clethra alnifolia,1
+SHCP_1,LI,216,LYBO,Lysimachia borealis,1
+SHCP_1,LI,216,GABA,Gaylussacia baccata,4
+SHCP_1,LI,216,VACO,Vaccinium corymbosum,3
+SHCP_1,LI,218,VACO,Vaccinium corymbosum,2
+SHCP_1,LI,218,MICA,Maianthemum canadense,1
+SHCP_1,LI,218,MIRE,Mitchella repens,1
+SHCP_1,LI,218,SAAL,Sassafras albidum,1
+SHCP_1,LI,220,MICA,Maianthemum canadense,1
+SHCP_1,LI,220,GABA,Gaylussacia baccata,6
+SHCP_1,LI,220,VAPA,Vaccinium pallidum,1
+SHCP_1,LI,220,ACRU,Acer rubrum,1
+SHCP_1,LI,222,EURA,Eubotrys racemosa,4
+SHCP_1,LI,222,GABA,Gaylussacia baccata,3
+SHCP_1,LI,222,ACRU,Acer rubrum,1
+SHCP_1,LI,224,ACRU,Acer rubrum,1
+SHCP_1,LI,224,VACO,Vaccinium corymbosum,1
+SHCP_1,LI,226,GABA,Gaylussacia baccata,3
+SHCP_1,LI,226,CLAL,Clethra alnifolia,1
+SHCP_1,LI,226,ACRU,Acer rubrum,1
+SHCP_1,LI,226,TORA,Toxicodendron radicans,1
+SHCP_1,LI,226,LYBO,Lysimachia borealis,1
+SHCP_1,LI,226,VACO,Vaccinium corymbosum,1
+SHCP_1,LI,228,PIRI,Pinus rigida,1
+SHCP_1,LI,228,ACRU,Acer rubrum,1
+SHCP_1,LI,228,RHVI,Rhododendron viscosum,8
+SHCP_1,LI,228,GABA,Gaylussacia baccata,1
+SHCP_1,LI,228,SMRO,Smilax rotundifolia,1
+SHCP_1,LI,228,VACO,Vaccinium corymbosum,1
+SHCP_1,LI,228,LYBO,Lysimachia borealis,1
+SHCP_1,LI,228,MICA,Maianthemum canadense,1
+SHCP_1,LI,230,ACRU,Acer rubrum,1
+SHCP_1,LI,230,NYSY,Nyssa sylvatica,1
+SHCP_1,LI,230,GABA,Gaylussacia baccata,5
+SHCP_1,LI,230,MICA,Maianthemum canadense,1
+SHCP_1,LI,230,GAFR,Gaylussacia frondosa,1
+SHCP_1,LI,230,VACO,Vaccinium corymbosum,1
+SHCP_1,LI,232,PIRI,Pinus rigida,1
+SHCP_1,LI,232,EURA,Eubotrys racemosa,3
+SHCP_1,LI,232,GABA,Gaylussacia baccata,1
+SHCP_1,LI,234,ACRU,Acer rubrum,1
+SHCP_1,LI,234,SMRO,Smilax rotundifolia,1
+SHCP_1,LI,234,EURA,Eubotrys racemosa,3
+SHCP_1,LI,234,VACO,Vaccinium corymbosum,1
+WNWR_BT,LI,45,GABA,Gaylussacia baccata,5
+WNWR_BT,LI,45,LYBO,Lysimachia borealis,1
+WNWR_BT,LI,45,SMRO,Smilax rotundifolia,5
+WNWR_BT,LI,45,POUN2,Poaceae sp. 2,1
+WNWR_BT,LI,47,QUAL,Quercus alba,3
+WNWR_BT,LI,47,GABA,Gaylussacia baccata,3
+WNWR_BT,LI,47,LYBO,Lysimachia borealis,2
+WNWR_BT,LI,47,POUN2,Poaceae sp. 2,2
+WNWR_BT,LI,49,QUIL,Quercus ilicifolia,2
+WNWR_BT,LI,49,QUAL,Quercus alba,2
+WNWR_BT,LI,49,GABA,Gaylussacia baccata,1
+WNWR_BT,LI,49,POUN2,Poaceae sp. 2,2
+WNWR_BT,LI,51,QUIL,Quercus ilicifolia,1
+WNWR_BT,LI,51,GABA,Gaylussacia baccata,6
+WNWR_BT,LI,51,SMRO,Smilax rotundifolia,1
+WNWR_BT,LI,53,LYBO,Lysimachia borealis,2
+WNWR_BT,LI,53,SMRO,Smilax rotundifolia,4
+WNWR_BT,LI,53,POUN2,Poaceae sp. 2,2
+WNWR_BT,LI,53,POUN3,Poaceae sp. 3,2
+WNWR_BT,LI,53,GABA,Gaylussacia baccata,2
+WNWR_BT,LI,55,POUN4,Poaceae sp. 4,5
+WNWR_BT,LI,55,SMRO,Smilax rotundifolia,3
+WNWR_BT,LI,55,POUN2,Poaceae sp. 2,1
+WNWR_BT,LI,55,LYBO,Lysimachia borealis,2
+WNWR_BT,LI,57,TORA,Toxicodendron radicans,2
+WNWR_BT,LI,57,LYBO,Lysimachia borealis,1
+WNWR_BT,LI,57,SMRO,Smilax rotundifolia,3
+WNWR_BT,LI,57,SAAL,Sassafras albidum,1
+WNWR_BT,LI,57,POUN2,Poaceae sp. 2,2
+WNWR_BT,LI,57,POUN3,Poaceae sp. 3,1
+WNWR_BT,LI,59,QUCO,Quercus coccinea,2
+WNWR_BT,LI,59,GABA,Gaylussacia baccata,2
+WNWR_BT,LI,59,PRSE,Prunus serotina,1
+WNWR_BT,LI,59,POUN3,Poaceae sp. 3,1
+WNWR_BT,LI,61,PIRI,Pinus rigida,2
+WNWR_BT,LI,61,QUCO,Quercus coccinea,2
+WNWR_BT,LI,61,GABA,Gaylussacia baccata,2
+WNWR_BT,LI,61,POUN4,Poaceae sp. 4,4
+WNWR_BT,LI,63,QUAL,Quercus alba,2
+WNWR_BT,LI,63,GABA,Gaylussacia baccata,4
+WNWR_BT,LI,63,SMRO,Smilax rotundifolia,2
+WNWR_BT,LI,63,LYBO,Lysimachia borealis,1
+WNWR_BT,LI,63,PAQU,Parthenocissus quinquefolia,1
+WNWR_BT,LI,63,POUN2,Poaceae sp. 2,2
+WNWR_BT,LI,65,PRSE,Prunus serotina,1
+WNWR_BT,LI,65,SAAL,Sassafras albidum,1
+WNWR_BT,LI,65,POUN2,Poaceae sp. 2,3
+WNWR_BT,LI,65,POUN4,Poaceae sp. 4,4
+WNWR_BT,LI,65,POUN5,Poacaea sp. 5,2
+WNWR_BT,LI,67,QUAL,Quercus alba,2
+WNWR_BT,LI,67,LYBO,Lysimachia borealis,2
+WNWR_BT,LI,67,GABA,Gaylussacia baccata,1
+WNWR_BT,LI,67,POUN2,Poaceae sp. 2,2
+WNWR_BT,LI,69,QUCO,Quercus coccinea,2
+WNWR_BT,LI,69,GABA,Gaylussacia baccata,5
+HCP_GI,LI,305,GABA,Gaylussacia baccata,7
+HCP_GI,LI,307,CAPE,Carex pensylvanica,5
+HCP_GI,LI,307,GABA,Gaylussacia baccata,1
+HCP_GI,LI,309,GABA,Gaylussacia baccata,4
+HCP_GI,LI,309,CAPE,Carex pensylvanica,2
+HCP_GI,LI,311,GABA,Gaylussacia baccata,4
+HCP_GI,LI,311,CAPE,Carex pensylvanica,4
+HCP_GI,LI,313,CAPE,Carex pensylvanica,2
+HCP_GI,LI,313,GAPR,Gaultheria procumbens,1
+HCP_GI,LI,313,GABA,Gaylussacia baccata,5
+HCP_GI,LI,315,CAPE,Carex pensylvanica,4
+HCP_GI,LI,315,DEFL,Deschampsia flexuosa,2
+HCP_GI,LI,317,CHMA,Chimaphila maculata,1
+HCP_GI,LI,317,GABA,Gaylussacia baccata,6
+HCP_GI,LI,319,GABA,Gaylussacia baccata,7
+HCP_GI,LI,319,GAPR,Gaultheria procumbens,1
+HCP_GI,LI,319,VAPA,Vaccinium pallidum,4
+HCP_GI,LI,321,CAPE,Carex pensylvanica,5
+HCP_GI,LI,323,GABA,Gaylussacia baccata,4
+HCP_GI,LI,323,VAPA,Vaccinium pallidum,3
+HCP_GI,LI,323,GAPR,Gaultheria procumbens,1
+HCP_GI,LI,325,GABA,Gaylussacia baccata,6
+HCP_GI,LI,325,CAPE,Carex pensylvanica,2
+HCP_GI,LI,327,GABA,Gaylussacia baccata,4
+HCP_GI,LI,327,CAPE,Carex pensylvanica,2

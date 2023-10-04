@@ -1,0 +1,244 @@
+﻿Site ,Region,Plot_No,Species_Code,Latin_Name,Total,Browsed,StumpSprout,Germinate
+RPD2_B1,LI,196,QUCO,Quercus coccinea,6,0,0,0
+RPD2_B1,LI,197,PIRI,Pinus rigida,1,0,0,0
+RPD2_B1,LI,198,NA,No species found,0,0,0,0
+RPD2_B1,LI,199,QUCO,Quercus coccinea,1,0,0,0
+RPD2_B1,LI,200,PIRI,Pinus rigida,3,0,0,3
+RPD2_B1,LI,200,QUIL,Quercus ilicifolia,1,0,0,0
+RPD2_B1,LI,200,QUCO,Quercus coccinea,1,0,0,0
+RPD2_B1,LI,200,QUAL,Quercus alba,9,0,0,0
+RPD2_B1,LI,201,QUIL,Quercus ilicifolia,4,0,0,0
+RPD2_B1,LI,201,QUCO,Quercus coccinea,1,0,0,0
+RPD2_B1,LI,202,QUIL,Quercus ilicifolia,8,0,0,0
+RPD2_B1,LI,202,QUAL,Quercus alba,1,0,0,0
+RPD2_B1,LI,202,QUCO,Quercus coccinea,2,0,0,0
+RPD2_B1,LI,203,NA,No species found,0,0,0,0
+RPD2_B1,LI,204,NA,No species found,0,0,0,0
+RPD2_B1,LI,205,QUAL,Quercus alba,1,0,0,0
+RPD2_B1,LI,205,QUIL,Quercus ilicifolia,1,0,0,0
+RPD2_B1,LI,206,PIRI,Pinus rigida,5,0,0,3
+RPD2_B1,LI,206,QUAL,Quercus alba,1,0,0,0
+RPD2_B1,LI,207,PIRI,Pinus rigida,1,0,0,0
+RPD2_B1,LI,208,QUCO,Quercus coccinea,1,0,0,0
+RPD2_B1,LI,209,PIRI,Pinus rigida,3,0,0,3
+RPD2_B1,LI,210,QUIL,Quercus ilicifolia,2,0,0,0
+RPD2_B1,LI,210,PIRI,Pinus rigida,1,0,0,1
+RPD2_B1,LI,211,QUCO,Quercus coccinea,2,0,0,0
+RPD2_B1,LI,211,PIRI,Pinus rigida,3,0,0,3
+RPD2_B1,LI,211,BESP,Betula species,1,0,0,0
+RPD2_B1,LI,212,PIRI,Pinus rigida,2,0,0,2
+RPD2_B1,LI,213,PIRI,Pinus rigida,2,0,0,2
+RPD2_B1,LI,213,QUCO,Quercus coccinea,1,0,0,0
+RPD2_B6,LI,196,QUIL,Quercus ilicifolia,3,0,0,0
+RPD2_B6,LI,196,QUAL,Quercus alba,2,0,0,0
+RPD2_B6,LI,170,PIRI,Pinus rigida,1,0,0,1
+RPD2_B6,LI,171,PIRI,Pinus rigida,1,0,0,1
+RPD2_B6,LI,172,QUIL,Quercus ilicifolia,1,0,0,0
+RPD2_B6,LI,173,QUAL,Quercus alba,11,0,11,0
+RPD2_B6,LI,174,PIRI,Pinus rigida,1,0,0,1
+RPD2_B6,LI,175,PIRI,Pinus rigida,4,0,0,2
+RPD2_B6,LI,175,QUAL,Quercus alba,13,0,0,0
+RPD2_B6,LI,175,QUCO,Quercus coccinea,1,0,0,0
+RPD2_B6,LI,176,PIRI,Pinus rigida,2,0,0,2
+RPD2_B6,LI,177,QUCO,Quercus coccinea,3,0,0,0
+RPD2_B6,LI,178,PIRI,Pinus rigida,4,0,0,0
+RPD2_B6,LI,179,QUIL,Quercus ilicifolia,2,0,0,0
+RPD2_B6,LI,179,QUAL,Quercus alba,1,0,0,0
+RPD2_B6,LI,179,PIRI,Pinus rigida,2,0,0,2
+RPD2_B6,LI,180,PIRI,Pinus rigida,1,0,0,1
+RPD2_B6,LI,180,QUCO,Quercus coccinea,1,0,0,0
+RPD2_B6,LI,181,QUCO,Quercus coccinea,1,0,0,0
+RPD2_B6,LI,181,PIRI,Pinus rigida,1,0,0,1
+RPD2_B6,LI,181,QUIL,Quercus ilicifolia,9,0,0,0
+RPD2_B6,LI,182,PIRI,Pinus rigida,1,0,0,1
+RPD2_B6,LI,183,PIRI,Pinus rigida,2,0,1,0
+RPD2_B6,LI,183,QUIL,Quercus ilicifolia,4,0,0,0
+RPD2_B6,LI,184,QUIL,Quercus ilicifolia,1,0,0,0
+RPD2_B6,LI,185,PIRI,Pinus rigida,5,0,0,3
+RPD2_B6,LI,185,QUCO,Quercus coccinea,4,0,2,0
+RPD2_B6,LI,186,PIRI,Pinus rigida,1,0,0,1
+RPD2_B5,LI,160,QUAL,Quercus alba,5,0,0,0
+RPD2_B5,LI,160,QUIL,Quercus ilicifolia,9,0,0,0
+RPD2_B5,LI,160,QUCO,Quercus coccinea,5,0,0,0
+RPD2_B5,LI,161,PIRI,Pinus rigida,3,0,0,3
+RPD2_B5,LI,161,QUAL,Quercus alba,1,0,0,0
+RPD2_B5,LI,162,QUIL,Quercus ilicifolia,2,0,0,0
+RPD2_B5,LI,162,QUCO,Quercus coccinea,4,1,0,0
+RPD2_B5,LI,162,QUAL,Quercus alba,3,3,0,0
+RPD2_B5,LI,163,QUIL,Quercus ilicifolia,1,0,0,0
+RPD2_B5,LI,164,PIRI,Pinus rigida,2,0,0,2
+RPD2_B5,LI,165,QUAL,Quercus alba,1,0,0,1
+RPD2_B5,LI,166,PIRI,Pinus rigida,1,0,0,1
+RPD2_B5,LI,167,QUCO,Quercus coccinea,3,0,3,0
+RPD2_B5,LI,168,QUIL,Quercus ilicifolia,2,0,0,0
+RPD2_B5,LI,168,PIRI,Pinus rigida,1,0,0,1
+APB_Hoffman,ALB,911,NA,No species found,0,0,0,0
+APB_Hoffman,ALB,910,QUVE,Quercus velutina,1,0,0,0
+APB_Hoffman,ALB,909,NA,No species found,0,0,0,0
+APB_Hoffman,ALB,908,PIRI,Pinus rigida,4,2,0,1
+APB_Hoffman,ALB,908,PRSE,Prunus serotina,1,0,0,0
+APB_Hoffman,ALB,907,QUCO,Quercus coccinea,2,0,0,0
+APB_Hoffman,ALB,906,NA,No species found,0,0,0,0
+APB_Hoffman,ALB,905,ACRU,Acer rubrum,1,0,0,0
+APB_Hoffman,ALB,904,PIRI,Pinus rigida,6,0,0,0
+APB_Hoffman,ALB,904,FRAL,Frangula alnus,1,0,0,0
+APB_Hoffman,ALB,904,ACRU,Acer rubrum,1,0,0,0
+APB_Hoffman,ALB,903,NA,No species found,0,0,0,0
+APB_Hoffman,ALB,902,NA,No species found,0,0,0,0
+APB_Hoffman,ALB,901,QUCO,Quercus coccinea,2,0,0,0
+APB_Hoffman,ALB,901,ACRU,Acer rubrum,1,0,0,0
+APB_Hoffman,ALB,900,PIRI,Pinus rigida,6,1,0,0
+APB_Hoffman,ALB,900,PRSE,Prunus serotina,1,0,0,0
+APB_Hoffman,ALB,899,QUCO,Quercus coccinea,8,0,0,0
+APB_Hoffman,ALB,899,PRSE,Prunus serotina,1,0,0,0
+APB_Hoffman,ALB,898,NA,No species found,0,0,0,0
+APB_Hoffman,ALB,897,NA,No species found,0,0,0,0
+APB_Hoffman,ALB,896,ACRU,Acer rubrum,1,0,0,0
+APB_Hoffman,ALB,895,NA,No species found,0,0,0,0
+APB_Hoffman,ALB,894,NA,No species found,0,0,0,0
+APB_Hoffman,ALB,893,NA,No species found,0,0,0,0
+APB_Hoffman,ALB,892,NA,No species found,0,0,0,0
+APB_Hoffman,ALB,891,NA,No species found,0,0,0,0
+APB_Hoffman,ALB,890,NA,No species found,0,0,0,0
+APB_Hoffman,ALB,889,POTR,Populus tremuloides,2,0,0,0
+APB_Hoffman,ALB,889,PIRI,Pinus rigida,6,5,0,0
+APB_Hoffman,ALB,889,QUCO,Quercus coccinea,2,0,0,0
+APB_HuckMound,ALB,795,QUPR,Quercus prinoides,2,0,0,0
+APB_HuckMound,ALB,794,QUIL,Quercus ilicifolia,1,0,0,0
+APB_HuckMound,ALB,793,SAAL,Sassafras albidum,2,0,0,0
+APB_HuckMound,ALB,793,PRSE,Prunus serotina,1,0,0,0
+APB_HuckMound,ALB,792,QUPR,Quercus prinoides,4,0,0,0
+APB_HuckMound,ALB,791,QUIL,Quercus ilicifolia,1,0,0,0
+APB_HuckMound,ALB,790,NA,No species found,0,0,0,0
+APB_HuckMound,ALB,789,NA,No species found,0,0,0,0
+APB_HuckMound,ALB,788,QUIL,Quercus ilicifolia,2,0,0,0
+APB_HuckMound,ALB,787,QUPR,Quercus prinoides,15,0,0,0
+APB_HuckMound,ALB,786,NA,No species found,0,0,0,0
+APB_HuckMound,ALB,785,QUPR,Quercus prinoides,16,0,0,0
+APB_HuckMound,ALB,784,PRVI,Prunus virginiana,2,2,0,0
+APB_HuckMound,ALB,783,QUPR,Quercus prinoides,2,0,0,0
+APB_HuckMound,ALB,782,SAAL,Sassafras albidum,1,0,0,0
+APB_HuckMound,ALB,782,QUPR,Quercus prinoides,18,0,0,0
+APB_HuckMound,ALB,781,QUPR,Quercus prinoides,8,0,0,0
+APB_HuckMound,ALB,780,ACRU,Acer rubrum,1,0,0,1
+APB_HuckMound,ALB,779,QUPR,Quercus prinoides,8,0,0,0
+APB_HuckMound,ALB,778,NA,No species found,0,0,0,0
+APB_HuckMound,ALB,777,QUIL,Quercus ilicifolia,2,0,0,0
+APB_HuckMound,ALB,776,QUPR,Quercus prinoides,3,0,0,0
+APB_HuckMound,ALB,775,QUPR,Quercus prinoides,1,0,0,0
+APB_HuckMound,ALB,774,QUPR,Quercus prinoides,10,0,0,0
+APB_HuckMound,ALB,773,NA,No species found,0,0,0,0
+APB_Fowlers,ALB,818,PIST,Pinus strobus,1,0,0,0
+APB_Fowlers,ALB,818,QUIL,Quercus ilicifolia,3,0,0,0
+APB_Fowlers,ALB,817,NA,No species found,0,0,0,0
+APB_Fowlers,ALB,816,PIST,Pinus strobus,1,0,0,0
+APB_Fowlers,ALB,815,PRSE,Prunus serotina,1,0,0,0
+APB_Fowlers,ALB,815,ROPS,Robinia pseudoacacia,2,0,0,0
+APB_Fowlers,ALB,815,QUCO,Quercus coccinea,2,0,0,0
+APB_Fowlers,ALB,814,NA,No species found,0,0,0,0
+APB_Fowlers,ALB,813,ROPS,Robinia pseudoacacia,1,0,0,0
+APB_Fowlers,ALB,812,NA,No species found,0,0,0,0
+APB_Fowlers,ALB,811,PRSE,Prunus serotina,2,0,0,0
+APB_Fowlers,ALB,810,ROPS,Robinia pseudoacacia,2,2,2,0
+APB_Fowlers,ALB,809,NA,No species found,0,0,0,0
+APB_Fowlers,ALB,808,QUIL,Quercus ilicifolia,2,0,0,0
+APB_Fowlers,ALB,807,NA,No species found,0,0,0,0
+APB_Fowlers,ALB,806,NA,No species found,0,0,0,0
+APB_Fowlers,ALB,805,QUIL,Quercus ilicifolia,1,0,0,0
+APB_Fowlers,ALB,805,QUPR,Quercus prinoides,1,0,0,0
+APB_Fowlers,ALB,804,QUPR,Quercus prinoides,1,0,0,0
+APB_Fowlers,ALB,803,NA,No species found,0,0,0,0
+APB_Fowlers,ALB,802,NA,No species found,0,0,0,0
+APB_Fowlers,ALB,801,NA,No species found,0,0,0,0
+APB_Fowlers,ALB,800,QUPR,Quercus prinoides,25,0,0,0
+APB_Fowlers,ALB,799,NA,No species found,0,0,0,0
+APB_Fowlers,ALB,798,QUIL,Quercus ilicifolia,4,0,0,0
+APB_Fowlers,ALB,797,NA,No species found,0,0,0,0
+APB_Fowlers,ALB,796,QUCO,Quercus coccinea,2,0,0,0
+APB_Fowlers,ALB,796,ROPS,Robinia pseudoacacia,1,0,0,0
+APB_Fowlers,ALB,796,PRPE,Prunus pensylvanica,1,0,0,0
+CE_B7_D,MA,523,QUIL,Quercus ilicifolia,6,0,0,0
+CE_B7_D,MA,522,ACRU,Acer rubrum,2,0,0,0
+CE_B7_D,MA,522,QUPR,Quercus prinoides,8,0,0,0
+CE_B7_D,MA,522,QUCO,Quercus coccinea,1,0,0,0
+CE_B7_D,MA,521,QUIL,Quercus ilicifolia,1,0,0,0
+CE_B7_D,MA,520,QUIL,Quercus ilicifolia,4,0,0,0
+CE_B7_D,MA,520,QUPR,Quercus prinoides,5,0,0,0
+CE_B7_D,MA,519,QUIL,Quercus ilicifolia,4,0,0,0
+CE_B7_D,MA,518,SAAL,Sassafras albidum,1,0,0,0
+CE_B7_D,MA,517,SAAL,Sassafras albidum,1,0,0,0
+CE_B7_D,MA,516,NA,No species found,0,0,0,0
+CE_B7_D,MA,515,PIRI,Pinus rigida,1,0,0,0
+CE_B7_D,MA,515,QUIL,Quercus ilicifolia,1,0,0,0
+CE_B7_D,MA,514,QUPR,Quercus prinoides,2,0,0,0
+CE_B7_D,MA,514,QUIL,Quercus ilicifolia,4,0,0,0
+CE_B7_D,MA,513,QUIL,Quercus ilicifolia,4,0,0,0
+CE_B7_D,MA,512,NA,No species found,0,0,0,0
+CE_B7_D,MA,511,NA,No species found,0,0,0,0
+CE_B7_D,MA,510,QUIL,Quercus ilicifolia,3,0,0,0
+CE_B7_D,MA,509,QUPR,Quercus prinoides,3,0,0,0
+CE_B7_D,MA,509,QUIL,Quercus ilicifolia,1,0,0,0
+CE_B7_D,MA,508,PIRI,Pinus rigida,1,0,0,0
+CE_B7_D,MA,508,SAAL,Sassafras albidum,1,0,0,0
+CE_B7_D,MA,507,NA,No species found,0,0,0,0
+CE_B7_D,MA,506,QUIL,Quercus ilicifolia,2,0,0,0
+CE_B7_D,MA,505,SAAL,Sassafras albidum,1,0,0,0
+CE_B7_D,MA,504,QUIL,Quercus ilicifolia,9,0,0,0
+CE_B7_D,MA,503,QUIL,Quercus ilicifolia,6,0,0,0
+CE_B7_D,MA,502,NA,No species found,0,0,0,0
+CE_B7_D,MA,501,QUIL,Quercus ilicifolia,1,0,0,0
+CE_B7_D,MA,500,PIRI,Pinus rigida,1,0,0,0
+CE_SWB_E1,MA,611,PIRI,Pinus rigida,1,0,0,0
+CE_SWB_E1,MA,611,QUIL,Quercus ilicifolia,2,0,0,0
+CE_SWB_E1,MA,611,QUAL,Quercus alba,5,0,0,0
+CE_SWB_E1,MA,610,QUCO,Quercus coccinea,1,0,0,0
+CE_SWB_E1,MA,610,QUAL,Quercus alba,1,0,0,0
+CE_SWB_E1,MA,610,QUIL,Quercus ilicifolia,1,0,0,0
+CE_SWB_E1,MA,610,QUVE,Quercus velutina,1,0,0,0
+CE_SWB_E1,MA,609,QUAL,Quercus alba,2,0,0,0
+CE_SWB_E1,MA,608,QUCO,Quercus coccinea,1,0,0,0
+CE_SWB_E1,MA,607,NA,No species found,0,0,0,0
+CE_SWB_E1,MA,606,PRSE,Prunus serotina,2,0,0,0
+CE_SWB_E1,MA,605,NA,No species found,0,0,0,0
+CE_SWB_E1,MA,604,QUIL,Quercus ilicifolia,8,0,0,0
+CE_SWB_E1,MA,603,QUIL,Quercus ilicifolia,8,0,0,0
+CE_SWB_E1,MA,603,QUCO,Quercus coccinea,1,0,0,0
+CE_SWB_E1,MA,602,QUIL,Quercus ilicifolia,7,0,0,0
+CE_SWB_E1,MA,602,QUAL,Quercus alba,1,0,0,0
+CE_SWB_E1,MA,601,QUAL,Quercus alba,14,0,0,0
+CE_SWB_E1,MA,600,QUCO,Quercus coccinea,1,0,0,0
+CE_SWB_E1,MA,600,QUIL,Quercus ilicifolia,1,0,0,0
+CE_SWB_E1,MA,599,QUIL,Quercus ilicifolia,6,0,0,0
+CE_SWB_E1,MA,599,PRSE,Prunus serotina,1,0,0,0
+CE_SWB_E1,MA,598,QUIL,Quercus ilicifolia,3,0,0,0
+CE_SWB_E1,MA,597,QUIL,Quercus ilicifolia,12,0,0,0
+CE_SWB_E1,MA,597,QUAL,Quercus alba,1,0,0,0
+CE_SWB_E1,MA,596,AMSP,Amelanchier spp.,1,0,0,0
+CE_SWB_E1,MA,595,ACRU,Acer rubrum,2,0,0,0
+CE_SWB_E1,MA,595,SAAL,Sassafras albidum,1,0,0,0
+CE_SWB_E1,MA,594,QUCO,Quercus coccinea,2,0,0,0
+CE_SWB_E1,MA,594,QUIL,Quercus ilicifolia,1,0,0,0
+CE_SWB_E1,MA,593,QUIL,Quercus ilicifolia,2,0,0,0
+CE_SWB_E1,MA,592,PIRI,Pinus rigida,1,0,0,0
+CE_SWB_E1,MA,591,QUCO,Quercus coccinea,1,0,0,0
+Mashpee_C,MA,351,PIRI,Pinus rigida,1,0,0,0
+Mashpee_C,MA,352,NA,No species found,0,0,0,0
+Mashpee_C,MA,353,QUIL,Quercus ilicifolia,1,0,0,0
+Mashpee_C,MA,354,PIRI,Pinus rigida,2,0,0,2
+Mashpee_C,MA,355,PIRI,Pinus rigida,1,0,0,0
+Mashpee_C,MA,356,NA,No species found,0,0,0,0
+Mashpee_C,MA,357,QUIL,Quercus ilicifolia,1,0,0,0
+Mashpee_C,MA,358,QUIL,Quercus ilicifolia,1,0,0,0
+Mashpee_C,MA,359,QUIL,Quercus ilicifolia,1,0,0,0
+Mashpee_C,MA,360,QUCO,Quercus coccinea,1,0,0,0
+Mashpee_C,MA,361,NA,No species found,0,0,0,0
+Mashpee_C,MA,362,PIRI,Pinus rigida,3,0,0,3
+Mashpee_C,MA,362,QUIL,Quercus ilicifolia,2,0,0,0
+Mashpee_C,MA,363,QUIL,Quercus ilicifolia,3,0,0,0
+Mashpee_C,MA,364,QUIL,Quercus ilicifolia,4,0,0,0
+Mashpee_C,MA,364,PIRI,Pinus rigida,2,0,0,2
+Mashpee_C,MA,365,QUIL,Quercus ilicifolia,4,0,0,0
+Mashpee_C,MA,366,QUCO,Quercus coccinea,1,0,0,0
+Mashpee_C,MA,366,PIRI,Pinus rigida,3,0,0,2
+Mashpee_C,MA,367,QUIL,Quercus ilicifolia,1,0,0,0
+Mashpee_C,MA,368,QUIL,Quercus ilicifolia,5,0,0,0

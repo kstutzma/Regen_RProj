@@ -1,0 +1,298 @@
+﻿Site ,Region,Plot_No,Species_Code,Latin_Name,Total,Browsed,StumpSprout
+TNCO_B1,NH,257,QUIL,Quercus ilicifolia,8,0,0
+TNCO_B1,NH,258,QUIL,Quercus ilicifolia,10,0,0
+TNCO_B1,NH,259,QUIL,Quercus ilicifolia,23,0,0
+TNCO_B1,NH,260,QUIL,Quercus ilicifolia,5,0,0
+TNCO_B1,NH,261,QUIL,Quercus ilicifolia,26,0,0
+TNCO_B1,NH,262,QUIL,Quercus ilicifolia,21,0,0
+TNCO_B1,NH,262,AMSP,Amelanchier spp.,1,0,0
+TNCO_B1,NH,263,QUIL,Quercus ilicifolia,32,0,0
+TNCO_B1,NH,264,QUIL,Quercus ilicifolia,22,0,0
+TNCO_B1,NH,265,PIRI,Pinus rigida,1,0,0
+TNCO_B1,NH,265,QUIL,Quercus ilicifolia,21,0,0
+TNCO_B1,NH,265,PRPE,Prunus pensylvanica,1,0,0
+TNCO_B1,NH,265,ACRU,Acer rubrum,3,3,0
+TNCO_B1,NH,266,QUIL,Quercus ilicifolia,33,0,0
+TNCO_B1,NH,267,QUIL,Quercus ilicifolia,25,0,0
+TNCO_B1,NH,268,QUIL,Quercus ilicifolia,62,0,0
+TNCO_B1,NH,269,QUIL,Quercus ilicifolia,4,0,0
+TNCO_B1,NH,270,QUIL,Quercus ilicifolia,6,0,0
+TNCO_B1,NH,270,PIRI,Pinus rigida,2,2,0
+TNCO_B1,NH,271,QUIL,Quercus ilicifolia,28,0,0
+TNCO_B1,NH,272,QUIL,Quercus ilicifolia,16,0,0
+TNCO_B1,NH,272,ACRU,Acer rubrum,3,3,0
+TNCO_B1,NH,273,QUIL,Quercus ilicifolia,14,0,0
+TNCO_B1,NH,274,QUIL,Quercus ilicifolia,28,0,0
+TNCO_B1,NH,275,QUIL,Quercus ilicifolia,16,0,0
+TNCO_B1,NH,276,QUIL,Quercus ilicifolia,24,0,0
+TNCO_B1,NH,277,QUIL,Quercus ilicifolia,43,0,0
+TNCO_B1,NH,278,QUIL,Quercus ilicifolia,26,0,0
+TNCO_B1,NH,279,QUIL,Quercus ilicifolia,16,0,0
+TNCO_B1,NH,280,QUIL,Quercus ilicifolia,14,0,0
+Mashpee_B1,MA,369,QUIL,Quercus ilicifolia,47,0,0
+Mashpee_B1,MA,370,QUIL,Quercus ilicifolia,22,0,0
+Mashpee_B1,MA,371,QUIL,Quercus ilicifolia,67,0,0
+Mashpee_B1,MA,372,QUIL,Quercus ilicifolia,108,0,0
+Mashpee_B1,MA,373,QUIL,Quercus ilicifolia,35,0,0
+Mashpee_B1,MA,373,QUAL,Quercus alba,1,0,0
+Mashpee_B1,MA,374,QUIL,Quercus ilicifolia,42,0,0
+Mashpee_B1,MA,375,QUIL,Quercus ilicifolia,45,0,0
+Mashpee_B1,MA,376,QUIL,Quercus ilicifolia,7,0,0
+Mashpee_B1,MA,376,QUPR,Quercus prinoides,1,0,0
+Mashpee_B1,MA,376,AMSP,Amelanchier spp.,1,0,0
+Mashpee_B1,MA,377,QUIL,Quercus ilicifolia,23,0,0
+Mashpee_B1,MA,377,SAAL,Sassafras albidum,4,0,0
+Mashpee_B1,MA,378,NA,No species found,0,0,0
+Mashpee_B1,MA,379,QUCO,Quercus coccinea,1,0,0
+Mashpee_B1,MA,379,QUVE,Quercus velutina,2,0,0
+Mashpee_B1,MA,380,QUIL,Quercus ilicifolia,15,0,0
+Mashpee_B1,MA,381,QUIL,Quercus ilicifolia,1,0,0
+Mashpee_B1,MA,381,SAAL,Sassafras albidum,3,0,3
+Mashpee_B1,MA,382,QUPR,Quercus prinoides,2,0,0
+Mashpee_B1,MA,382,QUIL,Quercus ilicifolia,44,0,0
+Mashpee_B1,MA,383,QUIL,Quercus ilicifolia,40,0,0
+Mashpee_B1,MA,383,QUPR,Quercus prinoides,3,0,0
+Mashpee_B1,MA,384,QUPR,Quercus prinoides,3,0,0
+Mashpee_B1,MA,384,QUIL,Quercus ilicifolia,17,0,0
+Mashpee_B1,MA,385,NA,No species found,0,0,0
+Mashpee_B1,MA,386,QUIL,Quercus ilicifolia,13,0,0
+Mashpee_B1,MA,386,QUAL,Quercus alba,2,0,0
+Mashpee_B1,MA,387,PRSE,Prunus serotina,3,0,3
+Mashpee_B1,MA,388,SAAL,Sassafras albidum,3,0,0
+Mashpee_B1,MA,388,QUCO,Quercus coccinea,2,0,1
+Mashpee_B1,MA,389,ACRU,Acer rubrum,14,0,14
+Mashpee_B1,MA,389,QUAL,Quercus alba,3,0,3
+Mashpee_B1,MA,390,QUCO,Quercus coccinea,12,0,4
+Mashpee_B1,MA,390,QUIL,Quercus ilicifolia,2,0,1
+Mashpee_B1,MA,390,SAAL,Sassafras albidum,2,0,2
+Mashpee_B1,MA,390,ACRU,Acer rubrum,7,0,7
+TNCO_Hobbs5,NH,980,QUIL,Quercus ilicifolia,14,0,0
+TNCO_Hobbs5,NH,979,QUIL,Quercus ilicifolia,31,0,0
+TNCO_Hobbs5,NH,979,ACRU,Acer rubrum,3,0,3
+TNCO_Hobbs5,NH,978,QUIL,Quercus ilicifolia,10,0,0
+TNCO_Hobbs5,NH,977,PIRI,Pinus rigida,1,0,0
+TNCO_Hobbs5,NH,977,QUIL,Quercus ilicifolia,7,0,0
+TNCO_Hobbs5,NH,977,ACRU,Acer rubrum,9,9,9
+TNCO_Hobbs5,NH,976,ACRU,Acer rubrum,19,12,19
+TNCO_Hobbs5,NH,976,QUIL,Quercus ilicifolia,12,0,0
+TNCO_Hobbs5,NH,975,QUIL,Quercus ilicifolia,5,0,0
+TNCO_Hobbs5,NH,974,QUIL,Quercus ilicifolia,7,0,0
+TNCO_Hobbs5,NH,974,PIST,Pinus strobus,4,0,0
+TNCO_Hobbs5,NH,974,ACRU,Acer rubrum,2,2,0
+TNCO_Hobbs5,NH,973,PIRI,Pinus rigida,4,0,0
+TNCO_Hobbs5,NH,973,QUIL,Quercus ilicifolia,12,0,0
+TNCO_Hobbs5,NH,973,QURU,Quercus rubra,1,0,0
+TNCO_Hobbs5,NH,973,PIST,Pinus strobus,5,0,0
+TNCO_Hobbs5,NH,973,ACRU,Acer rubrum,2,0,0
+TNCO_Hobbs5,NH,972,ACRU,Acer rubrum,2,2,2
+TNCO_Hobbs5,NH,972,FAGR,Fagus grandifolia,1,0,0
+TNCO_Hobbs5,NH,972,QUIL,Quercus ilicifolia,13,0,0
+TNCO_Hobbs5,NH,972,PIRI,Pinus rigida,1,1,0
+TNCO_Hobbs5,NH,971,QUIL,Quercus ilicifolia,39,0,0
+TNCO_Hobbs5,NH,970,QUIL,Quercus ilicifolia,29,0,0
+TNCO_Hobbs5,NH,969,QUIL,Quercus ilicifolia,5,0,0
+TNCO_Hobbs5,NH,969,PIST,Pinus strobus,1,0,0
+TNCO_Hobbs5,NH,968,QUIL,Quercus ilicifolia,19,0,0
+TNCO_Hobbs5,NH,968,ACRU,Acer rubrum,20,7,20
+TNCO_Hobbs5,NH,967,QUIL,Quercus ilicifolia,22,0,0
+TNCO_Hobbs5,NH,966,QUIL,Quercus ilicifolia,16,0,0
+TNCO_Hobbs5,NH,965,QUIL,Quercus ilicifolia,11,0,0
+TNCO_Hobbs5,NH,965,ACRU,Acer rubrum,14,4,14
+TNCO_Hobbs5,NH,964,QUIL,Quercus ilicifolia,19,0,0
+TNCO_Hobbs5,NH,963,QUIL,Quercus ilicifolia,9,0,0
+TNCO_Hobbs5,NH,963,ACRU,Acer rubrum,17,0,17
+TNCO_Hobbs5,NH,963,ACPE,Acer pennsylvania,3,3,0
+TNCO_Hobbs5,NH,963,PIST,Pinus strobus,2,1,0
+TNCO_Hobbs5,NH,962,QUIL,Quercus ilicifolia,12,0,0
+TNCO_Hobbs5,NH,962,PIST,Pinus strobus,1,0,0
+TNCO_Hobbs5,NH,961,PIRI,Pinus rigida,2,0,0
+TNCO_Hobbs5,NH,961,QUIL,Quercus ilicifolia,1,0,0
+TNCO_Hobbs5,NH,960,ACRU,Acer rubrum,9,0,9
+TNCO_Hobbs5,NH,960,QURU,Quercus rubra,1,0,0
+TNCO_Hobbs5,NH,960,QUIL,Quercus ilicifolia,4,0,0
+TNCO_Hobbs5,NH,959,QUIL,Quercus ilicifolia,9,0,0
+TNCO_Hobbs5,NH,959,QURU,Quercus rubra,2,1,0
+TNCO_Hobbs5,NH,958,QUIL,Quercus ilicifolia,29,0,0
+SPNHF_Harmon,NH,1143,ACRU,Acer rubrum,1,1,0
+SPNHF_Harmon,NH,1143,QUIL,Quercus ilicifolia,17,0,0
+SPNHF_Harmon,NH,1142,QUIL,Quercus ilicifolia,15,0,0
+SPNHF_Harmon,NH,1142,BEPO,Betula populifolia,15,0,0
+SPNHF_Harmon,NH,1141,QUIL,Quercus ilicifolia,26,0,0
+SPNHF_Harmon,NH,1141,BEPO,Betula populifolia,1,0,0
+SPNHF_Harmon,NH,1140,QUIL,Quercus ilicifolia,18,0,0
+SPNHF_Harmon,NH,1140,BEPO,Betula populifolia,3,0,3
+SPNHF_Harmon,NH,1139,QUIL,Quercus ilicifolia,1,0,0
+SPNHF_Harmon,NH,1139,ACRU,Acer rubrum,3,3,3
+SPNHF_Harmon,NH,1138,ACRU,Acer rubrum,13,5,11
+SPNHF_Harmon,NH,1138,QUIL,Quercus ilicifolia,12,0,0
+SPNHF_Harmon,NH,1137,QUIL,Quercus ilicifolia,16,0,0
+SPNHF_Harmon,NH,1137,ACRU,Acer rubrum,11,5,10
+SPNHF_Harmon,NH,1136,ACRU,Acer rubrum,1,1,0
+SPNHF_Harmon,NH,1136,QUIL,Quercus ilicifolia,27,0,0
+SPNHF_Harmon,NH,1135,QUIL,Quercus ilicifolia,43,0,0
+SPNHF_Harmon,NH,1135,BEPO,Betula populifolia,15,13,15
+SPNHF_Harmon,NH,1134,QUIL,Quercus ilicifolia,44,0,0
+SPNHF_Harmon,NH,1133,QUIL,Quercus ilicifolia,25,0,0
+SPNHF_Harmon,NH,1133,ACRU,Acer rubrum,4,3,4
+SPNHF_Harmon,NH,1132,ACRU,Acer rubrum,9,9,0
+SPNHF_Harmon,NH,1132,QUIL,Quercus ilicifolia,21,0,0
+SPNHF_Harmon,NH,1131,QUIL,Quercus ilicifolia,12,0,0
+SPNHF_Harmon,NH,1131,BEPO,Betula populifolia,1,0,0
+SPNHF_Harmon,NH,1130,ACRU,Acer rubrum,22,22,0
+SPNHF_Harmon,NH,1130,QUIL,Quercus ilicifolia,10,0,0
+SPNHF_Harmon,NH,1129,QUIL,Quercus ilicifolia,17,0,0
+SPNHF_Harmon,NH,1129,ACRU,Acer rubrum,11,11,10
+SPNHF_Harmon,NH,1128,QUIL,Quercus ilicifolia,5,0,0
+SPNHF_Harmon,NH,1128,ACRU,Acer rubrum,4,4,4
+SPNHF_Harmon,NH,1127,ACRU,Acer rubrum,7,7,3
+SPNHF_Harmon,NH,1127,QUIL,Quercus ilicifolia,17,0,0
+SPNHF_Harmon,NH,1126,QUIL,Quercus ilicifolia,26,0,0
+SPNHF_Harmon,NH,1125,ACRU,Acer rubrum,4,0,3
+SPNHF_Harmon,NH,1125,QUIL,Quercus ilicifolia,35,0,0
+SPNHF_Harmon,NH,1124,QUIL,Quercus ilicifolia,31,0,0
+SPNHF_Harmon,NH,1123,QUIL,Quercus ilicifolia,42,0,0
+SPNHF_Harmon,NH,1122,QUIL,Quercus ilicifolia,21,0,0
+SPNHF_Harmon,NH,1121,ACRU,Acer rubrum,8,0,8
+SPNHF_Harmon,NH,1121,QUIL,Quercus ilicifolia,38,0,0
+SPNHF_Harmon,NH,1120,QUIL,Quercus ilicifolia,52,0,0
+ TNCW_7SW,ME,1009,QUIL,Quercus ilicifolia,20,0,0
+ TNCW_7SW,ME,1009,BEPO,Betula populifolia,17,6,17
+ TNCW_7SW,ME,1008,QUIL,Quercus ilicifolia,24,0,0
+ TNCW_7SW,ME,1007,NA,No species found,0,0,0
+ TNCW_7SW,ME,1006,QUIL,Quercus ilicifolia,23,0,0
+ TNCW_7SW,ME,1006,BEPO,Betula populifolia,15,10,12
+ TNCW_7SW,ME,1005,QUIL,Quercus ilicifolia,8,0,0
+ TNCW_7SW,ME,1004,QUIL,Quercus ilicifolia,25,0,0
+ TNCW_7SW,ME,1003,QUIL,Quercus ilicifolia,10,0,0
+ TNCW_7SW,ME,1002,QUIL,Quercus ilicifolia,23,0,0
+ TNCW_7SW,ME,1001,QUIL,Quercus ilicifolia,10,0,0
+ TNCW_7SW,ME,1000,QUIL,Quercus ilicifolia,21,0,0
+ TNCW_7SW,ME,999,QUIL,Quercus ilicifolia,30,0,0
+ TNCW_7SW,ME,999,BEPO,Betula populifolia,6,0,0
+ TNCW_7SW,ME,998,QUIL,Quercus ilicifolia,31,0,0
+ TNCW_7SW,ME,997,QUIL,Quercus ilicifolia,15,0,0
+ TNCW_7SW,ME,996,QUIL,Quercus ilicifolia,25,0,0
+ TNCW_7SW,ME,996,BEPO,Betula populifolia,2,0,0
+ TNCW_7SW,ME,995,QUIL,Quercus ilicifolia,16,0,0
+ TNCW_7SW,ME,994,QUIL,Quercus ilicifolia,23,0,0
+ TNCW_7SW,ME,993,QUIL,Quercus ilicifolia,11,0,0
+ TNCW_7SW,ME,992,QUIL,Quercus ilicifolia,23,0,0
+ TNCW_7SW,ME,991,QUIL,Quercus ilicifolia,14,0,0
+ TNCW_7SW,ME,991,PRSE,Prunus serotina,1,0,0
+ TNCW_7SW,ME,990,QUIL,Quercus ilicifolia,29,0,0
+ TNCW_7SW,ME,989,QUIL,Quercus ilicifolia,50,0,0
+ TNCW_7SW,ME,988,QUIL,Quercus ilicifolia,43,0,0
+ TNCW_7SW,ME,987,QUIL,Quercus ilicifolia,26,0,0
+TNCW_18,ME,1073,NA,No species found,0,0,0
+TNCW_18,ME,1072,NA,No species found,0,0,0
+TNCW_18,ME,1071,NA,No species found,0,0,0
+TNCW_18,ME,1067,QUIL,Quercus ilicifolia,13,0,0
+TNCW_18,ME,1066,QUIL,Quercus ilicifolia,12,0,0
+TNCW_18,ME,1065,QUIL,Quercus ilicifolia,33,0,0
+TNCW_18,ME,1046,QUIL,Quercus ilicifolia,11,0,0
+TNCW_18,ME,1045,QUIL,Quercus ilicifolia,7,0,0
+TNCW_18,ME,1044,QUIL,Quercus ilicifolia,23,0,0
+TNCW_18,ME,1043,QUIL,Quercus ilicifolia,37,0,0
+TNCW_18,ME,1042,QUIL,Quercus ilicifolia,35,0,0
+TNCW_18,ME,1041,QUIL,Quercus ilicifolia,3,0,0
+TNCW_18,ME,1040,BEPO,Betula populifolia,1,0,1
+TNCW_18,ME,1040,QUIL,Quercus ilicifolia,12,0,0
+TNCW_18,ME,1039,QUIL,Quercus ilicifolia,13,0,0
+TNCW_18,ME,1038,QUIL,Quercus ilicifolia,27,0,0
+TNCW_18,ME,1037,QUIL,Quercus ilicifolia,27,0,0
+TNCW_18,ME,1036,QUIL,Quercus ilicifolia,11,0,0
+TNCW_18,ME,1035,NA,No species found,0,0,0
+TNCW_18,ME,1034,QUIL,Quercus ilicifolia,5,0,0
+TNCW_18,ME,1033,NA,No species found,0,0,0
+TNCW_10SE,ME,1031,QUIL,Quercus ilicifolia,20,0,0
+TNCW_10SE,ME,1030,QUIL,Quercus ilicifolia,18,0,0
+TNCW_10SE,ME,1029,QUIL,Quercus ilicifolia,19,0,0
+TNCW_10SE,ME,1028,QUIL,Quercus ilicifolia,7,0,0
+TNCW_10SE,ME,1027,QUIL,Quercus ilicifolia,6,0,0
+TNCW_10SE,ME,1026,QUIL,Quercus ilicifolia,12,0,0
+TNCW_10SE,ME,1025,QUIL,Quercus ilicifolia,10,0,0
+TNCW_10SE,ME,1024,QUIL,Quercus ilicifolia,4,0,0
+TNCW_10SE,ME,1023,QUIL,Quercus ilicifolia,10,0,0
+TNCW_10SE,ME,1023,PIST,Pinus strobus,1,1,0
+TNCW_10SE,ME,1022,QUIL,Quercus ilicifolia,21,0,0
+TNCW_10SE,ME,1021,QUIL,Quercus ilicifolia,18,0,0
+TNCW_10SE,ME,1020,BEPO,Betula populifolia,1,0,0
+TNCW_10SE,ME,1020,QUIL,Quercus ilicifolia,33,0,0
+TNCW_10SE,ME,1019,QUIL,Quercus ilicifolia,27,0,0
+TNCW_10SE,ME,1019,BEPO,Betula populifolia,1,0,0
+TNCW_10SE,ME,1019,ABBA,Abies balsamea,1,0,0
+TNCW_10SE,ME,1018,QUIL,Quercus ilicifolia,7,0,0
+TNCW_10SE,ME,1017,QUIL,Quercus ilicifolia,8,0,0
+TNCW_10SE,ME,1016,QUIL,Quercus ilicifolia,24,0,0
+TNCW_10SE,ME,1015,QUIL,Quercus ilicifolia,5,0,0
+TNCW_10SE,ME,1015,BEPO,Betula populifolia,2,1,1
+TNCW_10SE,ME,1015,PIST,Pinus strobus,1,0,0
+TNCW_10SE,ME,1014,QUIL,Quercus ilicifolia,9,0,0
+TNCW_10SE,ME,1013,BEPO,Betula populifolia,2,2,2
+TNCW_10SE,ME,1013,QUIL,Quercus ilicifolia,11,0,0
+TNCW_10SE,ME,1012,QUIL,Quercus ilicifolia,3,0,0
+TNCW_10SE,ME,1011,QUIL,Quercus ilicifolia,10,0,0
+TNCW_10SE,ME,1010,QUIL,Quercus ilicifolia,13,0,0
+CE_B7_C,MA,499,QUIL,Quercus ilicifolia,7,0,0
+CE_B7_C,MA,499,SAAL,Sassafras albidum,3,0,2
+CE_B7_C,MA,499,QUPR,Quercus prinoides,2,0,0
+CE_B7_C,MA,498,QUAL,Quercus alba,1,0,0
+CE_B7_C,MA,498,QUCO,Quercus coccinea,1,0,0
+CE_B7_C,MA,498,QUVE,Quercus velutina,2,0,0
+CE_B7_C,MA,498,QUIL,Quercus ilicifolia,1,0,0
+CE_B7_C,MA,497,NA,No species found,0,0,0
+CE_B7_C,MA,496,SAAL,Sassafras albidum,1,0,0
+CE_B7_C,MA,496,AMSP,Amelanchier spp.,1,0,0
+CE_B7_C,MA,495,SAAL,Sassafras albidum,1,0,0
+CE_B7_C,MA,495,ACRU,Acer rubrum,1,0,0
+CE_B7_C,MA,495,QUIL,Quercus ilicifolia,6,0,0
+CE_B7_C,MA,494,QUIL,Quercus ilicifolia,4,0,0
+CE_B7_C,MA,493,QUCO,Quercus coccinea,2,0,0
+CE_B7_C,MA,493,SAAL,Sassafras albidum,1,0,0
+CE_B7_C,MA,492,SAAL,Sassafras albidum,3,0,0
+CE_B7_C,MA,491,SAAL,Sassafras albidum,1,0,0
+CE_B7_C,MA,490,NA,No species found,0,0,0
+CE_B7_C,MA,489,SAAL,Sassafras albidum,1,0,0
+CE_B7_C,MA,488,SAAL,Sassafras albidum,2,0,0
+CE_B7_C,MA,487,QUIL,Quercus ilicifolia,2,0,0
+CE_B7_C,MA,487,QUCO,Quercus coccinea,1,0,0
+CE_B7_C,MA,486,NA,No species found,0,0,0
+CE_B7_C,MA,485,NA,No species found,0,0,0
+CE_B7_C,MA,484,QUAL,Quercus alba,4,0,4
+CE_B7_C,MA,484,QUIL,Quercus ilicifolia,1,0,0
+CE_B7_C,MA,483,SAAL,Sassafras albidum,4,0,0
+CE_B7_C,MA,482,QUCO,Quercus coccinea,2,0,0
+CE_B7_C,MA,481,SAAL,Sassafras albidum,3,0,0
+CE_B7_C,MA,480,QUCO,Quercus coccinea,3,0,0
+CE_B7_C,MA,479,PIRI,Pinus rigida,2,0,0
+CE_B7_C,MA,479,SAAL,Sassafras albidum,2,0,0
+CE_B7_B,MA,478,SAAL,Sassafras albidum,3,0,0
+CE_B7_B,MA,478,QUIL,Quercus ilicifolia,7,0,0
+CE_B7_B,MA,477,QUIL,Quercus ilicifolia,16,0,0
+CE_B7_B,MA,476,QUIL,Quercus ilicifolia,4,0,0
+CE_B7_B,MA,475,QUIL,Quercus ilicifolia,6,0,0
+CE_B7_B,MA,474,NA,No species found,0,0,0
+CE_B7_B,MA,473,QUIL,Quercus ilicifolia,3,0,0
+CE_B7_B,MA,472,QUIL,Quercus ilicifolia,17,0,0
+CE_B7_B,MA,471,QUIL,Quercus ilicifolia,2,0,0
+CE_B7_B,MA,471,QUCO,Quercus coccinea,1,0,0
+CE_B7_B,MA,470,ACRU,Acer rubrum,2,0,0
+CE_B7_B,MA,469,NA,No species found,0,0,0
+CE_B7_B,MA,468,PIRI,Pinus rigida,1,1,0
+CE_B7_B,MA,467,QUIL,Quercus ilicifolia,4,0,0
+CE_B7_B,MA,467,SAAL,Sassafras albidum,1,0,0
+CE_B7_B,MA,466,QUIL,Quercus ilicifolia,20,0,0
+CE_B7_B,MA,465,QUIL,Quercus ilicifolia,4,0,0
+CE_B7_B,MA,464,QUIL,Quercus ilicifolia,10,0,0
+CE_B7_B,MA,464,ACRU,Acer rubrum,1,0,0
+CE_B7_B,MA,463,QUIL,Quercus ilicifolia,19,0,0
+CE_B7_B,MA,462,QUIL,Quercus ilicifolia,4,0,0
+CE_B7_B,MA,461,NA,No species found,0,0,0
+CE_B7_B,MA,460,SAAL,Sassafras albidum,1,0,0
+CE_B7_B,MA,459,QUCO,Quercus coccinea,2,0,0
+CE_B7_B,MA,459,QUIL,Quercus ilicifolia,1,0,0
+CE_B7_B,MA,458,NA,No species found,0,0,0
+CE_B7_B,MA,457,NA,No species found,0,0,0
+CE_B7_B,MA,456,NA,No species found,0,0,0
+CE_B7_B,MA,455,NA,No species found,0,0,0
+CE_B7_B,MA,454,QUVE,Quercus velutina,1,0,0
