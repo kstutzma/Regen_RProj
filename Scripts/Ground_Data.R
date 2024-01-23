@@ -80,7 +80,7 @@ ground2$l.Mineral <- log(ground2$Mineral_Soil + 1)
 ground3 <- ground2 %>% 
   select(Plot_No, Lichen, Moss, Road_Trail, Rock, Mineral_Soil, Wood, Litter_Duff, l.LD1, l.LD2, avgLD_l, l.Mineral, avgLD)
 
-
+rm(ground2)
 
 # ****************** Code I'm not using and don't want to run, but don't quite want to get rid of (which is why I like markdown files)
 

@@ -65,12 +65,21 @@ ggplot(veg2, aes(x=Treat_Type, fill=SP_Total_Cover))+
 # lol, I have no idea how to look at this data, maybe pull out different species? whatever, it's in
 
 
+#Thinking of creating a new data set where there is a total cover variable. Unsure if I should let it go above 100 or if I should change all values above 100 to 100. Maybe take a look and then decide
 
 
 
+veg3 <- veg2 %>% 
+  group_by(Plot_No) %>% 
+  summarise(Veg_Total = sum(SP_Cover_midpoint))
 
+#this has 65 entries that are over 100%; no sites have 0
 
+#maybe log transform?
 
+veg3$l.Veg_Total <- log(veg3$Veg_Total)
+
+rm(veg)
 
 
 

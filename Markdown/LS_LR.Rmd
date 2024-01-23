@@ -1,0 +1,567 @@
+---
+title: "Large Seedling PIRI Linear Regression"
+author: "Kathleen Stutzman"
+date: "2024-01-10"
+output: html_document
+---
+
+Libraries:
+```{r Libraries, message=FALSE, warning=FALSE}
+# libraries -------------------
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+library(GGally)
+library(glmmTMB)
+library(TMB)
+library(emmeans)
+library(DHARMa)
+library(lmtest)
+```
+
+Set working directory
+```{r, setup}
+knitr::opts_knit$set(root.dir = '/Users/user/Desktop/Data/Regen_RProj/')
+```
+
+Functions:
+```{r}
+# functions -------------------
+
+```
+
+Source large seedling data:
+```{r, message=FALSE, warning=FALSE}
+source("Scripts/LS_Import.R")
+```
+
+Pivot wider to create dataframe where each row is for one plot and has total details for each species group
+```{r}
+ls_merge2 <- ls_merge %>% 
+  select(Plot_No, Region, Treat_Type, Site, Species_Groups, Total) #this is dropiing browse and stump sprout data
+
+ls_merge2 <- ls_merge2 %>% 
+  pivot_wider(names_from = Species_Groups, values_from = Total)
+```
+
+
+Import time since data and add it to the large seedling dataset
+```{r, message=FALSE, warning=FALSE}
+time_since <- read_csv("CleanData/Treat_Year_Data.csv")
+
+ls_merge3 <- merge(ls_merge2, time_since, by = 'Site')
+#log transform time from treatment data
+ls_merge3$l.TFT <- log(ls_merge3$Time_from_Treat)
+```
+
+Run the 'Add_BA' script and merge with dataset:
+```{r, message=FALSE, warning=FALSE}
+source("Scripts/Add_BA.R")
+
+# merge with ls dataset -------------------
+ls_merge4 <- merge(ls_merge3, prism_BA, by = "Plot_No")
+```
+
+Run 'Ground_Data.R' script and add it to large seedling dataset:
+```{r}
+source("Scripts/Ground_Data.R")
+
+# merge with ls dataset -------------------
+ls_merge5 <- merge(ls_merge4, ground3, by = "Plot_No")
+```
+
+Source and add veg data
+```{r}
+source("Scripts/Veg_Data.R")
+
+# merge with ls dataset 
+ls.all <- merge(ls_merge5, veg3, by = "Plot_No")
+
+rm(ls_merge5,
+   ls_merge2,
+   ls_merge3,
+   ls_merge4)
+```
+
+The large seedling count data is taken in 10m^2^ plots; basal area is measured in hectares; veg and soil data is taken in 1m^2^ plots. 
+
+Large seedling data will be converted into 1m^2^ plots in order to compare across and reduce the amount of scales of data collection to two: 1m^2^ plots and per hectare observations.
+
+```{r}
+ls.all$PIRI.1m <- ls.all$PIRI/10
+ls.all$SO.1m <- ls.all$Shrub_Oak/10
+ls.all$Other.1m <- ls.all$Other/10
+```
+
+Create log transformed categories for newly added variables, then select for just the desired variables:
+```{r}
+ls.all$l.PIRI1 <- log(ls.all$PIRI.1m + 1)
+ls.all$l.SO1 <- log(ls.all$SO.1m + 1)
+ls.all$l.other1 <- log(ls.all$Other.1m + 1)
+
+ls.all2 <- ls.all %>% 
+  select(Treat_Type, Region, Site, Plot_No, PIRI, PIRI.1m, l.PIRI1, Shrub_Oak, SO.1m, l.SO1, Other, Other.1m, l.other1, Time_from_Treat, l.TFT, BA_HA, l.BA_HA, PIRI.BA_HA, l.BA_piri, Mineral_Soil, l.Mineral, Litter_Duff, avgLD, avgLD_l, Veg_Total, l.Veg_Total) %>% 
+  arrange(Treat_Type)
+```
+
+Select just for numerical vs log and then look at paired plots:
+```{r, eval=FALSE}
+#not transformed
+ls.num <- ls.all2 %>% 
+  select(PIRI, Shrub_Oak, Other, Time_from_Treat, BA_HA, PIRI.BA_HA, Mineral_Soil, avgLD, Veg_Total, Treat_Type)
+
+ggpairs(ls.num)
+ggpairs(ls.num, aes(color = Treat_Type))
+
+
+#log transformed
+ls.numl <- ls.all2 %>% 
+  select(l.PIRI, l.SO, l.other, l.TFT, l.BA_HA, l.BA_piri, l.Mineral, avgLD_l, l.Veg_Total, Treat_Type)
+
+ggpairs(ls.numl)
+ggpairs(ls.numl, aes(color = Treat_Type))
+
+rm(ls.num,
+   ls.numl)
+```
+Can see the correlation coefficients for linear (Pearsons) relationships. None of them appear very strong, except for ones that are analogs (avg LD vs mineral soil exposure; ba/ha vs piri ba/ha)
+
+Log transformed average litter depth and basal area per hectare have a weak relationship (corr 0.33), which does make sense. 
+
+# The above script a data naming conventions are the same as in the LS_GLMM script
+
+
+Full dataset is called ls.all2
+
+
+Starting first with model analysis without treatment type:
+```{r}
+ls.m1 <- glmmTMB(PIRI.1m ~ l.SO1 + l.other1 + l.BA_HA + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all2,
+                 family = poisson)
+AIC(ls.m1) #98.5
+# gives warning about non-integer values (as i've reduced the counts (/10) to get them to the 1m2 ) - if BA isn't important, I could try again with no BA in dataset and keep 10m2 observations ....
+summary(ls.m1)
+
+ls.m2 <- glmmTMB(PIRI.1m ~ l.SO1 + l.other1 + l.BA_HA + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all2,
+                 family = poisson)
+AIC(ls.m2) #96.8
+
+lrtest(ls.m1, ls.m2) #p = 0.5
+
+ls.m3 <- glmmTMB(PIRI.1m ~ l.SO1 + l.other1 + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all2,
+                 family = poisson)
+AIC(ls.m3) #96.0
+
+lrtest(ls.m2, ls.m3) # p = 0.3
+
+rm(ls.m1, ls.m2, ls.m3)
+
+ls.m11a <- glmmTMB(PIRI.1m ~ avgLD_l + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all2,
+                 family = poisson)
+AIC(ls.m11a) #AIC = 89.3, was just interested to see the AIC of this model vs. ls at 10m2 observations
+
+#i'm just interested to see model fit on this 1m model
+ls.m11a_sr <-  simulateResiduals(ls.m11a, n = 1000, plot = T) #fails very much so
+```
+
+Basal area doesn't seem important, so I'm going to go back to the 10m^2^ and 1m^2^ scales and lose per hectare observations. I'll need to rework the dataset
+
+Revised data set with LS observations at 10m^2^ scale; this means no non-interger values for the poisson distro
+```{r}
+ls.all3 <- ls.all
+
+ls.all3$l.PIRI <- log(ls.all3$PIRI + 1)
+ls.all3$l.SO <- log(ls.all3$Shrub_Oak + 1)
+ls.all3$l.other <- log(ls.all3$Other + 1)
+
+ls.all3 <- ls.all3 %>% 
+  select(Treat_Type, Region, Site, Plot_No, PIRI, l.PIRI, Shrub_Oak, l.SO, Other, l.other, Time_from_Treat, l.TFT, BA_HA, l.BA_HA, PIRI.BA_HA, l.BA_piri, Mineral_Soil, l.Mineral, Litter_Duff, avgLD, avgLD_l, Veg_Total, l.Veg_Total) %>% 
+  arrange(Treat_Type)
+```
+
+
+Begin modeling again:
+```{r, eval=FALSE}
+#double checking about basal area variables, even though this is at 3 scales
+
+ls.m4 <- glmmTMB(PIRI ~ l.SO + l.other + l.BA_HA + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = poisson)
+AIC(ls.m4) #AIC is 291
+
+#test piri ba
+ls.m5 <- glmmTMB(PIRI ~ l.SO + l.other + l.BA_HA + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = poisson)
+AIC(ls.m5) #289.2
+
+lrtest(ls.m4, ls.m5) #p = 0.7
+
+#test ba
+ls.m6 <- glmmTMB(PIRI ~ l.SO + l.other + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = poisson)
+AIC(ls.m6) #287.3
+
+lrtest(ls.m5, ls.m6) #p=0.8
+
+#test mineral soil
+ls.m7 <- glmmTMB(PIRI ~ l.SO + l.other + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = poisson)
+AIC(ls.m7) #285.3
+
+lrtest(ls.m6, ls.m7) # p = 0.8
+
+#test litter depth
+ls.m8 <- glmmTMB(PIRI ~ l.SO + l.other + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = poisson)
+AIC(ls.m8) #289.5
+
+lrtest(ls.m7, ls.m8) # p = 0.01, keep avg LD
+
+#return avg ld, test other
+ls.m9 <- glmmTMB(PIRI ~ l.SO + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = poisson)
+AIC(ls.m9) #285.1
+
+lrtest(ls.m7, ls.m9) #p = 0.2
+
+# test shrub oak
+ls.m10 <- glmmTMB(PIRI ~ avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = poisson)
+AIC(ls.m10) #285.2
+
+lrtest(ls.m10, ls.m9) #p = 0.1
+
+#test veg cover ------ seems like this is the best model
+ls.m11 <- glmmTMB(PIRI ~ avgLD_l + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = poisson)
+AIC(ls.m11) # p = 283.2
+
+lrtest(ls.m10, ls.m11) # p = 0.97
+
+rm(ls.m4, ls.m5, ls.m6, ls.m7, ls.m8, ls.m9, ls.m10)
+```
+
+
+Now to test model fit:
+```{r, eval=FALSE}
+ls.m11_sr <- simulateResiduals(ls.m11, n = 1000, plot = TRUE) #doesn't pass ks
+testResiduals(ls.m11_sr)
+testZeroInflation(ls.m11_sr)
+
+# I wonder if I added treat type, if the model would pass
+ls.m12 <- glmmTMB(PIRI ~ Treat_Type + avgLD_l + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = poisson)
+AIC(ls.m12) #284.6
+
+lrtest(ls.m12, ls.m11) #says treat type isn't important
+
+ls.m12_sr <- simulateResiduals(ls.m12, n = 1000, plot = T) #looks better, still not perfect
+
+testResiduals(ls.m12_sr) #passes
+testZeroInflation(ls.m12_sr) #passes
+testQuantiles(ls.m12_sr)
+
+#going to test a model with more variables (and not treat type), to see if that fits better
+
+
+ls.m10_sr <- simulateResiduals(ls.m10, n = 1000, plot = T)
+#tests on model 9 failed & on 10
+```
+
+
+Models without treatment type failed in model fit. Going to run variable elimination again, starting with models with treatment type
+```{r}
+ls.m13 <- glmmTMB(PIRI ~ Treat_Type + l.SO + l.other + l.BA_HA + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = poisson)
+AIC(ls.m13) #293.2
+
+ls.m14 <- glmmTMB(PIRI ~ Treat_Type + l.SO + l.other + l.BA_HA + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = poisson)
+AIC(ls.m14) #291.3
+
+ls.m15 <- glmmTMB(PIRI ~ Treat_Type + l.SO + l.other + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = poisson)
+AIC(ls.m15) #289.5
+
+ls.m16 <- glmmTMB(PIRI ~ Treat_Type + l.SO + l.other + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = poisson)
+AIC(ls.m16) #287.5
+
+ls.m17 <- glmmTMB(PIRI ~ Treat_Type + l.SO + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = poisson)
+AIC(ls.m17) #286.3
+
+lrtest(ls.m13, ls.m14, ls.m15, ls.m16, ls.m17)
+
+
+ls.m18 <- glmmTMB(PIRI ~ Treat_Type + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = poisson)
+AIC(ls.m18) #286.6
+
+lrtest(ls.m17, ls.m18) #p = 0.13
+
+ls.m19 <- glmmTMB(PIRI ~ Treat_Type + avgLD_l + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = poisson)
+summary(ls.m19) #284.6
+
+lrtest(ls.m18, ls.m19) #0.98
+
+ls.m20 <- glmmTMB(PIRI ~ Treat_Type + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = poisson)
+AIC(ls.m20) #288
+lrtest(ls.m19, ls.m20) # p = 0.02
+
+rm(ls.m13, ls.m14, ls.m15, ls.m16, ls.m17, ls.m18, ls.m20)
+```
+
+
+
+Ok, test model fit with treat type (same as model 11)
+```{r}
+ls.m19_sr <- simulateResiduals(ls.m19, n = 1000, plot = TRUE) #passes KS, quantile deviations fails, but it still could be an accepted model
+testResiduals(ls.m19_sr) #pases
+testZeroInflation(ls.m19_sr) #passes
+testQuantiles(ls.m19_sr) #fails
+```
+
+Trying pairwise comparison of model fit:
+```{r}
+emmeans(ls.m19, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
+```
+
+Control vs Harvest is the only significant different (p = 0.0399)
+
+
+
+
+
+
+
+
+
+I'd like to see some graphs before I close out
+```{r}
+
+library(sjPlot)
+library(sjlabelled)
+library(sjmisc)
+
+
+set_theme(base = theme_classic(),
+          theme.font = 'serif',
+          axis.title.size = 1.5,
+          axis.textsize.x = 1.5,
+          axis.textsize.y = 1.5,
+          title.size = 2.5,
+          title.align = "center",
+          legend.pos = "right",
+          legend.size = 1.5,
+          legend.title.size = 1.5,
+          #legend.bordercol = "black",
+          legend.item.size = .75)
+
+# plot_model(ls.m19) #this is incidence rate ratios
+# 
+# plot_model(ls.m19, type = "diag") #random vs normal quantiles
+# 
+# plot_model(ls.m19, type = "re") #this plots random effects
+# 
+# plot_model(ls.m19, 
+#            type = 'pred', 
+#            terms = 'Treat_Type') #plot marginal effects (i might have done this wrong)
+
+# LS PIRI plot 1 ------------------- LD vs. TT
+plot_model(ls.m19, 
+                       type = 'pred', 
+                       terms = c('avgLD_l', 'Treat_Type'),
+                       axis.title = c("Average Leaf Litter Depth (log transformed)", "Total Count of Pitch Pine"),
+                       title = "Predicted Counts of Pitch Pine Seedlings \n >/=50cm & <2.5cm DBH",
+           legend.title = "Treatment Type",
+           line.size = 1,
+           value.offset = 'Treat_Type',
+           ci.lvl = NA,
+           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")) 
+
+
+
+
+# LS PIRI plot 2 ------------------- Time from Treatment vs TT
+plot_model(ls.m19, 
+                       type = 'pred', 
+                       terms = c('l.TFT', 'Treat_Type'),
+                       axis.title = c("Time from Treatment (log transformed)", "Total Count of Pitch Pine"),
+                       title = "Predicted Counts of Pitch Pine Seedlings \n >/=50cm & <2.5cm DBH",
+           legend.title = "Treatment Type",
+           line.size = 1,
+           value.offset = 'Treat_Type',
+           ci.lvl = NA,
+           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")) 
+```
+
+
+Should I think about graphs where the offset is included?
+
+Random slope for models?
+
+
+# Shrub oak models
+```{r}
+so.ls1 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = poisson)
+AIC(so.ls1) # 3377.9
+
+# test piri ba
+so.ls2 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = poisson)
+AIC(so.ls2) #3379.8
+
+lrtest(so.ls1, so.ls2) #p = 0.0498, so maybe
+
+# test total BA
+so.ls3 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = poisson)
+AIC(so.ls3) #3379.8
+
+lrtest(so.ls1, so.ls3) # p = 0.0478, keep BA for now
+
+# test mineral
+so.ls4 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = poisson)
+AIC(so.ls4) #3381.7
+
+lrtest(so.ls2, so.ls4) # p = 0.048
+
+# test avg ld
+so.ls5 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = poisson)
+AIC(so.ls5) #3378.3 ---- keep mineral, lower AIC
+
+lrtest(so.ls5, so.ls2) # p = 0.48
+
+# test piri
+so.ls6 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.BA_HA + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = poisson)
+AIC(so.ls6) #3380
+
+lrtest(so.ls6, so.ls5) # p = 0.051
+
+# test other
+so.ls7 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.BA_HA + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = poisson)
+AIC(so.ls7) #3388.2
+
+lrtest(so.ls6, so.ls7) # p = 0.001
+
+# test veg
+so.ls8 <- glmmTMB(Shrub_Oak ~ Treat_Type +l.other + l.BA_HA + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = poisson)
+AIC(so.ls8) # 3383.4
+
+lrtest(so.ls8, so.ls6) # p > 0.001
+```
+
+
+Seemingly best models
+```{r, eval=TRUE}
+so.ls5 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = poisson)
+AIC(so.ls5) #3378.3 ---- keep mineral, lower AIC
+
+so.ls5_sr <- simulateResiduals(so.ls5, n = 1000, plot = TRUE) #quantile test not looking good
+testResiduals(so.ls5_sr)
+testDispersion(so.ls5_sr, alternative = "less") #again, under dispersed
+
+so.ls5a <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = compois)
+AIC(so.ls5a) #3290
+
+so.ls5a_sr <- simulateResiduals(so.ls5a, n = 1000, plot = TRUE) 
+testResiduals(so.ls5a_sr) #still underdispersed
+
+so.ls5b <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = genpois)
+AIC(so.ls5b) #3274.5
+
+so.ls5b_sr <- simulateResiduals(so.ls5b, n = 1000, plot = TRUE)
+testResiduals(so.ls5b_sr) #still underdispersed
+```
+
+Test second model
+```{r}
+so.ls6 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.BA_HA + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = poisson)
+AIC(so.ls6) #3380
+
+so.ls6_sr <- simulateResiduals(so.ls6, n = 1000, plot = TRUE)
+testResiduals(so.ls6_sr) # fails dispersion
+
+so.ls6a <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.BA_HA + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = genpois)
+AIC(so.ls6a) #3275.5
+#compois distro fails and won't produce DHARMa results
+so.ls6a_sr <- simulateResiduals(so.ls6a, n = 1000, plot = T)
+testResiduals(so.ls6a_sr) # fails dispersion
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

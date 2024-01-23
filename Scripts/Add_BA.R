@@ -163,7 +163,8 @@ prism_BA <- merge(prism_BA.Total, just_PIRI, by = "Plot_No")
 
 #remove excess dataset to keep envr clean
 rm(prism_PIRI,
-   prism_BA.Total)
+   prism_BA.Total,
+   just_PIRI)
 
 
 

@@ -1,0 +1,474 @@
+---
+title: "Small Seedling PIRI GLMM"
+author: "Kathleen Stutzman"
+date: "2024-01-04"
+output: html_document
+---
+
+## Introduction:
+This script, originally written as an R script, will be much more readable as an R Markdown. Therefore, I am translating it into a markdown file.
+
+# Pitch Pine Small Seedling GLMM code
+
+Libraries:
+```{r Libraries, message=FALSE, warning=FALSE}
+# libraries -------------------
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+library(GGally)
+library(lme4)
+library(lmerTest)
+library(glmmTMB)
+library(TMB)
+library(emmeans)
+library(DHARMa)
+library(GGally)
+```
+
+Set working directory
+```{r, setup}
+knitr::opts_knit$set(root.dir = '/Users/user/Desktop/Data/Regen_RProj/')
+```
+
+Functions:
+```{r}
+# functions -------------------
+
+```
+
+Global variables:
+```{r}
+# global variables -------------------
+
+```
+
+Import small seedling data ready for analysis:
+```{r}
+source("Scripts/SS_Import.R")
+```
+
+Pivot wider to create dataframe where each row is for one plot and has total details for each species group
+```{r}
+ss_merge2 <- ss_merge %>% 
+  select(Plot_No, Region, Treat_Type, Site, Species_Groups, Total) #this is dropping stump sprout, browse, and germinate data
+
+ss_merge2 <- ss_merge2 %>% 
+  pivot_wider(names_from = Species_Groups, values_from = Total)
+```
+
+Import time since data and add it to the small seedling dataset
+```{r}
+time_since <- read_csv("CleanData/Treat_Year_Data.csv")
+
+ss_merge3 <- merge(ss_merge2, time_since, by = "Site")
+#log transform time from treatment data
+ss_merge3$l.TFT <- log(ss_merge3$Time_from_Treat)
+```
+
+Run the 'Add_BA' script and merge with dataset:
+```{r}
+source("Scripts/Add_BA.R")
+
+# merge with ss dataset -------------------
+ss_merge4 <- merge(ss_merge3, prism_BA, by = "Plot_No")
+```
+
+Run 'Ground_Data.R' script and add it to small seedling dataset:
+```{r}
+source("Scripts/Ground_Data.R")
+
+# merge with ss dataset -------------------
+ss_merge5 <- merge(ss_merge4, ground3, by = "Plot_No")
+
+rm(ss_merge2,
+   ss_merge3,
+   ss_merge4,
+   time_since)
+```
+
+Source and add veg data
+```{r}
+source("Scripts/Veg_Data.R")
+
+# merge with ss dataset 
+ss.all <- merge(ss_merge5, veg3, by = "Plot_No")
+```
+
+Create log transformed categories for newly added variables, then select for just the desired variables:
+```{r}
+ss.all$l.PIRI <- log(ss.all$PIRI + 1)
+ss.all$l.SO <- log(ss.all$Shrub_Oak + 1)
+ss.all$l.other <- log(ss.all$Other + 1)
+
+ss.all2 <- ss.all %>% 
+  select(Treat_Type, Region, Site, Plot_No, PIRI, l.PIRI, Shrub_Oak, l.SO, Other, l.other, Time_from_Treat, l.TFT, BA_HA, l.BA_HA, PIRI.BA_HA, l.BA_piri, Mineral_Soil, l.Mineral, Litter_Duff, avgLD, avgLD_l, Veg_Total, l.Veg_Total) %>% 
+  arrange(Treat_Type)
+```
+
+Select just for numerical vs log and then look at paired plots:
+```{r, eval=FALSE}
+#not transformed
+ss.num <- ss.all2 %>% 
+  select(PIRI, Shrub_Oak, Other, Time_from_Treat, BA_HA, PIRI.BA_HA, Mineral_Soil, avgLD, Veg_Total, Treat_Type)
+
+ggpairs(ss.num, aes(color = Treat_Type))
+ggpairs(ss.num)
+
+#log transformed
+ss.numl <- ss.all2 %>% 
+  select(l.PIRI, l.SO, l.other, l.TFT, l.BA_HA, l.BA_piri, l.Mineral, avgLD_l, l.Veg_Total, Treat_Type)
+
+ggpairs(ss.numl, aes(color = Treat_Type))
+ggpairs(ss.numl)
+```
+Can see the correlation coefficients for linear (Pearsons) relationships. None of them appear very strong, except for ones that are analogs (avg LD vs mineral soil exposure; ba/ha vs piri ba/ha)
+
+# The above script and naming conventions are the same as the SS_LR script
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# below is code from before veg added to data set
+
+
+Below are many models investigated for the data. Many models had convergence issues using the glmer package, but trying them again using glmmTMB package, they did not have convergence issues
+```{r, eval=FALSE}
+# start with biggest model ------------------- this is only on half of the observations (those with veg and soil data)
+ss.p_all <- glmmTMB(Total~Treat_Type + avgLD_l + l.BA_HA + l.BA_piri + l.Mineral + (1|Site/Plot_No) + offset(l.TFT),
+                  data = ss_alldata,
+                  family = poisson)
+AIC(ss.p_all) #730.7
+
+# - l.Mineral
+ss.p2 <- glmmTMB(Total~Treat_Type + avgLD_l + l.BA_HA + l.BA_piri + (1|Site/Plot_No),
+                  data = ss_alldata,
+                  family = poisson)
+AIC(ss.p2) #AIC is 712
+
+# - l.BA_piri
+############## best model/lowest AIC
+ss.p3 <- glmmTMB(Total~Treat_Type + avgLD_l + l.BA_HA + (1|Site/Plot_No),
+               data = ss_alldata,
+               family = poisson)
+AIC(ss.p3) # AIC 711.5
+
+lrtest(ss.p2, ss.p3) # p = .2, so drop piri ba
+
+# l.BA_piri instead of l.BA_HA
+ss.p6 <- glmmTMB(Total~Treat_Type + avgLD_l + l.BA_piri + (1|Site/Plot_No),
+               data = ss_alldata,
+               family = poisson)
+AIC(ss.p6) #AIC 714.8
+
+# l.Mineral instead of avgLD_l
+ss.p8 <- glmmTMB(Total~Treat_Type + l.BA_piri + l.Mineral + (1|Site/Plot_No),
+               data = ss_alldata,
+               family = poisson)
+AIC(ss.p8) # AIC 718.1
+
+ss.p9 <- glmmTMB(Total~Treat_Type + avgLD_l + l.Mineral + (1|Site/Plot_No),
+               data = ss_alldata,
+               family = poisson)
+AIC(ss.p9) #716.5
+
+ss.p10 <- glmmTMB(Total~Treat_Type + l.Mineral + l.BA_HA + (1|Site/Plot_No),
+               data = ss_alldata,
+               family = poisson)
+AIC(ss.p10) #AIC 715.5
+
+
+rm(ss.p_all, ss.p2, ss.p3, ss.p6, ss.p8, ss.p9)
+
+
+#models that converged both with glmer and glmmTMB:
+ss.p4 <- glmmTMB(Total~Treat_Type + l.Mineral + (1|Site/Plot_No),
+           data = ss_alldata,
+           family = poisson)
+AIC(ss.p4) #AIC is 717.7, converges
+
+ss.p5 <- glmmTMB(Total~Treat_Type + avgLD_l + (1|Site/Plot_No),
+               data = ss_alldata,
+               family = poisson)
+AIC(ss.p5) # converged, AIC 714.6
+
+ss.p7 <- glmmTMB(Total~Treat_Type + l.BA_piri + (1|Site/Plot_No),
+               data = ss_alldata,
+               family = poisson)
+AIC(ss.p7) #AIC is 719.1 (glmer and glmmTMB agree on AIC values for all the above models, so that is good)
+```
+
+Best Model
+```{r}
+#Best model
+ss.p3 <- glmmTMB(Total~Treat_Type + avgLD_l + l.BA_HA + (1|Site/Plot_No),
+               data = ss_alldata,
+               family = poisson)
+summary(ss.p3) #AIC is 711.5
+
+#second best model to also test/run diagnostics on
+ss.p5 <- glmmTMB(Total~Treat_Type + avgLD_l + (1|Site/Plot_No),
+               data = ss_alldata,
+               family = poisson)
+summary(ss.p5)
+```
+
+To test models against one another and see if variables contribute to the model:
+```{r}
+library(lmtest)
+#lrtest(model1, model2)
+```
+
+Run DHARMa package to check model fit:
+```{r}
+ss.p3_sr <- simulateResiduals(fittedModel = ss.p3, n= 1000, plot = TRUE)
+
+
+testDispersion(ss.p3_sr) #PASSES!!!! p = .25
+testOutliers(ss.p3_sr) #passes
+testZeroInflation(ss.p3_sr) #looks good p =.59
+testQuantiles(ss.p3_sr) # passes
+
+# Plotting standardized residuals against predictors
+plotResiduals(ss.p3_sr, ss_alldata$Treat_Type, xlab = "Treatment Type", main=NULL)
+
+plotResiduals(ss.p3_sr, ss_alldata$Site, xlab = "Site", main=NULL)
+
+
+
+#checking second best model from above
+ss.p5_sr <- simulateResiduals(fittedModel = ss.p5, n= 1000, plot = TRUE) #here the combined adjusted quantile test is significant - this is worse than the model above p3
+
+testDispersion(ss.p5_sr) #PASSES!!!! p = .15
+testOutliers(ss.p5_sr)
+testZeroInflation(ss.p5_sr) #looks good p =.5
+testQuantiles(ss.p5_sr) #p = 0.0261
+
+# Plotting standardized residuals against predictors
+plotResiduals(ss.p5_sr, ss_alldata$Treat_Type, xlab = "Treatment Type", main=NULL)
+
+plotResiduals(ss.p5_sr, ss_alldata$Site, xlab = "Site", main=NULL)
+```
+
+Use emmeans for pairwise comparison of Treatment Types:
+```{r}
+emmeans(ss.p3, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
+
+# now just FallRx and Harvest are significant, SpringRX now has a p value of 0.0593
+
+# Notes: infinite degrees of freedom means that this is a z test and not a t-test; z-confidence interval; how emmeans labels asymptotic tests; all glmers in emmeans are calculated this way
+```
+
+Below is script to create plots. Do not run unless desired. The added packages cause issues for running general GLMM scripts (issues with tidyverse) and therefore are only worth activating if you want to produce graphs or have already loaded all desired analysis
+```{r, eval=FALSE}
+library(sjPlot)
+library(sjlabelled)
+library(sjmisc)
+
+set_theme(base = theme_classic(),
+          theme.font = 'serif',
+          axis.title.size = 1.5,
+          axis.textsize.x = 1.5,
+          axis.textsize.y = 1.5,
+          title.size = 2.5,
+          title.align = "center",
+          legend.pos = "right",
+          legend.size = 1.5,
+          legend.title.size = 1.5,
+          #legend.bordercol = "black",
+          legend.item.size = .75)
+
+plot_model(ss.p7) #this is incidence rate ratios
+
+plot_model(ss.p5, type = "diag") #random vs normal quantiles
+
+plot_model(ss.p5, type = "re") #this plots random effects
+
+plot_model(ss.p5, 
+           type = 'pred', 
+           terms = 'Treat_Type') #plot marginal effects (i might have done this wrong)
+
+# SS PIRI plot 1 -------------------
+ss.plot1
+
+plot_model(ss.p5, 
+                       type = 'pred', 
+                       terms = c('avgLD_l', 'Treat_Type'),
+                       axis.title = c("Average Leaf Litter Depth (log transformed)", "Total Count of Pitch Pine"),
+                       title = "Predicted Counts of Pitch Pine Seedlings <50cm",
+           legend.title = "Treatment Type",
+           line.size = 1,
+           value.offset = 'Treat_Type',
+           ci.lvl = NA,
+           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")) 
+
+
+# SS Plot 2 ------------------- #this graph is no longer relevant, as the model with BA fails to converge - not sure if I should try other models etc. Just keeping code
+plot_model(ss.p5, type = 'pred', 
+           terms = c('l.BA_HA', 'Treat_Type'),
+           axis.title = c("Basal Area per Hectare (log transformed)", "Total Count of Pitch Pine"),
+           title = "Predicted Counts of Pitch Pine Seedlings <50cm",
+           legend.title = "Treatment Type",
+           ci.lvl = NA,
+           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15"))
+```
+
+
+## Other hidden analysis: early stats and graphs
+```{r, eval=FALSE, include=FALSE}
+# ******** graphing data to get a look at distro -------------------
+ggplot(ss_merge, aes(x=Total)) +
+  geom_histogram(binwidth = 1) +
+  facet_grid(cols = vars(Species_Groups), rows = vars(Treat_Type))
+
+# ********  boxplots? -------------------
+
+ggplot(ss_merge, aes(x = Species_Groups, y=Total))+
+  geom_boxplot()+
+  facet_wrap(vars(Treat_Type))
+
+
+library(kableExtra)
+# ********  lets look at some summary statistics -------------------
+ss_sumstats2 <- ss_merge %>% 
+  pivot_longer(c(Total, Browsed, StumpSprout, Germinate), names_to = "Type") %>% 
+  group_by(Treat_Type, Species_Groups, Type) %>% 
+  summarize(average = round(mean(value), digits=1),
+            med = median(value),
+            sd = round(sd(value), digits = 1),
+            var = round(var(value), digits = 1),
+            min = min(value),
+            max = max(value),
+            .groups = "drop")
+
+rm(ss_sumstats2)
+
+# ********  look at descriptive stats -------------------
+kable(favstats(Total ~ Site, data = ss_merge2),
+      booktabs = T, format = ,
+      caption = "PIRI counts by Site") %>% 
+  kable_styling("striped", full_width = T)
+
+kable(favstats(Total ~ Treat_Type, data = ss_merge2),
+      booktabs = T, format = ,
+      caption = "PIRI counts by Site") %>% 
+  kable_styling("striped", full_width = T)
+
+kable(favstats(log_Total ~ Treat_Type, data = ss_merge2),
+      booktabs = T, format = ,
+      caption = "PIRI counts by Site") %>% 
+  kable_styling("striped", full_width = T)
+
+kable(favstats(log_Total ~ Site, data = ss_merge2),
+      booktabs = T, format = ,
+      caption = "PIRI counts by Site") %>% 
+  kable_styling("striped", full_width = T)
+
+```
+
+
+## Other hidden analysis: early models
+```{r, eval=FALSE, include=FALSE}
+############### original analysis looking at nb and zi distros #####################
+ss.nb_null <- glmer.nb(Total~Treat_Type + (1|Site/Plot_No),
+                     data = ss_PIRI)
+summary(ss.nb_null) #AIC : 1388 df. resid : 993
+
+ss.zi_null <- glmmTMB(Total~Treat_Type + (1|Site/Plot_No),
+                      ziformula=~1,
+                      family = nbinom2,
+                      data=ss_PIRI)
+
+ss.zi_null2 <- glmmTMB(Total~Treat_Type + (1|Site/Plot_No),
+                      ziformula=~1,
+                      family = nbinom1,
+                      data=ss_PIRI)
+
+AIC(ss.nb_null, ss.zi_null, ss.zi_null2) #Best AIC with nb_null model at 1388 (1398 for zi_null, and 1402 for zi_null2)
+
+rm(ss.zi_null, 
+   ss.zi_null2)
+
+
+# for now, looks like just NB model is better than zero-inflated. now add more fixed and random effects?
+
+ss.nb_region <- glmer.nb(Total~Treat_Type + (1|Site/Plot_No) + (1|Region),
+                         data = ss_PIRI)
+summary(ss.nb_region) #AIC 1390
+
+ss.nb_plot2 <- glmer.nb(Total~Treat_Type + (1|Plot_No) + (1|Region),
+                        data = ss_PIRI) 
+summary(ss.nb_plot3) #AIC 1401
+
+AIC(ss.nb_null, ss.nb_region) # with region, has a larger AIC (1397), also some warning message about "boundary (singular) fit: see help('isSingular')"
+
+# i should check the fit of the model? whatever is akin to residuals?
+
+
+
+#how to plot fixed effects against residuals?
+
+# post hoc comparison
+par(mfrow = c(1,1))
+
+with(ss_PIRI, interaction.plot(Region, Treat_Type, Total))
+
+emmeans(ss.nb_null, pairwise ~ Treat_Type)
+
+
+rm(ss.nb_plot2,
+   ss.nb_region)
+
+
+
+# using DHARMa package to check model fit -------------------
+
+ss.nb_sim.resid <- simulateResiduals(fittedModel = ss.nb_null, n = 1000, plot = TRUE)
+
+testDispersion(ss.nb_sim.resid)
+testOutliers(ss.nb_sim.resid)
+
+# Plotting standardized residuals against predictors
+plotResiduals(ss.nb_sim.resid, ss_merge2$Treat_Type, xlab = "Treatment Type", main=NULL)  
+  
+plotResiduals(ss.nb_sim.resid, ss_merge2$Site, xlab = "Site", main=NULL)  #two are significantly different, but can't say which
+
+outliers(ss.nb_sim.resid) #gives 658, no idea what that means
+
+testZeroInflation(ss.nb_sim.resid) #p value of 0.6, looks pretty normal/possible and therefore not zero inflated
+  
+```
+
+Hidden analysis: sorting just for PIRI
+```{r, eval =FALSE, include=FALSE}
+#from earlier analysis, looking just at piri
+
+# filter for just PIRI
+ss_PIRI <- ss_merge %>% 
+  filter(Species_Groups == "PIRI") %>% 
+  arrange(Treat_Type)
+
+# now to make the explanatory variables factors
+ss_PIRI$Treat_Type = factor(ss_PIRI$Treat_Type,
+                              levels = unique(ss_PIRI$Treat_Type))
+
+ss_PIRI$Region = factor(ss_PIRI$Region,
+                              levels = unique(ss_PIRI$Region))
+
+ss_PIRI$Site = factor(ss_PIRI$Site,
+                              levels = unique(ss_PIRI$Site))
+```
+
+
+

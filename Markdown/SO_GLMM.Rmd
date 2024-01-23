@@ -1,0 +1,751 @@
+---
+title: "Scrub Oak GLMM all groups"
+author: "Kathleen Stutzman"
+date: "2024-01-05"
+output: html_document
+---
+
+Set working directory
+```{r, setup}
+knitr::opts_knit$set(root.dir = '/Users/user/Desktop/Data/Regen_RProj/')
+```
+
+## Introduction:
+This script was written to be an easier read than the straight R script
+
+## It was written before I created the full dataset with pivots and veg; will return to this and clean it
+
+# Scrub Oak Small Seedling GLMM Code:
+This code chunk uses all the same steps to import small seedling data before refining it to Scrub Oak (QUIL, QUPR). These are the same steps as in the PIRI script and are hidden below in one chunk
+```{r, include=FALSE}
+# libraries -------------------
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+library(lme4)
+library(lmerTest)
+library(glmmTMB)
+library(TMB)
+library(emmeans)
+library(DHARMa)
+library(lmtest)
+```
+
+Source small seedling data:
+```{r}
+source("Scripts/SS_Import.R")
+```
+
+
+Refine to just scrub oak:
+```{r}
+ss_SO <- ss_merge %>% 
+  filter(Species_Groups == "Shrub Oak") %>% 
+  arrange(Treat_Type)
+
+# now to make the explanatory variables factors
+ss_SO$Treat_Type = factor(ss_SO$Treat_Type,
+                            levels = unique(ss_SO $Treat_Type))
+ss_SO$Region = factor(ss_SO$Region,
+                        levels = unique(ss_SO$Region))
+ss_SO$Site = factor(ss_SO$Site,
+                      levels = unique(ss_SO$Site))
+```
+
+Import time since data and add it to the PIRI dataset
+```{r}
+time_since <- read_csv("CleanData/Treat_Year_Data.csv")
+
+ss_SO1 <- merge(ss_SO, time_since, by = "Site")
+#log transform time from treatment data
+ss_SO1$l.TFT <- log(ss_SO1$Time_from_Treat)
+```
+
+Run the 'Add_BA' script and merge with dataset:
+```{r}
+source("Scripts/Add_BA.R")
+
+# merge with ls dataset -------------------
+ss_SO2 <- merge(ss_SO1, prism_BA, by = 'Plot_No')
+```
+
+Run 'Ground_Data.R' script and add it to PIRI dataset:
+```{r}
+source("Scripts/Ground_Data.R")
+
+# merge with ls dataset -------------------
+ss_SO.all <- merge(ss_SO2, ground3, by = "Plot_No")
+
+rm(ss_SO1,
+   ss_SO2)
+```
+
+Hidden below are early models that used the poisson distribution. All are underdispersed:
+```{r, eval=FALSE, include=FALSE}
+# still a lot of zeros, so start with a poisson
+ss.so_all <- glmer(Total~Treat_Type + l.avgLD + l.BA_HA + l.BA_piri + l.Mineral + (1|Site/Plot_No) + offset(l.TFT),
+                   data = ss_SO.all,
+                   family = poisson)
+summary(ss.so_all) #failed to converge, AIC of 1897.4
+
+ss.so_1 <- glmer(Total~Treat_Type + l.avgLD + l.BA_HA + l.BA_piri + (1|Site/Plot_No) + offset(l.TFT),
+                   data = ss_SO.all,
+                   family = poisson)
+summary(ss.so_1) #failed to converge, AIC is 1895.6
+
+ss.so_2 <- glmer(Total~Treat_Type + l.avgLD + l.BA_HA + (1|Site/Plot_No) + offset(l.TFT),
+                 data = ss_SO.all,
+                 family = poisson)
+summary(ss.so_2) #failed to converge, AIC is 1894.4
+
+ss.so_3 <- glmer(Total~Treat_Type + l.avgLD + l.BA_HA + (1|Site/Plot_No),
+                 data = ss_SO.all,
+                 family = poisson)
+summary(ss.so_3) #failed to converge, AIC is 1886.1
+
+ss.so_4 <- glmer(Total~Treat_Type + l.BA_HA + (1|Site/Plot_No),
+                 data = ss_SO.all,
+                 family = poisson)
+summary(ss.so_4) #finally converged, AIC is 1887
+
+
+######## best model so far
+ss.so_5 <- glmer(Total~Treat_Type + (1|Site/Plot_No),
+                 data = ss_SO.all,
+                 family = poisson)
+summary(ss.so_5) #AIC is 1885.3
+
+lrtest(ss.so_4, ss.so_5) # p = .89, so l.BA_HA not valuable
+
+ss.so_6 <- glmer(Total~Treat_Type + l.Mineral + (1|Site/Plot_No),
+                 data = ss_SO.all,
+                 family = poisson)
+summary(ss.so_6) #1885.6
+
+lrtest(ss.so_6, ss.so_5) # p is .19, so l.Min no valuable
+
+rm(ss.so_1, 
+   ss.so_2, 
+   ss.so_3, 
+   ss.so_4, 
+   ss.so_6, 
+   ss.so_7)
+
+# using DHARMa package to check model fit -------------------
+ss.so5_sr <- simulateResiduals(fittedModel = ss.so_5, n = 1000, plot = TRUE)
+
+testDispersion(ss.so5_sr, alternative = 'less') #the model is underdispersed
+testOutliers(ss.so5_sr) #fine
+testZeroInflation(ss.so5_sr) #fine
+```
+
+As the above models were under dispersed, I then moved to trying the generalized Poisson and COM-poisson distributions. COM-poisson still resulted in under dispersion, so generalized Poisson was the best distribution:
+```{r, eval=FALSE}
+#Starting with the most variables
+so.ss_gp1 <- glmmTMB(Total~Treat_Type + avgLD_l + l.BA_HA + l.BA_piri + l.Mineral + (1|Site/Plot_No) + offset(l.TFT),
+                     data = ss_SO.all,
+                     family = genpois)
+summary(so.ss_gp1) #AIC is 1862.7
+
+
+# using DHARMa package to check model fit -------------------
+so.ss1_sr <- simulateResiduals(fittedModel = so.ss_gp1, n = 1000, plot = TRUE) #passes the test
+
+testDispersion(so.ss1_sr) 
+#alternative = 'less') #the model is underdispersed
+testOutliers(so.ss1_sr) #fine
+testZeroInflation(so.ss1_sr) #fine
+
+# some issues with residual quantiles. Going to drop items from the model and see what happens to the AIC, then re-test in DHARMa and see what happens to residual quantiles
+
+so.ss_gp2 <- glmmTMB(Total~Treat_Type + avgLD_l + l.BA_HA + l.BA_piri + l.Mineral + (1|Site/Plot_No),
+                     data = ss_SO.all,
+                     family = genpois)
+AIC(so.ss_gp2) #1850
+
+so.ss_gp3 <- glmmTMB(Total~Treat_Type + avgLD_l + l.BA_HA + l.Mineral + (1|Site/Plot_No),
+                     data = ss_SO.all,
+                     family = genpois)
+AIC(so.ss_gp3) #1848.7
+
+library(lmtest)
+lrtest(so.ss_gp2, so.ss_gp3) # p value is 0.37
+
+so.ss_gp4 <- glmmTMB(Total~Treat_Type + avgLD_l + l.BA_HA + (1|Site/Plot_No),
+                     data = ss_SO.all,
+                     family = genpois)
+AIC(so.ss_gp4) #1847
+
+lrtest(so.ss_gp3, so.ss_gp4) # p = .5
+
+so.ss_gp5 <- glmmTMB(Total~Treat_Type + avgLD_l + (1|Site/Plot_No),
+                     data = ss_SO.all,
+                     family = genpois)
+AIC(so.ss_gp5) #1845.1
+
+so.ss_gp6 <- glmmTMB(Total~Treat_Type + (1|Site/Plot_No),
+                     data = ss_SO.all,
+                     family = genpois)
+AIC(so.ss_gp6) #1845.8
+
+lrtest(so.ss_gp5, so.ss_gp6) # p=.1, so not worth it to keep avgLD
+
+so.ss6_sr <- simulateResiduals(fittedModel = so.ss_gp6, n = 1000, plot = TRUE) #passes the test
+
+testDispersion(so.ss6_sr)
+testDispersion(so.ss6_sr, alternative = 'less') # passes
+testOutliers(so.ss6_sr) #fine
+testZeroInflation(so.ss6_sr) #fine
+
+
+#this was just to see if issues with quantile predicitios had been resolved
+so.ss5_sr <- simulateResiduals(fittedModel = so.ss_gp5, n = 1000, plot = TRUE) #It had not; using the compois distro gets rid of the quantile prediction issues, but the model is under dispersed
+
+testDispersion(so.ss5_sr) #passes
+testOutliers(so.ss5_sr) #fine
+testZeroInflation(so.ss5_sr) #fine
+
+so.ss_cp7 <- glmmTMB(Total~Treat_Type + avgLD_l + (1|Site/Plot_No),
+                     data = ss_SO.all,
+                     family = compois)
+AIC(so.ss_cp7) #1866.2; doesn't seem like a better fit but will look in DHARMa
+
+so.ss7_sr <- simulateResiduals(fittedModel = so.ss_cp7, n = 1000, plot = TRUE) #gets rid of residual quantile issues
+
+testDispersion(so.ss7_sr) # just barely passes
+testDispersion(so.ss7_sr, alternative = 'less') #doesn't pass, model is still underdispersed
+testDispersion(so.ss7_sr, alternative = 'greater')# passes
+testOutliers(so.ss7_sr) #fine
+testZeroInflation(so.ss7_sr) #fine
+
+
+# trying best model with com pois distro
+so.ss_cp8 <- glmmTMB(Total~Treat_Type + (1|Site/Plot_No),
+                     data = ss_SO.all,
+                     family = compois)
+AIC(so.ss_cp8) #1865.9
+
+so.ss8_sr <- simulateResiduals(fittedModel = so.ss_cp8, n = 1000, plot = TRUE) 
+
+testDispersion(so.ss8_sr) # just barely passes
+testDispersion(so.ss8_sr, alternative = 'less') #doesn't pass, model is still underdispersed
+testDispersion(so.ss8_sr, alternative = 'greater')# passes
+testOutliers(so.ss8_sr) #fine
+testZeroInflation(so.ss8_sr) 
+
+
+
+
+# this is the best model -------------------
+so.ss_gp6 <- glmmTMB(Total~Treat_Type + (1|Site/Plot_No),
+                     data = ss_SO.all,
+                     family = genpois)
+summary(so.ss_gp6)
+
+
+rm(so.ss1_sr,
+   so.ss5_sr,
+   so.ss7_sr,
+   so.ss8_sr,
+   so.ss_cp8,
+   so.ss_gp1,
+   so.ss_gp2,
+   so.ss_gp3,
+   so.ss_gp4,
+   so.ss_gp5,
+   so.ss_gp7)
+```
+
+There are a lot of models above. In the chunk below, the best model, along with DHARMa test, and emmeans test are run (so the earlier block does not need to be)
+```{r}
+# this is the best model -------------------
+so.ss_gp6 <- glmmTMB(Total~Treat_Type + (1|Site/Plot_No),
+                     data = ss_SO.all,
+                     family = genpois)
+summary(so.ss_gp6)
+
+so.ss6_sr <- simulateResiduals(fittedModel = so.ss_gp6, n = 1000, plot = TRUE) #passes the test
+
+testDispersion(so.ss6_sr)
+testDispersion(so.ss6_sr, alternative = 'less') # passes
+testOutliers(so.ss6_sr) #fine
+testZeroInflation(so.ss6_sr) #fine
+
+emmeans(so.ss_gp6,  specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
+# no significant differences
+```
+# All graphing can be found at the end of the script/document
+
+
+
+# Other hidden analysis: early data visualization:
+```{r, eval=FALSE, include=FALSE}
+ggplot(ss_SO.all, aes(x = Species_Groups, y=Total))+
+  geom_boxplot()+
+  facet_wrap(vars(Treat_Type))
+
+ggplot(ss_SO.all, aes(x=Total)) +
+  geom_histogram(binwidth = 1) +
+  facet_grid(rows = vars(Treat_Type))
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Scrub Oak Large Seedling GLMM Code:
+This code uses all the same steps to import large seedling data before refining it to Scrub Oak (QUIL, QUPR). These are the same steps as in the PIRI script and are hidden below in one chunk
+
+Source large seedling data:
+```{r}
+source("Scripts/LS_Import.R")
+```
+
+
+Filter just for shrub oaks:
+```{r}
+ls_SO <- ls_merge %>% 
+  filter(Species_Groups == "Shrub Oak") %>% 
+  arrange(Treat_Type)
+
+# make explanatory variables factors -------------------
+ls_SO$Treat_Type = factor(ls_SO$Treat_Type,
+                            levels = unique(ls_SO$Treat_Type))
+ls_SO$Region = factor(ls_SO$Region,
+                        levels = unique(ls_SO$Region))
+ls_SO$Site = factor(ls_SO$Site,
+                      levels = unique(ls_SO$Site))
+```
+
+Import time since data and add it to the Shrub Oak dataset
+```{r}
+time_since <- read_csv("CleanData/Treat_Year_Data.csv")
+
+ls_SO2 <- merge(ls_SO, time_since, by = 'Site')
+#log transform time from treatment data
+ls_SO2$l.TFT <- log(ls_SO2$Time_from_Treat)
+```
+
+Run the 'Add_BA' script and merge with dataset:
+```{r}
+source("Scripts/Add_BA.R")
+
+# merge with ls dataset -------------------
+ls_SO3 <- merge(ls_SO2, prism_BA, by = "Plot_No")
+```
+
+Run 'Ground_Data.R' script and add it to dataset:
+```{r}
+source("Scripts/Ground_Data.R")
+
+# merge with ls dataset -------------------
+ls_SO.all <- merge(ls_SO3, ground3, byt = "Plot_No")
+
+rm(ls_SO3, 
+   ls_SO2)
+```
+
+Hidden below are early models that used the poisson distribution. All are underdispersed:
+```{r, include=FALSE, eval=FALSE}
+# start tyring models with a poisson distro -------------------
+ls.so_all <- glmer(Total~Treat_Type + l.avgLD + l.BA_HA + l.BA_piri + l.Mineral + (1|Site/Plot_No) + offset(l.TFT),
+                   data = ls_SO.all,
+                   family = poisson)
+summary(ls.so_all) #failed to converge, AIC is 3398.7
+
+
+ls.so1 <- glmer(Total~Treat_Type + l.avgLD + l.BA_HA + l.BA_piri + (1|Site/Plot_No) + offset(l.TFT),
+                   data = ls_SO.all,
+                   family = poisson)
+summary(ls.so1) #failed to converge, AIC went up
+
+ls.so2 <- glmer(Total~Treat_Type + (1|Site/Plot_No),
+                data = ls_SO.all,
+                family = poisson)
+summary(ls.so2) #AIC 3406.9
+
+ls.so3 <- glmer(Total~Treat_Type + l.Mineral + (1|Site/Plot_No),
+                data = ls_SO.all,
+                family = poisson)
+summary(ls.so3) #AIC 3399.8
+
+ls.so4 <- glmer(Total~Treat_Type + l.Mineral + l.BA_HA + (1|Site/Plot_No),
+                data = ls_SO.all,
+                family = poisson)
+summary(ls.so4)
+lrtest(ls.so4, ls.so3) # p is .2
+
+#seems to be best model
+ls.so5 <- glmer(Total~Treat_Type + l.Mineral + (1|Site/Plot_No) + offset(l.TFT),
+                data = ls_SO.all,
+                family = poisson)
+summary(ls.so5) #AIC 3399.8
+
+lrtest(ls.so5, ls.so3) # gives it the same p-value (i think) as all other offset comps
+
+rm(ls.so1, ls.so2, ls.so4, ls.so_all)
+
+
+
+
+ls.so5_sr <- simulateResiduals(fittedModel = ls.so5, n = 1000, plot = TRUE)
+
+ls.so3_sr <- simulateResiduals(fittedModel = ls.so3, n = 1000, plot = TRUE)
+
+#neither are great, 5 seems to be better
+
+testDispersion(ls.so5_sr) #again low p value
+testDispersion(ls.so5_sr, alternative = 'less') # underdispersion
+testDispersion(ls.so5_sr, alternative = 'greater')
+
+testOutliers(ls.so5_sr) #good
+testZeroInflation(ls.so5_sr) # ok - seeing zero inflation!
+
+ls.so_zi1 <- glmmTMB(Total~Treat_Type + (1|Site/Plot_No),
+                     data = ls_SO.all,
+                     ziformula = ~(1|Site/Plot_No),
+                     family = poisson)
+summary(ls.so_zi1)
+#not working - will have to trouble shoot it
+fixef(ls.so_zi1)
+
+ls_SO.all$l.Total <- log(ls_SO.all$Total + 1)
+
+ggplot(ls_SO.all, aes(x=l.Total))+
+  geom_histogram(binwidth = .5)+
+  facet_grid(rows = vars(Treat_Type))
+#when log transformed (all together) it looks normal with a bunch of zeros. Not sure what distro to use
+
+ls.so_lm1 <- lmm
+
+
+
+ggplot(ls_SO.all, aes(x=Total))+
+  geom_histogram(binwidth = 2)+
+  facet_grid(rows = vars(Treat_Type))
+
+
+
+
+
+
+
+
+
+ls.so_zi1.sr <- simulateResiduals(ls.so_zi1, n = 1000, plot = T)
+testDispersion(ls.so_zi1.sr)
+
+
+ls.so_nb5 <- glmer.nb(Total~Treat_Type + l.Mineral + (1|Site/Plot_No) + offset(l.TFT),
+                data = ls_SO.all)
+summary(ls.so_nb5)
+
+ls.so_nb5.sr <- simulateResiduals(fittedModel = ls.so_nb5, n = 1000, plot = TRUE)
+testZeroInflation(ls.so_nb5.sr)
+# this does not solve the issue
+```
+
+Unable to find a working model at this point. 
+
+This is the best model, but it is still underdispersed
+
+ls_gp6 <- glmmTMB(Total~Treat_Type + l.BA_HA + (1|Site/Plot_No) + offset(l.TFT),
+                  data = ls_SO.all,
+                  family = genpois)
+AIC(ls_gp6)
+
+ls.gp6_sr <- simulateResiduals(ls_gp6, n=1000, plot = TRUE)
+
+testDispersion(ls.gp6_sr, alternative = 'less') #fails
+testZeroInflation(ls.gp6_sr) #passes
+testOutliers(ls.gp6_sr) #passes
+
+I tried just a lmm, but it was very not normal/bad model and also I wasn't able to use plot as a random variable within site
+
+
+Giving up for now. Need to circle back
+
+
+
+
+#Other hidden analysis: early data visualization:
+```{r, eval=FALSE, include=FALSE}
+# ********  exploring total data using histogram -------------------
+ggplot(ls_SO.all, aes(x=Total))+
+  geom_histogram(binwidth = 2)+
+  facet_grid(rows = vars(Treat_Type))
+
+# ********  boxplots? -------------------
+ggplot(ls_SO.all, aes(x = Species_Groups, y=Total))+
+  geom_boxplot()+
+  facet_wrap(vars(Treat_Type))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Sapling data set up
+
+Source sapling data:
+```{r}
+source("Scripts/SA_Import.R")
+```
+
+
+
+
+
+
+
+# Scrub Oak Sapling GLMM Code:
+This code uses all the same steps to import large seedling data before refining it to Scrub Oak (QUIL, QUPR). These are the same steps as in the PIRI script and are hidden below in one chunk
+```{r, include=FALSE}
+file_folder_SA <- "CleanData/sapling_CSV/"
+
+options(scipen = 999) #to display actual values
+
+file_names_SA <- list.files(path=file_folder_SA)
+
+for (i in seq_along(file_names_SA)) {
+  assign(paste0(file_names_SA[i], i),
+         read.csv(paste0(file_folder_SA, file_names_SA[i])))
+}
+
+# Adding treatment types -------------------
+SA_Control_Data.csv1$Treat_Type <- "Control"
+SA_Fall_Burn_Data.csv2$Treat_Type <- "FallRx"
+SA_Mow_Burn_Data.csv3$Treat_Type <- "MowRx"
+SA_Spring_Burn_Data.csv4$Treat_Type <- "SpringRx"
+SA_Thinned_Data.csv5$Treat_Type <- "Harvest"
+
+# merge into one data set -------------------
+sapling <- rbind(SA_Control_Data.csv1, 
+                 SA_Fall_Burn_Data.csv2, 
+                 SA_Mow_Burn_Data.csv3, 
+                 SA_Spring_Burn_Data.csv4, 
+                 SA_Thinned_Data.csv5) 
+
+
+# remove data sets to keep environment clean-------------------
+rm(SA_Control_Data.csv1,
+   SA_Fall_Burn_Data.csv2,
+   SA_Mow_Burn_Data.csv3,
+   SA_Spring_Burn_Data.csv4,
+   SA_Thinned_Data.csv5)
+
+sapling$Species_Groups <- NA
+
+# PIRI
+sapling$Species_Groups <- ifelse(sapling$Species_Code == 'PIRI', 'PIRI', sapling$Species_Groups)
+
+# Shrub Oak
+sapling$Species_Groups <- ifelse(sapling$Species_Code %in% c('QUIL','QUPR'), 'Shrub Oak', sapling$Species_Groups)
+
+#Other  
+sapling$Species_Groups <- ifelse(sapling$Species_Code %in% c('ACRU', 'BEPO', 'QUCO', 'QUAL', 'QUVE', 'QUST', 'QURU', 'QUPR', 'PRSE', 'FRPE', 'PRVI', 'PODE', 'POGR', 'SAAL', 'AMSP', 'FAGR', 'NYSY', 'ACPE', 'ACNE', 'MOSP', 'POTR', 'PRSP', 'PIST', 'ABBA', 'FRAL', 'ROPS', 'RHCA', 'ELUM', 'BELE'), 'Other', sapling$Species_Groups)
+
+
+# now to check all have been assigned -------------------
+check_sa <- sapling %>% 
+  filter(if_any(Species_Groups, is.na))
+
+# there are 724 plots that do not have saplings recorded -------------------
+
+rm(check_sa)
+
+sapling2 <- sapling %>%
+  select(Region,
+         Treat_Type,
+         Site,
+         Plot_No,
+         Species_Groups, 
+         DBH.cm.)
+
+# we should have just tallied amounts instead of recording DBH, so now to convert to tally
+sapling2$Tally <- NA
+
+sapling2$Tally <- ifelse(sapling2$DBH.cm. >= 2.5, 1, sapling2$Tally)
+
+sapling2$Tally <- ifelse(sapling2$DBH.cm. == 0, 0, sapling2$Tally)
+
+# check to see all have been assigned -------------------
+check_sapling <- sapling2 %>% 
+  filter(if_any(Tally, is.na))
+
+rm(check_sapling)
+
+# add duplicates by plot and filter it down -------------------
+sapling3 <- sapling2 %>% 
+  select(Region,
+         Treat_Type,
+         Site,
+         Plot_No,
+         Species_Groups,
+         Tally)
+
+#check for correct number of plots (1001)
+n_distinct(sapling3$Plot_No)
+
+# split data set to use complete function
+sapling_meta <- sapling3 %>% 
+  select(Region, Treat_Type, Site, Plot_No) %>% 
+  distinct(Plot_No, .keep_all = TRUE)
+
+sapling_plot <- sapling3 %>% 
+  select(Plot_No, Species_Groups, Tally)
+
+#duplicates of "other need to be combined
+sapling_plot1 <- sapling_plot %>% 
+  group_by(Plot_No, Species_Groups) %>% 
+  summarise(Total_Tally = sum(Tally)) %>% 
+  ungroup()
+
+sapling_plot2 <- sapling_plot1 %>% 
+  complete(Plot_No, Species_Groups, fill = list(Total_Tally = 0))
+
+sapling_NA <- sapling_plot2[complete.cases(sapling_plot2),]
+
+sapling_merge <- merge(sapling_meta, sapling_NA, by= "Plot_No")
+
+# now remove datasets no longer needed to keep envr clean -------------------
+rm(sapling_meta,
+   sapling_plot,
+   sapling_plot1,
+   sapling_plot2,
+   sapling2,
+   sapling3,
+   sapling_NA)
+```
+
+
+Filtering just for Shrub Oaks:
+```{r}
+sapling_SO <- sapling_merge %>% 
+  filter(Species_Groups == "Shrub Oak") %>% 
+  arrange(Treat_Type)
+```
+
+Import time since data and add it to the dataset
+```{r}
+time_since <- read_csv("CleanData/Treat_Year_Data.csv")
+
+sapling_SO2 <- merge(sapling_SO, time_since, by = 'Site')
+#log transform time from treatment data
+sapling_SO2$l.TFT <- log(sapling_SO2$Time_from_Treat)
+```
+
+Run the 'Add_BA' script and merge with dataset:
+```{r}
+source("Scripts/Add_BA.R")
+
+# merge with ls dataset -------------------
+sapling_SO3 <- merge(sapling_SO2, prism_BA, by = 'Plot_No')
+```
+
+Run 'Ground_Data.R' script and add it to the dataset:
+```{r}
+source("Scripts/Ground_Data.R")
+
+# merge with ls dataset -------------------
+sa.so_alldata <- merge(sapling_SO3, ground3, by = 'Plot_No')
+
+rm(sapling_SO3,
+   sapling_SO2)
+
+#there are 44 scrub oak sapling observations out of 487 sites
+```
+
+Models tested for shrub oak sapling data:
+```{r}
+sa.so_all <- glmmTMB(Total_Tally ~ Treat_Type + l.BA_HA + avgLD_l + (1|Site/Plot_No) + offset(l.TFT),
+                     data = sa.so_alldata,
+                     family = poisson)
+AIC(sa.so_all) #309
+
+# best model -------------------
+sa.so_p2 <- glmmTMB(Total_Tally ~ Treat_Type + l.BA_HA + (1|Site/Plot_No) + offset(l.TFT),
+                     data = sa.so_alldata,
+                     family = poisson)
+AIC(sa.so_p2) #307.8, passes DHARMa test
+
+lrtest(sa.so_all, sa.so_p2) # p = .4
+
+sa.so_p1 <- glmmTMB(Total_Tally ~ Treat_Type + (1|Site/Plot_No) + offset(l.TFT),
+                    data = sa.so_alldata,
+                    family = poisson)
+AIC(sa.so_p1) #305.9, doesn't pass DHARMa test
+
+sa.so1_sr <- simulateResiduals(sa.so_p1, n=1000, plot = T)
+testZeroInflation(sa.so1_sr) #passes, guess we don't need to use a zero inflated model; but model needs work
+
+sa.so_p4 <- glmmTMB(Total_Tally ~ Treat_Type + (1|Site/Plot_No),
+                    data = sa.so_alldata,
+                    family = poisson)
+AIC(sa.so_p4) #doesn't pass dharma test
+
+lrtest(sa.so_p1, sa.so_p4) #offset is valuable
+
+rm(sa.so_all,
+   sa.so_p4)
+```
+
+Run DHARMa package to check residuals:
+```{r}
+sa.so1_sr <- simulateResiduals(sa.so_p1, n=1000, plot = T) #combined adjusted quantile test is significant
+
+
+sa.so2_sr <- simulateResiduals(sa.so_p2, n=1000, plot = T) #combined adjusted quantile test is non-significant
+testZeroInflation(sa.so2_sr) #passes
+testDispersion(sa.so2_sr) #passes
+testOutliers(sa.so2_sr) #passes
+
+#This means sa.so_p2 is the best model
+```
+
+Use emmeans for pairwise comparison of treatment types
+```{r}
+emmeans(sa.so_p2, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
+# no differences
+```
+
+
+# Neither small seedling nor saplings have a signficiant relationship with treatment type. Have't been able to figure out a good model for large seedlings yet
+
+
