@@ -38,7 +38,7 @@ source("Scripts/LS_Import.R")
 Pivot wider to create dataframe where each row is for one plot and has total details for each species group
 ```{r}
 ls_merge2 <- ls_merge %>% 
-  select(Plot_No, Region, Treat_Type, Site, Species_Groups, Total) #this is dropiing browse and stump sprout data
+  select(Plot_No, Region, Treat_Type, Site, Species_Groups, Total) #this is dropping browse and stump sprout data
 
 ls_merge2 <- ls_merge2 %>% 
   pivot_wider(names_from = Species_Groups, values_from = Total)
@@ -542,18 +542,229 @@ testResiduals(so.ls6a_sr) # fails dispersion
 
 
 
+### testing other distros
+```{r}
+so.ls6 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.BA_HA + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = poisson)
+AIC(so.ls6)
+
+so.ls6a <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.BA_HA + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = genpois)
+AIC(so.ls6a)
+
+# compois distro fails, won't produce DHARMa results
+
+so.ls6b <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.BA_HA + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = tweedie)
+AIC(so.ls6b)
+
+so.ls6b_sr <- simulateResiduals(so.ls6b, n = 1000, plot = TRUE)
+testDispersion(so.ls6b_sr) #fails
+
+so.ls6c <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.BA_HA + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = t_family)
+AIC(so.ls6c)
+
+so.ls6c_sr <- simulateResiduals(so.ls6c, n = 1000, plot = TRUE)
+testResiduals(so.ls6c_sr)
+testDispersion(so.ls6c_sr) #passes
+testQuantiles(so.ls6c_sr)
+
+
+so.ls6d <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.BA_HA + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = gaussian)
+AIC(so.ls6d)
+
+so.ls6d_sr <- simulateResiduals(so.ls6d, n = 1000, plot = TRUE) #fails
+```
 
 
 
 
+#### student t seems to work, so now try model elimination with t distro
+```{r}
+so.ls1 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = t_family)
+AIC(so.ls1) # 3880.6
+
+# test piri ba
+so.ls2 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                family = t_family)
+AIC(so.ls2) #3879.6
+
+lrtest(so.ls1, so.ls2) #p = 0.3
+
+# test total BA
+so.ls3 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                  family = t_family)
+AIC(so.ls3) #3885.4
+
+lrtest(so.ls1, so.ls3) # p = 0.009
+
+# test mineral
+so.ls4 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                  family = t_family)
+AIC(so.ls4) #3881.5
+
+lrtest(so.ls2, so.ls4) # p = 0.046
+
+# test avg ld
+so.ls5 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                  family = t_family)
+AIC(so.ls5) #3877.7---- keep avg LD, lower AIC
+
+lrtest(so.ls5, so.ls2) # p = 0.48
+
+# test piri
+so.ls6 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.BA_HA + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                  family = t_family)
+AIC(so.ls6) #3882.6
+
+lrtest(so.ls6, so.ls4) # p = 0.08
+
+# test other
+so.ls7 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.BA_HA + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = t_family)
+AIC(so.ls7) #3891
+
+lrtest(so.ls6, so.ls7) # p = 0.001
+
+# test veg
+so.ls8 <- glmmTMB(Shrub_Oak ~ Treat_Type +l.other + l.BA_HA + avgLD_l + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = t_family)
+#won't converge
+
+lrtest(so.ls6, so.ls1) #p = 0.046
+
+#issue is that I'm representing 3 measurement scales. reduce BA? 
+```
+
+
+```{r}
+so.ls6 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.BA_HA + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                  family = t_family)
+
+ls.all3$BA_10m <- (ls.all3$BA_HA/1000)
+ls.all3$l.BA_10m <- log(ls.all3$BA_10m + 1)
+
+so.ls9 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.BA_10m + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                  data = ls.all3,
+                  family = t_family)
+
+so.ls10 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                  data = ls.all3,
+                  family = t_family)
+AIC(so.ls10) #3884.5
+
+so.ls11 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + avgLD_l + offset(l.TFT) + (1|Site/Plot_No),
+                  data = ls.all3,
+                  family = t_family)
+AIC(so.ls11) #3395.4
+
+lrtest(so.ls10, so.ls11) #keep veg
+
+so.ls12 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + avgLD_l + l.BA_10m + offset(l.TFT) + (1|Site/Plot_No),
+                  data = ls.all3,
+                  family = t_family)
+AIC(so.ls12) #3883.8
+
+lrtest(so.ls11, so.ls12) #keep ba
+
+#maybe if i drop something else model will run?
+
+so.ls13 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.BA_10m + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                  data = ls.all3,
+                  family = t_family)
+AIC(so.ls12) #3883.8
+
+so.ls1a <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_10m + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = t_family)
+AIC(so.ls1a) # 3873.8
+
+
+```
 
 
 
 
+```{r}
+# this is killing me - moving the basal area down to the 10m scale, to keep measurements on 2 scales; overwriting models
+
+so.ls1 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_10m + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = t_family)
+AIC(so.ls1) # 3873.8
+
+so.ls2 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_10m + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = t_family)
+AIC(so.ls2)
+
+so.ls3 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_10m + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = t_family)
+AIC(so.ls3) #3875.7 without mineral
+
+so.ls3b <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_10m + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = t_family)
+AIC(so.ls3b) #3871.9 w/o LD
+
+lrtest(so.ls2, so.ls3) # p = 0.46
+lrtest(so.ls2, so.ls3b) #drop ld for sure
+
+# test piri
+so.ls4 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.BA_10m + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = t_family)
+AIC(so.ls4) #3871.9
+
+#test other
+so.ls5 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.BA_10m + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = t_family)
+AIC(so.ls5) #3881.5
+
+lrtest(so.ls4, so.ls5) # keep other
+
+# test veg
+so.ls6 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.BA_10m + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = t_family)
+AIC(so.ls6) #3878
+
+so.ls7 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = t_family)
+AIC(so.ls7) #3881.7, keep ba
+```
 
 
+# best model?
+```{r}
+so.ls4 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.BA_10m + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = t_family)
+AIC(so.ls4)
 
-
+so.ls4_sr <- simulateResiduals(so.ls4, n = 1000, plot = TRUE)
+testResiduals(so.ls4_sr)
+```
 
 
 

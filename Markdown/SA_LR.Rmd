@@ -523,6 +523,8 @@ testResiduals(sa.f4_sr) #passes
 
 AIC(sa.f4, sa.f2)
 #aic is lower for sa.f4 & more df - therefore better model? maybe graph both to see what is going on?
+
+emmeans(sa.f4, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
 ```
 
 

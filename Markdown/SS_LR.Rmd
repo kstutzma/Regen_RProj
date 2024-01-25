@@ -561,7 +561,7 @@ testDispersion(so.ss10_sr, alternative = "less") # still under dispersed
 so.ss11 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + offset(l.TFT) + (1|Site/Plot_No),
                  data = ss.all2,
                  family = genpois)
-summary(so.ss11)
+summary(so.ss11) #AIC = 1854.2
 
 so.ss11_sr <- simulateResiduals(so.ss11, n = 1000, plot = TRUE)
 testResiduals(so.ss11_sr)
@@ -575,6 +575,20 @@ FallRx, MowRx, and SpringRx significantly different than control; none of the tr
 
 
 
+Graph SO model
+```{r}
+# SS SO plot 1 ------------------- PIRI vs. TT
+plot_model(so.ss11, 
+                       type = 'pred', 
+                       terms = c('l.PIRI', 'Treat_Type'),
+                       axis.title = c("Pitch pine small seedling counts (log transformed)", "Total Count of Shrub Oak"),
+                       title = "Predicted Counts of Shrub Oak \n Seedlings <50cm",
+           legend.title = "Treatment Type",
+           line.size = 1,
+           value.offset = 'Treat_Type',
+           ci.lvl = NA,
+           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")) 
+```
 
 
 

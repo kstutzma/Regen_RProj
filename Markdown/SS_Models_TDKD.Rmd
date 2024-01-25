@@ -1,0 +1,250 @@
+---
+title: "Small seeding models for Tony & Kevin"
+author: "Kathleen Stutzman"
+date: "2024-01-25"
+output: html_document
+---
+
+Hidden below is code for importing the data set and log transforming variables. The best model (lowest AIC & using lrtest) is presented below, model fit checked, and pairwise comparison for Treatment Type.  
+
+I did create and test models without treatment type, but they always have higher AIC and worse model fit that those with (probably due to the control category...)  
+
+##### Variables investigated:
+- **Treat_Type** - treatment type
+- **PIRI** - pitch pine seedling count
+- **SO** - shrub oak seedling count
+- **other** - other seedling count
+- **BA_HA** - basal area per hectare
+- **BA_piri** - pitch pine basal area per hectare
+- **Mineral** - exposed mineral soil
+- **avgLD** - average leaf litter depth
+- **Veg_Total** - total understory plant cover
+- **TFT** - time between treatment and sampling (used as an offset)
+- **Site/Plot_No** - random effect of plots within sites
+
+Variables are log transformed (l. or _l)
+
+## Pitch Pine Regeneration
+
+```{r Libraries, message=FALSE, warning=FALSE, include=FALSE}
+# libraries -------------------
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+library(GGally)
+library(glmmTMB)
+library(TMB)
+library(emmeans)
+library(DHARMa)
+library(lmtest)
+```
+
+```{r, setup, include=FALSE}
+# Set WD:
+knitr::opts_knit$set(root.dir = '/Users/user/Desktop/Data/Regen_RProj/')
+```
+
+```{r, include=FALSE, message=FALSE, warning=FALSE}
+# Import seedling data
+
+source("Scripts/SS_Import.R")
+
+ss_merge2 <- ss_merge %>% 
+  select(Plot_No, Region, Treat_Type, Site, Species_Groups, Total) #this is dropping stump sprout, browse, and germinate data
+
+ss_merge2 <- ss_merge2 %>% 
+  pivot_wider(names_from = Species_Groups, values_from = Total)
+
+time_since <- read_csv("CleanData/Treat_Year_Data.csv")
+
+ss_merge3 <- merge(ss_merge2, time_since, by = "Site")
+#log transform time from treatment data
+ss_merge3$l.TFT <- log(ss_merge3$Time_from_Treat)
+
+source("Scripts/Add_BA.R")
+
+# merge with ss dataset -------------------
+ss_merge4 <- merge(ss_merge3, prism_BA, by = "Plot_No")
+
+source("Scripts/Ground_Data.R")
+
+# merge with ss dataset -------------------
+ss_merge5 <- merge(ss_merge4, ground3, by = "Plot_No")
+
+rm(ss_merge2,
+   ss_merge3,
+   ss_merge4,
+   time_since)
+
+source("Scripts/Veg_Data.R")
+
+# merge with ss dataset 
+ss.all <- merge(ss_merge5, veg3, by = "Plot_No")
+
+ss.all$l.PIRI <- log(ss.all$PIRI + 1)
+ss.all$l.SO <- log(ss.all$Shrub_Oak + 1)
+ss.all$l.other <- log(ss.all$Other + 1)
+
+ss.all2 <- ss.all %>% 
+  select(Treat_Type, Region, Site, Plot_No, PIRI, l.PIRI, Shrub_Oak, l.SO, Other, l.other, Time_from_Treat, l.TFT, BA_HA, l.BA_HA, PIRI.BA_HA, l.BA_piri, Mineral_Soil, l.Mineral, Litter_Duff, avgLD, avgLD_l, Veg_Total, l.Veg_Total) %>% 
+  arrange(Treat_Type)
+```
+
+### Best small seedling pitch pine model
+```{r}
+ss.m4 <- glmmTMB(PIRI ~ Treat_Type + l.SO + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all2,
+                 family = poisson)
+summary(ss.m4)
+```
+
+### Check model fit
+```{r}
+ss.m4_sr <- simulateResiduals(ss.m4, n = 1000, plot = TRUE) #looks pretty good
+
+testResiduals(ss.m4_sr) #passes uniformity, dispersion, and outliers
+testQuantiles(ss.m4_sr) #passes
+testZeroInflation(ss.m4_sr) #passes
+```
+
+### Pairwise for treatment type
+```{r}
+emmeans(ss.m4, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
+```
+
+### Graph pitch pine models
+```{r, warning=FALSE, message=FALSE, fig.align='center'}
+library(sjPlot)
+library(sjlabelled)
+library(sjmisc)
+
+set_theme(base = theme_classic(),
+          theme.font = 'serif',
+          axis.title.size = 1.5,
+          axis.textsize.x = 1.5,
+          axis.textsize.y = 1.5,
+          title.size = 2.5,
+          title.align = "center",
+          legend.pos = "right",
+          legend.size = 1.5,
+          legend.title.size = 1.5,
+          #legend.bordercol = "black",
+          legend.item.size = .75)
+
+# SS PIRI plot 1 ------------------- LD vs. TT
+plot_model(ss.m4, 
+                       type = 'pred', 
+                       terms = c('avgLD_l', 'Treat_Type'),
+                       axis.title = c("Average Leaf Litter Depth (log transformed)", "Total Count of Pitch Pine"),
+                       title = "Predicted Counts of Pitch Pine \n Seedlings <50cm",
+           legend.title = "Treatment Type",
+           line.size = 1,
+           value.offset = 'Treat_Type',
+           ci.lvl = NA,
+           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")) 
+
+
+# SS PIRI plot 2 ------------------- Veg vs TT
+plot_model(ss.m4, 
+                       type = 'pred', 
+                       terms = c('l.Veg_Total', 'Treat_Type'),
+                       axis.title = c("Average Understory Vegetation Cover (log transformed)", "Total Count of Pitch Pine"),
+                       title = "Predicted Counts of Pitch Pine \n Seedlings <50cm",
+           legend.title = "Treatment Type",
+           line.size = 1,
+           value.offset = 'Treat_Type',
+           ci.lvl = NA,
+           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")) 
+
+
+# SS PIRI pot 3 ------------------- Shrub Oak seedling vs TT
+plot_model(ss.m4, 
+                       type = 'pred', 
+                       terms = c('l.SO', 'Treat_Type'),
+                       axis.title = c("Shrub oak small seedling counts (log transformed)", "Total Count of Pitch Pine"),
+                       title = "Predicted Counts of Pitch Pine \n Seedlings <50cm",
+           legend.title = "Treatment Type",
+           line.size = 1,
+           value.offset = 'Treat_Type',
+           ci.lvl = NA,
+           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")) 
+
+
+
+# SS PIRI plot 4 ------------------- Time from Treatment vs TT
+plot_model(ss.m4, 
+                       type = 'pred', 
+                       terms = c('l.TFT', 'Treat_Type'),
+                       axis.title = c("Time from Treatment (log transformed)", "Total Count of Pitch Pine"),
+                       title = "Predicted Counts of Pitch Pine \n Seedlings <50cm",
+           legend.title = "Treatment Type",
+           line.size = 1,
+           value.offset = 'Treat_Type',
+           ci.lvl = NA,
+           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")) 
+```
+  
+
+
+
+
+## Shrub Oak Regeneration
+This includes QUIL (scrub oak) & QUPR (dwarf chinkapin oak)
+
+### Best small seedling shrub oak model
+```{r}
+so.ss11 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all2,
+                 family = genpois)
+summary(so.ss11)
+```
+
+### Check model fit
+```{r}
+so.ss11_sr <- simulateResiduals(so.ss11, n = 1000, plot = TRUE)
+testResiduals(so.ss11_sr)
+testQuantiles(so.ss11_sr) #quantiles are not good
+```
+From what I've read, models with significant quantile deviations can still be good models / used. There are some distribution issues. I've switched to genpois distro here, which just barely gets the job done. Models using poisson or com-pois distros are underdispersed. *Additional thoughts appreciated*
+
+### Pairwise for treatment type
+```{r}
+emmeans(so.ss11, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
+```
+
+### Graph shrub oak seedling model
+```{r, warning=FALSE, message=FALSE, fig.align='center'}
+# SS SO plot 1 ------------------- PIRI vs. TT
+plot_model(so.ss11, 
+                       type = 'pred', 
+                       terms = c('l.PIRI', 'Treat_Type'),
+                       axis.title = c("Pitch pine small seedling counts (log transformed)", "Total Count of Shrub Oak"),
+                       title = "Predicted Counts of Shrub Oak \n Seedlings <50cm",
+           legend.title = "Treatment Type",
+           line.size = 1,
+           value.offset = 'Treat_Type',
+           ci.lvl = NA,
+           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")) 
+````
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

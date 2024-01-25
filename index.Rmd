@@ -9,10 +9,17 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Setting up a git repo and following the steps from BIO 381 last semester
+## R Markdown code for Pitch Pine Regeneration project
 
-## [Small seedling GLMM code](Markdown/SS_LR.html)
+### [Small seedling models for TD & KD](Mardown/SS_Models_TDKD.html)
 
-## [Large seedling GLMM code](Mardown/LS_LR.html)
+### [Large seedling models for TD & KS](Markdown/LS_Models_TDKD.html)
 
-## [Sapling GLMM code](Mardown/SA_LR.html)
+
+### Below are the full scripts for generating models above
+
+#### [Small seedling GLMM code](Markdown/SS_LR.html)
+
+#### [Large seedling GLMM code](Mardown/LS_LR.html)
+
+#### [Sapling GLMM code](Mardown/SA_LR.html)
