@@ -63,7 +63,6 @@ source("Scripts/Ground_Data.R")
 
 # merge with sapling dataset -------------------
 sa_merge5 <- merge(sa_merge4, ground3, by = 'Plot_No')
-
 ```
 
 Source and add veg data:

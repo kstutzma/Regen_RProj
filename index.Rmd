@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## R Markdown code for Pitch Pine Regeneration project
 
-### [Small seedling models for TD & KD](Mardown/SS_Models_TDKD.html)
+### [Small seedling models for TD & KD](Markdown/SS_Models_TDKD.html)
 
 ### [Large seedling models for TD & KD](Markdown/LS_Models_TDKD.html)
 
