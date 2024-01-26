@@ -1,0 +1,229 @@
+---
+title: "Sapling models for Tony & Kevin"
+author: "Kathleen Stutzman"
+date: "2024-01-26"
+output: html_document
+---
+
+Hidden below is code for importing the data set and log transforming variables. The best model (lowest AIC & using lrtest) is presented below, model fit checked, and pairwise comparison for Treatment Type.  
+
+I did create and test models without treatment type, but they always have higher AIC and worse model fit that those with (probably due to the control category...)  
+
+##### Variables investigated:
+- **Treat_Type** - treatment type
+- **PIRI** - pitch pine sapling count (25m^2^)
+- **SO** - shrub oak sapling count (25m^2^)
+- **other** - other seedling count (25m^2^)
+- **BA_HA** - basal area per hectare
+- **BA_piri** - pitch pine basal area per hectare
+- **Mineral** - exposed mineral soil (1m^2^)
+- **avgLD** - average leaf litter depth (1m^2^)
+- **Veg_Total** - total understory plant cover (1m^2^)
+- **TFT** - time between treatment and sampling (used as an offset)
+- **Site/Plot_No** - random effect of plots within sites
+
+*Variables are log transformed (l. or _l)*
+
+## Pitch Pine Regeneration
+
+```{r Libraries, message=FALSE, warning=FALSE, include=FALSE}
+# libraries -------------------
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+library(GGally)
+library(glmmTMB)
+library(TMB)
+library(emmeans)
+library(DHARMa)
+library(lmtest)
+```
+
+```{r, setup, include=FALSE}
+# Set WD:
+knitr::opts_knit$set(root.dir = '/Users/user/Desktop/Data/Regen_RProj/')
+```
+
+```{r, message=FALSE, warning=FALSE, include=FALSE}
+source("Scripts/SA_Import.R")
+
+sa_merge2 <- sapling_merge %>% 
+  pivot_wider(names_from = Species_Groups, values_from = Total_Tally)
+
+time_since <- read_csv("CleanData/Treat_Year_Data.csv")
+
+sa_merge3 <- merge(sa_merge2, time_since, by = 'Site')
+#log transform time from treatment data
+sa_merge3$l.TFT <- log(sa_merge3$Time_from_Treat)
+
+source("Scripts/Add_BA.R")
+
+# merge with sapling dataset -------------------
+sa_merge4 <- merge(sa_merge3, prism_BA, by = 'Plot_No')
+
+source("Scripts/Ground_Data.R")
+
+# merge with sapling dataset -------------------
+sa_merge5 <- merge(sa_merge4, ground3, by = 'Plot_No')
+
+source("Scripts/Veg_Data.R")
+
+# merge with sapling dataset -------------------
+sa.all <- merge(sa_merge5, veg3, by = "Plot_No")
+
+rm(sa_merge3,
+   sa_merge4,
+   sa_merge5)
+
+sa.all3 <- sa.all
+
+sa.all3$l.PIRI <- log(sa.all3$PIRI + 1)
+sa.all3$l.SO <- log(sa.all3$Shrub_Oak + 1)
+sa.all3$l.other <- log(sa.all3$Other + 1)
+
+sa.all3 <- sa.all3 %>% 
+  select(Treat_Type, Region, Site, Plot_No, PIRI, l.PIRI, Shrub_Oak, l.SO, Other, l.other, Time_from_Treat, l.TFT, BA_HA, l.BA_HA, PIRI.BA_HA, l.BA_piri, Mineral_Soil, l.Mineral, Litter_Duff, avgLD, avgLD_l, Veg_Total, l.Veg_Total) %>% 
+  arrange(Treat_Type)
+```
+
+### Best pitch pine sapling model
+```{r}
+sa.f4 <- glmmTMB(PIRI ~ Treat_Type + offset(l.TFT) + (1|Site/Plot_No),
+                 data = sa.all3,
+                 ziformula = ~Region,
+                 family = poisson)
+summary(sa.f4)
+
+# below model also works, but has higer AIC and less DF
+sa.f2 <- glmmTMB(PIRI ~ Treat_Type + l.other + offset(l.TFT) + (1|Site/Plot_No),
+                 data = sa.all3,
+                 ziformula = ~1,
+                 family = poisson)
+summary(sa.f2)
+```
+
+
+### Check model fit
+```{r}
+sa.f4_sr <- simulateResiduals(sa.f4, n = 1000, plot = TRUE) #passes
+testZeroInflation(sa.f4_sr) #passes
+testResiduals(sa.f4_sr)
+```
+
+### Pairwise comparison for treatment types
+```{r}
+emmeans(sa.f4, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
+```
+##### None signficantly different from the other; generally not a lot of pitch pine saplings measured
+
+### Plot model one
+```{r, warning=FALSE, message=FALSE, fig.align='center'}
+library(sjPlot)
+library(sjlabelled)
+library(sjmisc)
+
+set_theme(base = theme_classic(),
+          theme.font = 'serif',
+          axis.title.size = 1.5,
+          axis.textsize.x = 1.5,
+          axis.textsize.y = 1.5,
+          title.size = 2.5,
+          title.align = "center",
+          legend.pos = "right",
+          legend.size = 1.5,
+          legend.title.size = 1.5,
+          #legend.bordercol = "black",
+          legend.item.size = .75)
+
+plot_model(sa.f4, 
+           type = "pred",
+           terms = "Treat_Type")
+
+plot_model(sa.f4, 
+           type = "pred",
+           terms = c("l.TFT", "Treat_Type"),
+           axis.title = c("Time from Last Treatment (log transformed)", "Total Count of Pitch Pine"),
+           title = "Predicted Counts of Pitch Pine \n Saplings >/= 2.5 cm & < 10 cm DBH",
+           legend.title = "Treatment Type",
+           line.size = 1,
+           show.zeroinf = T,
+           ci.lvl = NA,
+           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15"))
+```
+
+#### Plot second model
+```{r, fig.align='center'}
+plot_model(sa.f2, 
+           type = "pred",
+           terms = c("l.TFT", "Treat_Type"),
+           axis.title = c("Time from Last Treatment (log transformed)", "Total Count of Pitch Pine"),
+           title = "Predicted Counts of Pitch Pine \n Saplings >/= 2.5 cm & < 10 cm DBH",
+           legend.title = "Treatment Type",
+           line.size = 1,
+           show.zeroinf = T,
+           ci.lvl = NA,
+           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15"))
+
+plot_model(sa.f2, 
+           type = "pred",
+           terms = c("l.other", "Treat_Type"),
+           axis.title = c("Other Saplings (log transformed)", "Total Count of Pitch Pine"),
+           title = "Predicted Counts of Pitch Pine \n Saplings >/= 2.5 cm & < 10 cm DBH",
+           legend.title = "Treatment Type",
+           line.size = 1,
+           show.zeroinf = T,
+           ci.lvl = NA,
+           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15"))
+```
+
+## Shrub Oak Regeneration
+This includes QUIL (scrub oak) & QUPR (dwarf chinkapin oak)
+
+### Best shrub oak sapling model
+
+#### The "full" model has the least issues with quantile deviations
+```{r}
+so.sa2 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.BA_piri + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = sa.all3,
+                 family = poisson)
+summary(so.sa2) # 363.4
+
+so.sa2_sr <- simulateResiduals(so.sa2, n = 1000, plot = TRUE)
+testResiduals(so.sa2_sr) #passes
+testZeroInflation(so.sa2_sr) #passes
+```
+
+#### The reduced model has the lowest AIC, but more issues with quantile deviations
+```{r}
+so.sa8 <- glmmTMB(Shrub_Oak ~ Treat_Type + offset(l.TFT) + (1|Site/Plot_No),
+                 data = sa.all3,
+                 family = poisson)
+summary(so.sa8)
+
+so.sa8_sr <- simulateResiduals(so.sa8, n = 1000, plot = TRUE)
+testResiduals(so.sa8_sr) #passes, quantile issues
+testZeroInflation(so.sa8_sr) #passes
+```
+
+### The pairwise comparisons are similar and no significant differences are shown in either
+```{r}
+emmeans(so.sa8, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response') # no difference
+
+emmeans(so.sa2, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response') # no difference
+```
+
+### Plot models
+```{r, fig.align='center'}
+plot_model(so.sa8, 
+           type = "pred",
+           terms = c("l.TFT", "Treat_Type"),
+           axis.title = c("Time from Last Treatment (log transformed)", "Total Count of Shrub Oak"),
+           title = "Predicted Counts of Shrub Oak \n Saplings >/= 2.5 cm & < 10 cm DBH",
+           legend.title = "Treatment Type",
+           line.size = 1,
+           ci.lvl = NA,
+           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15"))
+
+```
+
+

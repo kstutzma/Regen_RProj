@@ -581,6 +581,8 @@ so.ls6d <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.BA_HA + l.Mineral + l.Ve
 AIC(so.ls6d)
 
 so.ls6d_sr <- simulateResiduals(so.ls6d, n = 1000, plot = TRUE) #fails
+plot(so.ls6d_sr)
+testResiduals(so.ls6d_sr)
 ```
 
 
@@ -653,6 +655,8 @@ lrtest(so.ls6, so.ls1) #p = 0.046
 ```
 
 
+
+### testing t distro
 ```{r}
 so.ls6 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.BA_HA + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
                  data = ls.all3,
@@ -701,7 +705,7 @@ AIC(so.ls1a) # 3873.8
 
 
 
-
+### starting with basal area at 10m^2^ range instead of per HA
 ```{r}
 # this is killing me - moving the basal area down to the 10m scale, to keep measurements on 2 scales; overwriting models
 
@@ -757,22 +761,72 @@ AIC(so.ls7) #3881.7, keep ba
 
 # best model?
 ```{r}
-so.ls4 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.BA_10m + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+so.ls6 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.BA_10m + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
                  data = ls.all3,
                  family = t_family)
-AIC(so.ls4)
+summary(so.ls6)
 
-so.ls4_sr <- simulateResiduals(so.ls4, n = 1000, plot = TRUE)
-testResiduals(so.ls4_sr)
+so.ls6_sr <- simulateResiduals(so.ls6, n = 1000, plot = TRUE)
+testResiduals(so.ls6_sr)
+plot(so.ls6_sr)
+```
+
+### Pairwise with treatment type
+```{r}
+emmeans(so.ls6, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
 ```
 
 
 
 
+```{r}
+hist(ls.all3$Shrub_Oak)
+
+ggplot(ls.all3, aes(x=Shrub_Oak))+
+  geom_histogram(binwidth = 2)+
+  facet_grid(rows = vars(Treat_Type))
+```
 
 
+##### Model 6 appears to be the best. There are issues of collinearlity with total veg cover and shrub oak counts, so it has been dropped from the model despite AIC/lrtest results
 
 
+### Graph shrub oak models
+```{r}
+# LS SO plot 1 ------------------- other vs. TT
+plot_model(so.ls6, 
+                       type = 'pred', 
+                       terms = c('l.other', 'Treat_Type'),
+                       axis.title = c("Other small seedling counts (log transformed)", "Total Count of Shrub Oak"),
+                       title = "Predicted Counts of Shrub Oak \n Seedlings >/=50cm & <2.5cm DBH",
+           legend.title = "Treatment Type",
+           line.size = 1,
+           value.offset = 'Treat_Type',
+           ci.lvl = NA,
+           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")) 
 
+# LS SO plot 2 ------------------- BA_10m vs. TT
+plot_model(so.ls6, 
+                       type = 'pred', 
+                       terms = c('l.other', 'Treat_Type'),
+                       axis.title = c("Total Basal Area per 10 square meters (log transformed)", "Total Count of Shrub Oak"),
+                       title = "Predicted Counts of Shrub Oak \n Seedlings >/=50cm & <2.5cm DBH",
+           legend.title = "Treatment Type",
+           line.size = 1,
+           value.offset = 'Treat_Type',
+           ci.lvl = NA,
+           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")) 
 
+# LS SO plot 3 ------------------- l.mineral vs. TT
+plot_model(so.ls6, 
+                       type = 'pred', 
+                       terms = c('l.other', 'Treat_Type'),
+                       axis.title = c("Amount of exposed mineral soil (log transformed)", "Total Count of Shrub Oak"),
+                       title = "Predicted Counts of Shrub Oak \n Seedlings >/=50cm & <2.5cm DBH",
+           legend.title = "Treatment Type",
+           line.size = 1,
+           value.offset = 'Treat_Type',
+           ci.lvl = NA,
+           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")) 
+```
 

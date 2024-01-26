@@ -10,7 +10,7 @@ Hidden below is code for importing the data set and log transforming variables. 
 I did create and test models without treatment type, but they always have higher AIC and worse model fit that those with (probably due to the control category...)  
 
 ##### Variables investigated:
-- **Treat_Type** - treatment type (1m^2^)
+- **Treat_Type** - treatment type
 - **PIRI** - pitch pine seedling count (10m^2^)
 - **SO** - shrub oak seedling count (10m^2^)
 - **other** - other seedling count (10m^2^)
@@ -22,7 +22,7 @@ I did create and test models without treatment type, but they always have higher
 - **TFT** - time between treatment and sampling (used as an offset)
 - **Site/Plot_No** - random effect of plots within sites
 
-Variables are log transformed (l. or _l)
+*Variables are log transformed (l. or _l)*
 
 ## Pitch Pine Regeneration
 
@@ -108,10 +108,11 @@ Issues with quantiles, but still can be a good/useful model despite these issues
 
 
 ### Pairwise with treatment type
+##### These are really rates due to the offset for time
 ```{r}
 emmeans(ls.m19, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
 ```
-
+##### Only harvest is significantly different than contol
 
 
 ### Graph pitch pine models
@@ -169,37 +170,38 @@ This includes QUIL (scrub oak) & QUPR (dwarf chinkapin oak)
 
 ### Large seedling shrub oak model
   - Poisson, genpois, & compois models all fail and are underdispersed. Gaussian dispersion also fails. The student t distro seems to work ...
+  - Model versions suggest that total veg cover is important. However, shrub oak can often make up a significant portion of understory veg cover. So, of course shrub oak abundance increases as total veg cover increases. Therefore, it is dropped from the model for issues of collineraity. 
 ```{r}
 ls.all3$BA_10m <- (ls.all3$BA_HA/1000)
 ls.all3$l.BA_10m <- log(ls.all3$BA_10m + 1)
 
-so.ls4 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.BA_10m + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+so.ls6 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.BA_10m + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
                  data = ls.all3,
                  family = t_family)
-summary(so.ls4)
+summary(so.ls6)
 ```
 
 ### Check model fit
 ```{r}
-so.ls4_sr <- simulateResiduals(so.ls4, n = 1000, plot = TRUE)
-testResiduals(so.ls4_sr)
+so.ls6_sr <- simulateResiduals(so.ls6, n = 1000, plot = TRUE)
+testResiduals(so.ls6_sr)
 ```
 A little concerned about the DHARMa nonparametric dispersion test graph
 
 ### Pairwise with treatment type
 ```{r}
-emmeans(so.ls4, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
+emmeans(so.ls6, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
 ```
-I think this advocates for mowing, which makes sense
+#### Seems like MowRx is signficantly different from all other categories
 
 
 ### Graph shrub oak model
 ```{r}
 # LS SO plot 1 ------------------- other vs. TT
-plot_model(so.ls4, 
+plot_model(so.ls6, 
                        type = 'pred', 
                        terms = c('l.other', 'Treat_Type'),
-                       axis.title = c("Other small seedling counts (log transformed)", "Total Count of Pitch Pine"),
+                       axis.title = c("Other small seedling counts (log transformed)", "Total Count of Shrub Oak"),
                        title = "Predicted Counts of Shrub Oak \n Seedlings >/=50cm & <2.5cm DBH",
            legend.title = "Treatment Type",
            line.size = 1,
@@ -208,10 +210,10 @@ plot_model(so.ls4,
            colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")) 
 
 # LS SO plot 2 ------------------- BA_10m vs. TT
-plot_model(so.ls4, 
+plot_model(so.ls6, 
                        type = 'pred', 
                        terms = c('l.other', 'Treat_Type'),
-                       axis.title = c("Total Basal Area per 10m^2^ (log transformed)", "Total Count of Shrub Oak"),
+                       axis.title = c("Total Basal Area per 10 square meters (log transformed)", "Total Count of Shrub Oak"),
                        title = "Predicted Counts of Shrub Oak \n Seedlings >/=50cm & <2.5cm DBH",
            legend.title = "Treatment Type",
            line.size = 1,
@@ -220,7 +222,7 @@ plot_model(so.ls4,
            colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")) 
 
 # LS SO plot 3 ------------------- l.mineral vs. TT
-plot_model(so.ls4, 
+plot_model(so.ls6, 
                        type = 'pred', 
                        terms = c('l.other', 'Treat_Type'),
                        axis.title = c("Amount of exposed mineral soil (log transformed)", "Total Count of Shrub Oak"),
@@ -230,21 +232,8 @@ plot_model(so.ls4,
            value.offset = 'Treat_Type',
            ci.lvl = NA,
            colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")) 
-
-# LS SO plot 4 ------------------- l.veg total vs. TT
-plot_model(so.ls4, 
-                       type = 'pred', 
-                       terms = c('l.Veg_Total', 'Treat_Type'),
-                       axis.title = c("Average Understory Vegetation Cover (log transformed)", "Total Count of Shrub Oak"),
-                       title = "Predicted Counts of Shrub Oak \n Seedlings >/=50cm & <2.5cm DBH",
-           legend.title = "Treatment Type",
-           line.size = 1,
-           value.offset = 'Treat_Type',
-           ci.lvl = NA,
-           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")) 
 ```
 
-### Plot 4 is funny, because they make up the understory, so of course as it increases, so do they. Probably drop due to collinearity
 
 
 

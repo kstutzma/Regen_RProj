@@ -11,18 +11,18 @@ I did create and test models without treatment type, but they always have higher
 
 ##### Variables investigated:
 - **Treat_Type** - treatment type
-- **PIRI** - pitch pine seedling count
-- **SO** - shrub oak seedling count
-- **other** - other seedling count
+- **PIRI** - pitch pine seedling count (1m^2^)
+- **SO** - shrub oak seedling count (1m^2^)
+- **other** - other seedling count (1m^2^)
 - **BA_HA** - basal area per hectare
 - **BA_piri** - pitch pine basal area per hectare
-- **Mineral** - exposed mineral soil
-- **avgLD** - average leaf litter depth
-- **Veg_Total** - total understory plant cover
+- **Mineral** - exposed mineral soil (1m^2^)
+- **avgLD** - average leaf litter depth (1m^2^)
+- **Veg_Total** - total understory plant cover (1m^2^)
 - **TFT** - time between treatment and sampling (used as an offset)
 - **Site/Plot_No** - random effect of plots within sites
 
-Variables are log transformed (l. or _l)
+*Variables are log transformed (l. or _l)*
 
 ## Pitch Pine Regeneration
 
@@ -205,12 +205,15 @@ so.ss11_sr <- simulateResiduals(so.ss11, n = 1000, plot = TRUE)
 testResiduals(so.ss11_sr)
 testQuantiles(so.ss11_sr) #quantiles are not good
 ```
-From what I've read, models with significant quantile deviations can still be good models / used. There are some distribution issues. I've switched to genpois distro here, which just barely gets the job done. Models using poisson or com-pois distros are underdispersed. *Additional thoughts appreciated*
+- From what I've read, models with significant quantile deviations can still be good models / used. There are some distribution issues. I've switched to genpois distro here, which just barely gets the job done. Models using poisson or com-pois distros are underdispersed. *Additional thoughts appreciated*
+- Could try the t distro, depending on response from Maria
 
 ### Pairwise for treatment type
 ```{r}
 emmeans(so.ss11, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
 ```
+#### MowRX, FallRx, and SpringRx significantly different from Control.
+
 
 ### Graph shrub oak seedling model
 ```{r, warning=FALSE, message=FALSE, fig.align='center'}
