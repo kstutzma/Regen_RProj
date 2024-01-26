@@ -22,6 +22,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 #### [Small seedling GLMM code](Markdown/SS_LR.html)
 
-#### [Large seedling GLMM code](Mardown/LS_LR.html)
+#### [Large seedling GLMM code](Markdown/LS_LR.html)
 
-#### [Sapling GLMM code](Mardown/SA_LR.html)
+#### [Sapling GLMM code](Markdown/SA_LR.html)
