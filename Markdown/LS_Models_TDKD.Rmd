@@ -169,34 +169,39 @@ plot_model(ls.m19,
 This includes QUIL (scrub oak) & QUPR (dwarf chinkapin oak)
 
 ### Large seedling shrub oak model
-  - Poisson, genpois, & compois models all fail and are underdispersed. Gaussian dispersion also fails. The student t distro seems to work ...
+  - Poisson, nbinom, genpois, & compois models all fail due to underdispersion. Some have issues with zero inflation as well. Gaussian dispersion also fails due to issues with uniformity. 
   - Model versions suggest that total veg cover is important. However, shrub oak can often make up a significant portion of understory veg cover. So, of course shrub oak abundance increases as total veg cover increases. Therefore, it is dropped from the model for issues of collineraity. 
 ```{r}
 ls.all3$BA_10m <- (ls.all3$BA_HA/1000)
 ls.all3$l.BA_10m <- log(ls.all3$BA_10m + 1)
+```
 
+### T distro model
+```{r, eval=FALSE}
 so.ls6 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.BA_10m + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
                  data = ls.all3,
                  family = t_family)
 summary(so.ls6)
 ```
 
+
+
 ### Check model fit
-```{r}
+```{r, eval=FALSE}
 so.ls6_sr <- simulateResiduals(so.ls6, n = 1000, plot = TRUE)
 testResiduals(so.ls6_sr)
 ```
 A little concerned about the DHARMa nonparametric dispersion test graph
 
 ### Pairwise with treatment type
-```{r}
+```{r, eval=FALSE}
 emmeans(so.ls6, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
 ```
 #### Seems like MowRx is signficantly different from all other categories
 
 
 ### Graph shrub oak model
-```{r}
+```{r, eval=FALSE}
 # LS SO plot 1 ------------------- other vs. TT
 plot_model(so.ls6, 
                        type = 'pred', 

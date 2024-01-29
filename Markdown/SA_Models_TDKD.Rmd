@@ -189,6 +189,7 @@ so.sa2 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.BA_pir
 summary(so.sa2) # 363.4
 
 so.sa2_sr <- simulateResiduals(so.sa2, n = 1000, plot = TRUE)
+testZeroInflation(so.sa2_sr) #passes
 testResiduals(so.sa2_sr) #passes
 testZeroInflation(so.sa2_sr) #passes
 ```

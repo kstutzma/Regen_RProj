@@ -1,5 +1,5 @@
 ---
-title: "Initial webpage set up"
+title: "Pitch Pine Project R Code webpage repo"
 author: "Kathleen Stutzman"
 date: "2023-10-02"
 output: html_document
