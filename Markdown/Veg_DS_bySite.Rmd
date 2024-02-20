@@ -1,5 +1,5 @@
 ---
-title: "Veg descriptive statistics by site"
+title: "Veg descriptive statistics by site & treatment type"
 author: "Kathleen Stutzman"
 date: "2024-02-20"
 output: html_document
@@ -30,6 +30,7 @@ source("Functions/species_richness.R")
 source("Functions/shannon_index.R")
 source("Functions/spec_num.R")
 source("Functions/Pielous_J.R")
+source("Functions/asnum_keepname.R")
 ```
 
 Source veg data:
@@ -62,6 +63,8 @@ veg_site <- veg2 %>%
 #reattach site info and reorder
 veg_merge1 <- merge(veg_site, veg_wider, by = "Plot_No") %>% 
    select(Site, Plot_No, everything())
+
+rm(veg_wider)
 ```
 
 Create df without plot numbers; then split df by site
@@ -251,6 +254,105 @@ print(veg_sd)
 ```
 
 
+#### Averages by treatment type:
+Using information calculated by site to create an average value for each treatment type
+```{r}
+#species richness data is numbers but not numeric, so convert to numeric so I can find the mean
+veg_sd2 <- as.data.frame(asnum_keepname(veg_sd))
+
+#checking
+is.numeric(veg_sd2$chao)
+
+#pull out site and treatment type data, so it can be connected with DS data
+trt_meta <- veg_meta %>% 
+  select(Site, Treat_Type) %>% 
+  distinct(Site, .keep_all = T) %>% 
+  column_to_rownames(var = "Site")
+
+#merge and make df ready to split
+veg_trt <- merge(veg_sd2, trt_meta, by = "row.names")  %>% 
+  select(Treat_Type, everything()) %>%
+  select(-Row.names)
+
+#split dataframe by treat type
+treat_split <- split(veg_trt[-1], veg_trt$Treat_Type)
+
+
+#find means for each category by treatment type
+z <- as.data.frame(sapply(treat_split, colwise(mean)))
+
+#transpose
+DS_byTT <- as.data.frame(t(z))
+
+#the applys? turn the data to not numeric? not sure exactly. This converts the dataframe to numeric
+DS_byTT2 <- as.data.frame(asnum_keepname(DS_byTT))
+```
+
+#### Print Treatment Type DS
+```{r}
+print(DS_byTT2)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r, include=FALSE, eval=FALSE}
+# hidden code that i ended up not using due to vegan and partitioning, but don't want to lose -------------------
+############################### lots of useless(?) code - replaced by understanding partioning
+
+#starting by converting data set to presence/absence
+
+#need to fix names
+#veg_merge2 <- veg_merge2 %>% 
+  select(-Site)
+
+vm_rn <- data.frame(veg_merge2[,-1], row.names=veg_merge2[,1])
+
+vm_rn[vm_rn > 0] <- 1
+
+vm_rn <- rownames_to_column(vm_rn, var = "Plot_No")
+
+veg_pa <- merge(veg_site, vm_rn, by = "Plot_No")
+#holy shit. i did that
+
+spc_sumbysite <- veg_pa %>% 
+  group_by(Site) %>% 
+  summarise_at(vars(QUCO:HECA), sum)
+
+#RICHNESS
+richness <- ddply(spc_sumbysite, ~Site, function(x) {
+  data.frame(Richness=sum(x[-1]>0))
+}) # we got it. AMEN baby. this was terrible.
+
+#ABUNDANCE - not sure how useful as this is % cover and not individuals counted, but ok
+abun1 <- veg_merge1 %>%
+  group_by(Site) %>% 
+  summarise_at(vars(QUCO:HECA), mean)
+
+abundance <- ddply(abun1, ~Site, function(x) {
+  data.frame(Abundance = sum(x[-1]))
+})
+
+#################################################
+
+
+
+
+
+```
 
 
 

@@ -18,6 +18,7 @@ source("Functions/species_richness.R")
 source("Functions/shannon_index.R")
 source("Functions/spec_num.R")
 source("Functions/Pielous_J.R")
+source("Functions/asnum_keepname.R")
 
 #start by sourcing the veg script
 source("Scripts/Veg_Data.R")
@@ -73,6 +74,8 @@ veg_merge1 <- merge(veg_site, veg_wider, by = "Plot_No")
 veg_merge2 <- veg_merge1 %>% 
   select(Site, Plot_No, everything())
 
+rm(veg_wider)
+
 #what information do I want site by site?
 
 # observed species richness (jackknife estimates) - specpool(df, smallsample = T)
@@ -110,29 +113,6 @@ veg_merge2 <- veg_merge1 %>%
 
 ############################### lots of useless(?) code - replaced by understanding partioning
 
-#starting by converting data set to presence/absence
-
-#need to fix names
-#veg_merge2 <- veg_merge2 %>% 
-  select(-Site)
-
-vm_rn <- data.frame(veg_merge2[,-1], row.names=veg_merge2[,1])
-
-vm_rn[vm_rn > 0] <- 1
-
-vm_rn <- rownames_to_column(vm_rn, var = "Plot_No")
-
-veg_pa <- merge(veg_site, vm_rn, by = "Plot_No")
-#holy shit. i did that
-
-spc_sumbysite <- veg_pa %>% 
-  group_by(Site) %>% 
-  summarise_at(vars(QUCO:HECA), sum)
-
-#RICHNESS
-richness <- ddply(spc_sumbysite, ~Site, function(x) {
-  data.frame(Richness=sum(x[-1]>0))
-}) # we got it. AMEN baby. this was terrible.
 
 #ABUNDANCE - not sure how useful as this is % cover and not individuals counted, but ok
 abun1 <- veg_merge1 %>%
@@ -329,6 +309,57 @@ rm(m1,
    m2, 
    m3, 
    m4)
+
+
+
+# will probably end up averaging this by treatment type; also exporting to excel files....
+
+veg_sd2 <- as.data.frame(asnum_keepname(veg_sd))
+  
+
+is.numeric(veg_sd2$chao)
+
+trt_meta <- veg_meta %>% 
+  select(Site, Treat_Type) %>% 
+  distinct(Site, .keep_all = T) %>% 
+  column_to_rownames(var = "Site")
+
+veg_trt <- merge(veg_sd2, trt_meta, by = "row.names")  %>% 
+  # select(Treat_Type, everything()) %>% 
+  # select(-Row.names)
+  #column_to_rownames(var = "Row.names") %>%
+  select(Treat_Type, everything()) %>%
+  select(-Row.names)
+
+#split dataframe by treat type
+treat_split <- split(veg_trt[-1], veg_trt$Treat_Type)
+
+
+z <- as.data.frame(sapply(treat_split, colwise(mean)))
+
+DS_byTT <- as.data.frame(t(z))
+
+DS_byTT2 <- as.data.frame(round(asnum_keepname(DS_byTT)), digits = 3) # i'd love to round this but again it is a nightmare to keep the row labels
+
+rm(DS_byTT2)
+
+is.numeric(DS_byTT2$chao)
+
+DS_byTT2 <- modify_if(DS_byTT2, ~is.numeric(.), ~round(., 3))
+
+#woof  - that took a while 
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

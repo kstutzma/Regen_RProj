@@ -13,7 +13,7 @@
 
 <meta name="date" content="2024-02-20" />
 
-<title>Veg descriptive statistics by site</title>
+<title>Veg descriptive statistics by site &amp; treatment type</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -350,7 +350,8 @@ display: none;
 
 
 
-<h1 class="title toc-ignore">Veg descriptive statistics by site</h1>
+<h1 class="title toc-ignore">Veg descriptive statistics by site &amp;
+treatment type</h1>
 <h4 class="author">Kathleen Stutzman</h4>
 <h4 class="date">2024-02-20</h4>
 
@@ -373,7 +374,8 @@ library(adespatial)</code></pre>
 source(&quot;Functions/species_richness.R&quot;)
 source(&quot;Functions/shannon_index.R&quot;)
 source(&quot;Functions/spec_num.R&quot;)
-source(&quot;Functions/Pielous_J.R&quot;)</code></pre>
+source(&quot;Functions/Pielous_J.R&quot;)
+source(&quot;Functions/asnum_keepname.R&quot;)</code></pre>
 <p>Source veg data:</p>
 <pre class="r"><code>#start by sourcing the veg script
 source(&quot;Scripts/Veg_Data.R&quot;)
@@ -400,7 +402,9 @@ veg_site &lt;- veg2 %&gt;%
 
 #reattach site info and reorder
 veg_merge1 &lt;- merge(veg_site, veg_wider, by = &quot;Plot_No&quot;) %&gt;% 
-   select(Site, Plot_No, everything())</code></pre>
+   select(Site, Plot_No, everything())
+
+rm(veg_wider)</code></pre>
 <p>Create df without plot numbers; then split df by site</p>
 <pre class="r"><code>#remove plot number
 veg_merge3 &lt;- veg_merge1 %&gt;% 
@@ -1132,6 +1136,62 @@ rm(m1,
 ## TNCW_14            0.6390657   0.21614942   0.022314502  0.028654217
 ## TNCW_18            0.6617116   0.17340440   0.015703915  0.022176477
 ## TNCW_7SW           0.7016679   0.11415434   0.010936607  0.021115719</code></pre>
+<div id="averages-by-treatment-type" class="section level4">
+<h4>Averages by treatment type:</h4>
+<p>Using information calculated by site to create an average value for
+each treatment type</p>
+<pre class="r"><code>#species richness data is numbers but not numeric, so convert to numeric so I can find the mean
+veg_sd2 &lt;- as.data.frame(asnum_keepname(veg_sd))
+
+#checking
+is.numeric(veg_sd2$chao)</code></pre>
+<pre><code>## [1] TRUE</code></pre>
+<pre class="r"><code>#pull out site and treatment type data, so it can be connected with DS data
+trt_meta &lt;- veg_meta %&gt;% 
+  select(Site, Treat_Type) %&gt;% 
+  distinct(Site, .keep_all = T) %&gt;% 
+  column_to_rownames(var = &quot;Site&quot;)
+
+#merge and make df ready to split
+veg_trt &lt;- merge(veg_sd2, trt_meta, by = &quot;row.names&quot;)  %&gt;% 
+  select(Treat_Type, everything()) %&gt;%
+  select(-Row.names)
+
+#split dataframe by treat type
+treat_split &lt;- split(veg_trt[-1], veg_trt$Treat_Type)
+
+
+#find means for each category by treatment type
+z &lt;- as.data.frame(sapply(treat_split, colwise(mean)))
+
+#transpose
+DS_byTT &lt;- as.data.frame(t(z))
+
+#the applys? turn the data to not numeric? not sure exactly. This converts the dataframe to numeric
+DS_byTT2 &lt;- as.data.frame(asnum_keepname(DS_byTT))</code></pre>
+</div>
+<div id="print-treatment-type-ds" class="section level4">
+<h4>Print Treatment Type DS</h4>
+<pre class="r"><code>print(DS_byTT2)</code></pre>
+<pre><code>##           Species     chao   chao.se    jack1 jack1.se    jack2     boot
+## Control  16.72727 25.26697  9.197177 22.41107 2.910847 25.33444 19.29166
+## FallRx   17.00000 29.85718 14.787903 22.15631 2.880715 24.91506 19.34355
+## Harvest  11.66667 16.19983  5.382170 14.65118 1.839634 16.24356 13.04196
+## MowRx    24.00000 38.62945 13.435117 33.11540 3.942209 38.54840 27.98926
+## SpringRx 20.44444 41.75321 20.842223 28.97475 3.862330 34.40839 24.12478
+##           boot.se         n S.I._Mean   S.I._SD Spc.Num_Mean Spc.Num_SD
+## Control  1.680008 10.636364  1.203229 0.3726515     5.697383   1.800755
+## FallRx   1.672775 11.333333  1.344766 0.3091786     6.275499   1.883640
+## Harvest  1.093705  9.500000  1.094276 0.3754267     4.705219   1.566635
+## MowRx    2.059717 11.333333  1.383972 0.3767572     7.323232   1.964687
+## SpringRx 1.983378  9.666667  1.314602 0.3281250     6.249046   1.645218
+##          Pielous_J_mean Pielous_J_SD richness.lcbd replace.lcbd
+## Control       0.7329871    0.1455960    0.02245772   0.02401150
+## FallRx        0.7489876    0.1179252    0.01219184   0.02219380
+## Harvest       0.7471170    0.1544901    0.02895786   0.01471323
+## MowRx         0.7123887    0.1609741    0.02127836   0.02163559
+## SpringRx      0.7392147    0.1375988    0.02379456   0.02091365</code></pre>
+</div>
 </div>
 
 
