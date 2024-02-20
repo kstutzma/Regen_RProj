@@ -501,7 +501,6 @@ AIC(so.ls8) # 3383.4
 lrtest(so.ls8, so.ls6) # p > 0.001
 ```
 
-
 Seemingly best models
 ```{r, eval=FALSE}
 so.ls5 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
@@ -548,12 +547,6 @@ AIC(so.ls6a) #3275.5
 so.ls6a_sr <- simulateResiduals(so.ls6a, n = 1000, plot = T)
 testResiduals(so.ls6a_sr) # fails dispersion
 ```
-
-
-
-
-
-
 
 ### testing other distros
 ```{r, eval=FALSE}
@@ -1264,12 +1257,41 @@ testZeroInflation(m4_sr) #passes
 testResiduals(m4_sr) #fails dispersion
 ```
 
-
-
 ### I cannot find a model that works. 
 
 
 
+```{r}
+so.ls1 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 ziformula = ~1,
+                 family = poisson-lognormal)
+AIC(so.ls1)
+
+overdisp_fun <- function(model) {
+    rdf <- df.residual(model)
+    rp <- residuals(model,type="pearson")
+    Pearson.chisq <- sum(rp^2)
+    prat <- Pearson.chisq/rdf
+    pval <- pchisq(Pearson.chisq, df=rdf, lower.tail=FALSE)
+    c(chisq=Pearson.chisq,ratio=prat,rdf=rdf,p=pval)
+}
+
+
+overdisp_fun(so.ls1)
+
+
+library(lme4)
+mod2 <- glmer(Shrub_Oak ~ Treat_Type + l.other + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
+              data = ls.all3,
+              family = poisson)
+
+mod2_sr <- simulateResiduals(mod2, n = 1000, plot = T)
+testZeroInflation(mod2_sr)
+testDispersion(mod2_sr)
+
+#still bad, can't find this poisson log normal family distro of which the literature speaks - unless its the quasipoisson distro, which says can't work with a glmer....
+```
 
 
 

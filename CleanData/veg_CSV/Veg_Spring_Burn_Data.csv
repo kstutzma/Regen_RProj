@@ -23,14 +23,14 @@ RPD2_B1,LI,206,GABA,Gaylussacia baccata,3
 RPD2_B1,LI,206,VAPA,Vaccinium pallidum,3
 RPD2_B1,LI,206,CAUN2,Carex sp.,2
 RPD2_B1,LI,206,QUAL,Quercus alba,1
-RPD2_B1,LI,206,DISp1,Dichanthelium sp.,2
+RPD2_B1,LI,206,DISP,Dichanthelium sp.,2
 RPD2_B1,LI,208,QUCO,Quercus coccinea,3
 RPD2_B1,LI,208,COPE,Comptonia peregrina,6
 RPD2_B1,LI,208,GABA,Gaylussacia baccata,4
 RPD2_B1,LI,208,VAPA,Vaccinium pallidum,2
 RPD2_B1,LI,208,CAPE,Carex pensylvanica,2
 RPD2_B1,LI,208,POUN3,Poaceae sp. 3,2
-RPD2_B1,LI,208,DISp2,Dichanthelium sp.,1
+RPD2_B1,LI,208,DISP,Dichanthelium sp.,1
 RPD2_B1,LI,208,APAN,Apocynum androsaemifolium,2
 RPD2_B1,LI,210,PIRI,Pinus rigida,1
 RPD2_B1,LI,210,QUIL,Quercus ilicifolia,3
@@ -54,7 +54,7 @@ RPD2_B6,LI,173,VAPA,Vaccinium pallidum,3
 RPD2_B6,LI,173,QUAL,Quercus alba,8
 RPD2_B6,LI,173,PHAM,Phytolacca americana,1
 RPD2_B6,LI,173,COPE,Comptonia peregrina,1
-RPD2_B6,LI,173,DISp1,Dichanthelium sp.,1
+RPD2_B6,LI,173,DISP,Dichanthelium sp.,1
 RPD2_B6,LI,173,POUN7,Poacaea sp. 7,1
 RPD2_B6,LI,175,ERHI,Erechtites hieracilfolius,2
 RPD2_B6,LI,175,QUAL,Quercus alba,4
@@ -83,12 +83,12 @@ RPD2_B6,LI,183,QUIL,Quercus ilicifolia,3
 RPD2_B6,LI,183,VAPA,Vaccinium pallidum,3
 RPD2_B6,LI,183,ERHI,Erechtites hieracilfolius,1
 RPD2_B6,LI,183,DEPU,Dennstaedtia punctilobula,1
-RPD2_B6,LI,183,DISp1,Dichanthelium sp.,1
+RPD2_B6,LI,183,DISP,Dichanthelium sp.,1
 RPD2_B6,LI,183,POUN8,Poacaea sp. 8,1
 RPD2_B6,LI,185,PIRI,Pinus rigida,1
 RPD2_B6,LI,185,QUCO,Quercus coccinea,7
 RPD2_B6,LI,185,PHAM,Phytolacca americana,2
-RPD2_B6,LI,185,DISp1,Dichanthelium sp.,4
+RPD2_B6,LI,185,DISP,Dichanthelium sp.,4
 RPD2_B6,LI,185,VAPA,Vaccinium pallidum,3
 RPD2_B6,LI,185,DEPU,Dennstaedtia punctilobula,2
 RPD2_B6,LI,185,CAPE,Carex pensylvanica,2

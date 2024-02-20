@@ -207,7 +207,6 @@ testResiduals(so.ss11_sr) #passes uniformity & dispersion
 testQuantiles(so.ss11_sr) #quantiles are not good
 ```
 - From what I've read, models with significant quantile deviations can still be good models / used. There are some distribution issues. I've switched to genpois distro here, which just barely gets the job done. Models using poisson or com-pois distros are underdispersed. *Additional thoughts appreciated*
-- Could try the t distro, depending on response from Maria
 
 ### Pairwise for treatment type
 ```{r}
