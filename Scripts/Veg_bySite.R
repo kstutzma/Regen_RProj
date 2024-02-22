@@ -1,5 +1,5 @@
 # Stutzman
-# Script to import veg, create site average, preform DS, reduce to species that occur in at least 5% of plots
+# Script to import veg, create a site average and perform DS (including richness, diversity, number, evenness, and beta diversity)
 #  2024-02-14
 
 library(ggplot2)
@@ -19,6 +19,7 @@ source("Functions/shannon_index.R")
 source("Functions/spec_num.R")
 source("Functions/Pielous_J.R")
 source("Functions/asnum_keepname.R")
+
 
 #start by sourcing the veg script
 source("Scripts/Veg_Data.R")

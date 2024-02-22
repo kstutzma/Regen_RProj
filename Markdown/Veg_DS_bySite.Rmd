@@ -5,7 +5,7 @@ date: "2024-02-20"
 output: html_document
 ---
 
-This script calculates species richness, species diversity (Shannon Index), species numbers, evenness, and beta diversity for veg data
+This script creates an average for each site and then calculates species richness, species diversity (Shannon Index), species numbers, evenness, and beta diversity for veg data. 
 
 
 Libraries:

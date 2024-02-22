@@ -4,283 +4,364 @@
 
 # the plan is to run this a pure r code before cleaning it up and making it a markdown script to go on-line. 
 
-# would like to pivot wider and see how that works for the many species zeros...
+# I will pivot data wider, fill implied zeros, reduce to species that occur in 5% of plots and then standardize columns
 
-#then generate some descriptive stats on species abundance, diversity, etc - using both treatment type and region
-
+# libraries -------------------
 library(ggplot2)
 library(vegan)
-library(devtools)
 library(ggvegan)
+#library(ggpubr) #this masks mutate from plyr
 library(tidyverse)
+# library(plyr)
+# library(dplyr)
+# library(adespatial)
+
+# source functions -------------------
 
 
-#start by sourcing the veg script
+
+# start by sourcing the veg script -------------------
 source("Scripts/Veg_Data.R")
+rm(veg3)
 
-#work off veg2
 
-#divide into two dataframes to merge back together later? I don't think they merge back together - as I need two matrix to compare for NMDS
-
-#if i want to look at TT and Region for DS, I may need to sort those first here and then run DS on each individual
-
+#split overall data from veg cover
 veg_meta <- veg2 %>% 
   select(Region, Treat_Type, Site, Plot_No) %>% 
   distinct(Plot_No, .keep_all = TRUE)
 
+#pivot veg data wider and fill in zeros
 veg_wider <- veg2 %>% 
   select(Plot_No, Species_Code, SP_Cover_midpoint) %>% 
   group_by(Plot_No) %>% 
   pivot_wider(names_from = Species_Code, values_from = SP_Cover_midpoint, values_fill = 0) 
 
-#yes! this worked
+#create dataframe of site and plot
+veg_site <- veg2 %>% 
+  select(Site, Plot_No) %>% 
+  group_by(Site) %>% 
+  distinct(Plot_No, .keep_all = TRUE)
 
 
-veg_merge <- merge(veg_meta, veg_wider, by = "Plot_No")
+merveg <- merge(veg_site, veg_wider, by = "Plot_No") %>% 
+  select(-Plot_No)
 
 #we've got 165 species (re-check post unidentified species list work)
 
 # I'll need to go back and deal with unknowns, condense ID-ed grasses by genus etc, but for now we can play around a little
 
 
-SAC <- specaccum(comm = veg_wider, method = "random", permutations = 1000)
-
-plot(SAC)
-boxplot(SAC) #looks weird. Would like to be able to plot by region or treat type, which she had in that video...
-
-SPC_num <- specnumber(veg_wider)
-mean(SPC_num) #7.3
-sd(SPC_num) #2.5
-median(SPC_num) #7
-fivenum(SPC_num) #min 2, 1Q 5, median 7, 3Q 9, max 17
-
-S.I <- diversity(veg_wider, index = "shannon")
-
-plot(S.I)
-mean(S.I)   # 0.47
-sd(S.I)     # 0.22
-
-x <- specpool(veg_wider, smallsample = T)
-# i want to look at by treat type and this is all pooled. seems like i might need to filter and create individual and then overlay them. Seems difficult, but I am interested as to whether these vary by treatment type and region
 
 
+
+
+
+# source other files ----------------------
+
+time_since <- read_csv("CleanData/Treat_Year_Data.csv") # this is a dataframe with one row for each site
+
+
+# make sure ggpubs not on, or this won't load
+source("Scripts/Add_BA.R") #work on prism_BA, has total BA figures - do I need to change these as they were collected on a different scale?
+
+prism1 <- prism_BA %>% 
+  select(Plot_No, BA_HA, PIRI.BA_HA)
+
+prism2 <- merge(prism1, veg_site, by = "Plot_No") %>% 
+  select(-Plot_No) %>% 
+  select(Site, everything())
+
+prism4veg <- prism2 %>% 
+  group_by(Site) %>% 
+  summarise_at(vars(BA_HA:PIRI.BA_HA), mean)
+
+rm(prism_BA, prism1, prism2)
+
+
+source("Scripts/Ground_Data.R") #work on ground 3
+
+ground4 <- ground3 %>% 
+  select(Plot_No, Lichen, Moss, Rock, Mineral_Soil, Wood, Litter_Duff, avgLD)
+
+ground5 <- merge(ground4, veg_site, by = "Plot_No") %>% 
+  select(Site, everything()) %>% 
+  select(-c(Plot_No))
+
+ground4veg <- ground5 %>% 
+  group_by(Site) %>% 
+  summarise_at(vars(Lichen:avgLD), mean)
+
+rm(ground3, ground4, ground)
+
+
+vegmeta2 <- veg_meta %>% 
+  select(Region, Treat_Type, Site) %>% 
+  distinct(Site, .keep_all = TRUE)
+
+# now merge them (may have to think about relativization for BA numbers at some point - too hard currently)
+
+vm1 <- merge(vegmeta2, time_since, by = "Site")
+
+vm2 <- merge(vm1, ground4veg, by = "Site")
+
+meta.data_veg <- merge(vm2, prism4veg, by = "Site") %>% 
+  select(-c(Inventory_Yr, Treat_Yr))
+
+
+rm(vm2, vm1, time_since, ground4veg, prism4veg)
+
+
+
+
+
+
+
+#rule of thumb is less than 5% of plots. There are 499 plots. 5% of that is 25. that would leave me with 26 species
+
+#THIS IS 20 plots or more, the last 5 are under 25 plots but above 20
+veg_5PERC <- veg_wider %>% 
+  select(Plot_No,
+         QUIL,
+         GAPR,
+         VAPA,
+         CAPE,
+         GABA,
+         VAAN,
+         PTAQ,
+         RUSP,
+         KAAN,
+         PIRI,
+         ACRU,
+         LYQU,
+         QUCO,
+         MELI,
+         CEOR,
+         COPE,
+         PRSE,
+         QUPR,
+         PAQU,
+         CEAM,
+         QUAL,
+         PIST,
+         ARME,
+         LYBO,
+         POUN11,
+         RHGL)
+# AMSP,
+# VAMY,
+# FRSP,
+# ARNU,
+# SMGL)
+
+
+z6 <- lapply(veg_5PERC, function(x){ length(which(x==0))})
+z7 <- as_data_frame(z6)
+(sum(z7[,2:27]))/(26*499)
+#still 80% zeros with 26 species. feels ouch...
+rm(z6, z7)
+
+
+
+
+# add site and lose plot number -------------------
+veg5 <- merge(veg_5PERC, veg_site) %>% 
+  select(-Plot_No) %>% 
+  select(Site, everything())
+
+veg5_avg <- veg5 %>% 
+  group_by(Site) %>% 
+  summarise_at(vars(QUIL:RHGL), mean) %>% 
+  column_to_rownames(var = "Site")
+
+rm(veg5, veg_5PERC)
+
+veg5_colsum <- as.data.frame(colSums(veg5_avg))
+# CEOR is bittersweet and is only found in APB
+# CEAM also an APB only, RHGL maybe too ... 
+
+# relativize data, dividing each cell by the column total (to bring common and rare species closer together) -------------------
+rel_veg5 <- decostand(veg5_avg, method = 'total', MARGIN = 2)
+
+#umm ... am i ready to run?
+
+
+# should look at Applied Community Ecology book, especially the decision tree stuff and start formally recording that business
+
+# I have imported the data; pared the data down to species that occur in at least 5% of plots (aka 25 plots); averaged the data by site; relativized the data by column total. I will be using city-block distances (i.e., Bray-Curtis). Not going to transform the data further at this point
+
+summary(rel_veg5)
+
+#starting with 6 dimensions
+test_6d <- metaMDS(rel_veg5, 
+                   distance = 'bray', 
+                   k = 6, 
+                   trymax = 20,
+                   autotransform = FALSE)
+# this works and yields stress values of 0.06
+
+# trying 5 dimensions
+test_5d <- metaMDS(rel_veg5, 
+                   distance = 'bray', 
+                   k = 5, 
+                   trymax = 20,
+                   autotransform = FALSE)
+# this works and yields stress values of 0.07 - 0.08
+
+# trying 4 dimensions
+test_4d <- metaMDS(rel_veg5, 
+                   distance = 'bray', 
+                   k = 4, 
+                   trymax = 20,
+                   autotransform = FALSE)
+# this works and yields stress values of 0.09 - 0.1
+
+# trying 3 dimensions
+test_3d <- metaMDS(rel_veg5, 
+                   distance = 'bray', 
+                   k = 3, 
+                   trymax = 20,
+                   autotransform = FALSE)
+# this works and yields stress values of 0.12
+
+# trying 2 dimensions
+test_2d <- metaMDS(rel_veg5, 
+                   distance = 'bray', 
+                   k = 2, 
+                   trymax = 20,
+                   autotransform = FALSE)
+# this works and yields stress values of 0.16 (and one of 0.25)
+
+# seems to me that 2 dimensions works well (below the 0.2 rule of thumb), but will keep 3 dimension as well
+
+rm(test_4d, test_5d, test_6d)
+
+# now I think I'll import all the other data, sum by site for quant data, to make a matrix of envr factors to compare against the NMDS
+
+
+
+
+
+ordiplot(test_2d, type = "t")
+# looks like region is the reason behind grouping ....
+
+#trying out ggvegan
+
+frt.nmds1 <- fortify(test_2d)
+
+
+
+
+
+
+fort<- fortify(test_2d)
+ggplot() +
+  geom_point(data = subset(fort, score =='sites'),
+             mapping = aes(x = NMDS1, y = NMDS2),
+             colour="black",
+             alpha=0.5)+
+  geom_segment(data = subset(fort, score == 'species'),
+               mapping = aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2),
+               arrow = arrow(length = unit(0.015, "npc"),
+                             type="closed"),
+               colour="darkgray",
+               linewidth =0.8)+
+  geom_text(data = subset(fort, score =='species'),
+            mapping = aes(label=label, x=NMDS1*1.1, y=NMDS2*1.1))+
+  geom_abline(intercept = 0,slope = 0,linetype="dashed", linewidth=0.8,colour="gray")+
+  geom_vline(aes(xintercept=0), linetype="dashed", linewidth=0.8, colour="gray")+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.line = element_line(colour = "black"))
+
+
+
+
+ggplot() +
+  geom_point(data = subset(fort, score =='sites'),
+             mapping = aes(x = NMDS1, y = NMDS2, color = meta.data_veg$Treat_Type),
+             alpha=0.5)+
+  geom_segment(data = subset(fort, score == 'species'),
+               mapping = aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2),
+               arrow = arrow(length = unit(0.015, "npc"),
+                             type="closed"),
+               colour="darkgray",
+               linewidth =0.8)
+
+
+ggplot() +
+  geom_point(data = subset(fort, score =='sites'),
+             mapping = aes(x = NMDS1, y = NMDS2, color = meta.data_veg$Region),
+             alpha=0.75)+
+  geom_segment(data = subset(fort, score == 'species'),
+               mapping = aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2),
+               arrow = arrow(length = unit(0.015, "npc"),
+                             type="closed"),
+               colour="darkgray",
+               linewidth =0.8)+
+  geom_text(data = subset(fort, score =='species'),
+            mapping = aes(label=label, x=NMDS1*1.1, y=NMDS2*1.1))+
+  geom_abline(intercept = 0,slope = 0,linetype="dashed", linewidth=0.8,colour="gray")+
+  geom_vline(aes(xintercept=0), linetype="dashed", linewidth=0.8, colour="gray")+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.line = element_line(colour = "black"))
+
+# region seems a pretty clear driver of understory composition. Can still run adonis tests etc on other values (permanova for treat or/and region)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+###################################
+# figured out why veg had one more plot than ground (typo)
+ground_plots <- ground3 %>% 
+  select(Plot_No)
+
+veg_plot <- veg_site %>% 
+  ungroup() %>% 
+  select(Plot_No)
+
+setdiff(veg_plot, ground_plots)
+#75 is different
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+####################
 #sort alphabetically column names (will need to pull plot to the front post)
 v_sort <- veg_wider[,order(colnames(veg_wider))]
 
 v_sort <- v_sort %>% 
   select(Plot_No, everything())
-
-#how many zeros in dataframe?
-z <- lapply(v_sort, function(x){ length(which(x==0))})
-
-z1 <- as_data_frame(z)
-
-(sum(z1[,2:166]))/(165*499)
-# is this is correct my data frame is 96% zeros...
-#wonder how this changes when I remove species with only one occurrence ... 
-
-rm(z, z1)
-
-n_distinct(v_sort$Plot_No) #says there are 499 distinct plots - I'm pretty sure there are only 498 in regen, which is weird and I should investigate
-
-
-# I think looking at all of this by treatment type is interesting, so I'm going to create these subgroups, as introducing the factor in the vegan code just doesn't seem possible
-
-c.veg <- veg2 %>% 
-  filter(Treat_Type == "Control") %>% 
-  select(Plot_No, Species_Code, SP_Cover_midpoint) %>% 
-  group_by(Plot_No) %>% 
-  pivot_wider(names_from = Species_Code, values_from = SP_Cover_midpoint, values_fill = 0)
-
-mrx.veg <- veg2 %>% 
-  filter(Treat_Type == 'MowRx') %>% 
-  select(Plot_No, Species_Code, SP_Cover_midpoint) %>% 
-  group_by(Plot_No) %>% 
-  pivot_wider(names_from = Species_Code, values_from = SP_Cover_midpoint, values_fill = 0)
-
-srx.veg <- veg2 %>% 
-  filter(Treat_Type == "SpringRx") %>% 
-  select(Plot_No, Species_Code, SP_Cover_midpoint) %>% 
-  group_by(Plot_No) %>% 
-  pivot_wider(names_from = Species_Code, values_from = SP_Cover_midpoint, values_fill = 0)
-
-frx.veg <- veg2 %>% 
-  filter(Treat_Type == "FallRx") %>% 
-  select(Plot_No, Species_Code, SP_Cover_midpoint) %>% 
-  group_by(Plot_No) %>% 
-  pivot_wider(names_from = Species_Code, values_from = SP_Cover_midpoint, values_fill = 0)
-
-h.veg <- veg2 %>% 
-  filter(Treat_Type == "Harvest") %>% 
-  select(Plot_No, Species_Code, SP_Cover_midpoint) %>% 
-  group_by(Plot_No) %>% 
-  pivot_wider(names_from = Species_Code, values_from = SP_Cover_midpoint, values_fill = 0)
-
-# Species accumulation curves by treatment type
-sac.c <- specaccum(comm = c.veg, method = "random", permutations = 1000)
-
-sac.mrx <- specaccum(comm = mrx.veg, method = "random", permutations = 1000)
-
-sac.srx <- specaccum(comm = srx.veg, method = "random", permutations = 1000)
-
-sac.frx <- specaccum(comm = frx.veg, method = "random", permutations = 1000)
-
-sac.h <- specaccum(comm = h.veg, method = "random", permutations = 1000)
-
-sac.t <- specaccum(comm = veg_wider, method = "random", permutations = 1000)
-
-#Here are the species accumulation curves by each treatment type, layered into one graph. Mowing has the most point and species
-plot(sac.t) #total
-lines(sac.mrx, lty=1, lwd=1, col="yellow") #mowrx
-lines(sac.srx,lty=1,lwd=1,col="green") #springrx
-lines(sac.c,lty=1,lwd=1,col="blue") #control
-lines(sac.frx,lty=1,lwd=1,col="red") #fallrx
-lines(sac.h,lty=1,lwd=1,col="purple") #harvest
-
-# rm(sac.srx,
-#    sac.frx,
-#    sac.c,
-#    sac.h,
-#    sac.mrx)
-
-#species richness
-SPC_c <- specnumber(c.veg)
-mean(SPC_c)
-sd(SPC_c) 
-median(SPC_c) 
-
-SPC_h <- specnumber(h.veg)
-mean(SPC_h)
-sd(SPC_h) 
-median(SPC_h) 
-
-SPC_mrx <- specnumber(mrx.veg)
-mean(SPC_mrx)
-sd(SPC_mrx) 
-median(SPC_mrx) 
-
-SPC_srx <- specnumber(srx.veg)
-mean(SPC_srx)
-sd(SPC_srx) 
-median(SPC_srx) 
-
-SPC_frx <- specnumber(frx.veg)
-mean(SPC_frx)
-sd(SPC_frx) 
-median(SPC_frx) 
-
-SPC_t <- specnumber(veg_wider)
-mean(SPC_t)
-sd(SPC_t) 
-median(SPC_t)
-
-#diversity index
-si.c <- diversity(c.veg, index = "shannon")
-mean(si.c)
-sd(si.c)
-
-si.h <- diversity(h.veg, index = "shannon")
-mean(si.h)
-sd(si.h)
-
-si.mrx <- diversity(mrx.veg, index = "shannon")
-mean(si.mrx)
-sd(si.mrx)
-
-si.srx <- diversity(srx.veg, index = "shannon")
-mean(si.srx)
-sd(si.srx)
-
-si.frx <- diversity(frx.veg, index = "shannon")
-mean(si.frx)
-sd(si.frx)
-
-si.t <- diversity(veg_wider, index = "shannon")
-mean(si.t)
-sd(si.t)
-
-plot(si.t)
-points(si.mrx, col = "yellow")
-points(si.h, col="purple")
-points(si.c, col="blue")
-points(si.srx, col="green")
-points(si.frx, col="red")
-
-boxplot(si.t, si.h, si.srx, si.mrx, si.frx, si.c)
-
-#diversity estimator, using chao
-sp.c <- specpool(c.veg, smallsample = T)
-sp.h <- specpool(h.veg, smallsample = T)
-sp.mrx <- specpool(mrx.veg, smallsample = T)
-sp.srx <- specpool(srx.veg, smallsample = T)
-sp.frx <- specpool(frx.veg, smallsample = T)
-sp.t <- specpool(veg_wider, smallsample = T)
-
-
-
-
-
-
-
-
-
-
-
-
-#I'd also like to see by region
-LI.veg <- veg2 %>% 
-  filter(Region == "LI") %>% 
-  select(Plot_No, Species_Code, SP_Cover_midpoint) %>% 
-  group_by(Plot_No) %>% 
-  pivot_wider(names_from = Species_Code, values_from = SP_Cover_midpoint, values_fill = 0)
-
-ALB.veg <- veg2 %>% 
-  filter(Region == "ALB") %>% 
-  select(Plot_No, Species_Code, SP_Cover_midpoint) %>% 
-  group_by(Plot_No) %>% 
-  pivot_wider(names_from = Species_Code, values_from = SP_Cover_midpoint, values_fill = 0)
-
-MA.veg <- veg2 %>% 
-  filter(Region == "MA") %>% 
-  select(Plot_No, Species_Code, SP_Cover_midpoint) %>% 
-  group_by(Plot_No) %>% 
-  pivot_wider(names_from = Species_Code, values_from = SP_Cover_midpoint, values_fill = 0)
-
-NH.veg <- veg2 %>% 
-  filter(Region == "NH") %>% 
-  select(Plot_No, Species_Code, SP_Cover_midpoint) %>% 
-  group_by(Plot_No) %>% 
-  pivot_wider(names_from = Species_Code, values_from = SP_Cover_midpoint, values_fill = 0)
-
-ME.veg <- veg2 %>% 
-  filter(Region == "ME") %>% 
-  select(Plot_No, Species_Code, SP_Cover_midpoint) %>% 
-  group_by(Plot_No) %>% 
-  pivot_wider(names_from = Species_Code, values_from = SP_Cover_midpoint, values_fill = 0)
-
-# Species accumulation curves by region
-sac.LI <- specaccum(comm = LI.veg, method = "random", permutations = 1000)
-
-sac.ALB <- specaccum(comm = ALB.veg, method = "random", permutations = 1000)
-
-sac.MA <- specaccum(comm = MA.veg, method = "random", permutations = 1000)
-
-sac.NH <- specaccum(comm = NH.veg, method = "random", permutations = 1000)
-
-sac.ME <- specaccum(comm = ME.veg, method = "random", permutations = 1000)
-
-#Here are the species accumulation curves by each region, layered into one graph. Albany has the most species, MA has the most points
-plot(sac.ALB) #ALB
-lines(sac.MA,lty=1,lwd=1,col="green") #MA
-lines(sac.LI,lty=1,lwd=1,col="blue") #LI
-lines(sac.NH,lty=1,lwd=1,col="red") #NH
-lines(sac.ME,lty=1,lwd=1,col="purple") #ME
-
-# rm(sac.ALB,
-#    sac.LI,
-#    sac.MA,
-#    sac.ME,
-#    sac.NH)
 
 
 
@@ -294,78 +375,8 @@ x1 <- as.data.frame(x)
 rm(z, z1, x, x1)
 
 
-
-# richness, diversity, abundance and evenness for each plot
-# i'm doing this by plot, but wondering about doing it by site? need to revist PC-ORD text about the proportion stuff
-
-#richness
-library(plyr)
-richness <- ddply(veg_wider,~Plot_No,function(x) {
-  data.frame(RICHNESS=sum(x[-1]>0))
-  })
-
-ggplot(richness, aes(RICHNESS))+
-  geom_histogram()
-# not normal, but unimodal - transform?
-
-
-#abundance
-abundance <- ddply(veg_wider,~Plot_No,function(x) {
-  data.frame(ABUNDANCE=sum(x[-1]))
-  })
-
-
-#diversity
-diversity <-  ddply(veg_wider,~Plot_No,function(x) {
-  data.frame(SHANNON=diversity(x[-1], index="shannon"))
-  })
-
-#evenness
-even <- ddply(veg_wider,~Plot_No,function(x) {
-  data.frame(SIMPSON=diversity(x[-1], index="simpson")/log(sum(x[-1]>0)))
-  })
-
-
-a <- merge(richness, abundance, by = "Plot_No")
-
-b <- merge(a, diversity, by = "Plot_No")
-
-div.met <- merge(b, even, by = "Plot_No")
-
-rm(a, b, diversity, even, abundance, richness)
-
-div.met$EVENNESS <- div.met$SHANNON/div.met$RICHNESS
-
-
-
-ggplot(div.met, aes(RICHNESS))+
-  geom_histogram()
-# not normal, but unimodal, positive skew
-
-ggplot(div.met, aes(ABUNDANCE))+
-  geom_histogram()
-# not normal, but unimodal, positive skew
-
-ggplot(div.met, aes(SHANNON))+
-  geom_histogram()
-# not normal, but unimodal, negative skew
-
-ggplot(div.met, aes(SIMPSON))+
-  geom_histogram()
-# not normal, but unimodal, long tails both sides
-
-ggplot(div.met, aes(EVENNESS))+
-  geom_histogram()
-# not normal, but unimodal, negative skew?
-
-
-
-
-
-
-
-
-
+########veg - 1 and - 2 species #############################################
+# early and not so elegant code to understand how many of what species occur where
 # I think I need to remove species columns that only occur once
 
 veg_wider_log <- as.data.frame(lapply(veg_wider, as.logical))
@@ -487,52 +498,8 @@ z5 <- as_data_frame(z4)
 #still 91.6% zeros 
 
 rm(z2, z3, z4, z5)
+##################################################
 
-
-#rule of thumb is less than 5% of plots. There are 499 plots. 5% of that is 25. that would leave me with 26 species
-
-#THIS IS 20 plots or more, the last 5 are under 25 plots but above 20
-veg_5PERC <- veg_wider %>% 
-  select(Plot_No,
-         QUIL,
-         GAPR,
-         VAPA,
-         CAPE,
-         GABA,
-         VAAN,
-         PTAQ,
-         RUSP,
-         KAAN,
-         PIRI,
-         ACRU,
-         LYQU,
-         QUCO,
-         MELI,
-         CEOR,
-         COPE,
-         PRSE,
-         QUPR,
-         PAQU,
-         CEAM,
-         QUAL,
-         PIST,
-         ARME,
-         LYBO,
-         POUN11,
-         RHGL)
-         # AMSP,
-         # VAMY,
-         # FRSP,
-         # ARNU,
-         # SMGL)
-
-
-
-
-z6 <- lapply(veg_5PERC, function(x){ length(which(x==0))})
-z7 <- as_data_frame(z6)
-(sum(z7[,2:27]))/(26*499)
-#still 80% zeros with 26 species. feels ouch...
 
 
 
