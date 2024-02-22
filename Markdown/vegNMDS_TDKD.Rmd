@@ -230,7 +230,7 @@ per.tt <- adonis2(rel_veg5 ~ Treat_Type, data = meta.data_veg)
 
 print(per.tt)
 ```
-
+#### Treatment type explains ~19% of variation
 
 
 
