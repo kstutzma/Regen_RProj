@@ -252,7 +252,7 @@ frt.nmds1 <- fortify(test_2d)
 
 
 
-
+#plot 
 fort<- fortify(test_2d)
 ggplot() +
   geom_point(data = subset(fort, score =='sites'),
@@ -287,26 +287,48 @@ ggplot() +
                colour="darkgray",
                linewidth =0.8)
 
-
+#shape as TT, color as region
 ggplot() +
-  geom_point(data = subset(fort, score =='sites'),
-             mapping = aes(x = NMDS1, y = NMDS2, color = meta.data_veg$Region),
-             alpha=0.75)+
-  geom_segment(data = subset(fort, score == 'species'),
-               mapping = aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2),
-               arrow = arrow(length = unit(0.015, "npc"),
-                             type="closed"),
-               colour="darkgray",
-               linewidth =0.8)+
   geom_text(data = subset(fort, score =='species'),
             mapping = aes(label=label, x=NMDS1*1.1, y=NMDS2*1.1))+
   geom_abline(intercept = 0,slope = 0,linetype="dashed", linewidth=0.8,colour="gray")+
   geom_vline(aes(xintercept=0), linetype="dashed", linewidth=0.8, colour="gray")+
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
-        axis.line = element_line(colour = "black"))
+        axis.line = element_line(colour = "black"))+
+  geom_point(data = subset(fort, score =='sites'),
+             mapping = aes(x = NMDS1, y = NMDS2, color = meta.data_veg$Region, shape = meta.data_veg$Treat_Type),
+             alpha=2)
 
 # region seems a pretty clear driver of understory composition. Can still run adonis tests etc on other values (permanova for treat or/and region)
+
+# to run PerMANOVA, there is an assumption of evenness across envr factor, therefore check
+
+summary(meta.data_veg)
+
+summary(as.factor(meta.data_veg$Treat_Type))
+# 6 (harvest) - 12 (mowrx): 6, 9, 9, 11, 12
+
+summary(as.factor(meta.data_veg$Region))
+# 5 (ME) - 14 (MA): 5, 8, 9, 11, 14
+
+
+per.region <- adonis2(rel_veg5 ~ Region, data = meta.data_veg)
+
+per.tt <- adonis2(rel_veg5 ~ Treat_Type, data = meta.data_veg)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
