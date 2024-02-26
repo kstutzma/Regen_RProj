@@ -318,6 +318,10 @@ per.region <- adonis2(rel_veg5 ~ Region, data = meta.data_veg)
 per.tt <- adonis2(rel_veg5 ~ Treat_Type, data = meta.data_veg)
 
 
+per.rxt <- adonis2(rel_veg5 ~ Treat_Type + Region + Treat_Type*Region, data = meta.data_veg)
+
+print(per.rxt)
+# all are significant
 
 
 
@@ -332,6 +336,83 @@ per.tt <- adonis2(rel_veg5 ~ Treat_Type, data = meta.data_veg)
 
 
 
+###########################################
+# this lost power to understand treatment type
+
+# make a region - treatment mean and run NMDS on that, to see if there is a distinguishable treatment pattern with the effect of region constrained (a little)
+
+veg_reg <- veg_meta %>% 
+  select(Region, Site, Treat_Type) %>% 
+  distinct(Site, .keep_all = TRUE) %>% 
+  column_to_rownames(var = "Site")
+
+
+
+region.rel_veg5 <- merge(veg_reg, rel_veg5, by = "row.names")  %>% 
+  select(-Row.names)
+
+
+region.TT <- region.rel_veg5 %>% 
+  group_by(Region, Treat_Type) %>% 
+  summarise_at(vars(QUIL:RHGL), mean) %>% 
+  ungroup()
+
+region.TT$Region_TT <- paste(region.TT$Region, region.TT$Treat_Type)
+
+region.meta <- region.TT %>% 
+  select(Region_TT, Region, Treat_Type)
+
+region.TT <- region.TT %>% 
+  select(Region_TT, everything()) %>% 
+  select(-c(Region, Treat_Type)) %>% 
+  column_to_rownames(var = "Region_TT")
+
+# trying 2 dimensions
+r.test_2d <- metaMDS(region.TT, 
+                   distance = 'bray', 
+                   k = 2, 
+                   trymax = 20,
+                   autotransform = FALSE)
+# stress is 0.089
+
+ordiplot(r.test_2d, type = "t")
+
+
+
+#plot 
+fort2<- fortify(r.test_2d)
+ggplot() +
+  geom_point(data = subset(fort2, score =='sites'),
+             mapping = aes(x = NMDS1, y = NMDS2, color=region.meta$Treat_Type),
+             alpha=1,
+             size=2)+
+  geom_segment(data = subset(fort2, score == 'species'),
+               mapping = aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2),
+               arrow = arrow(length = unit(0.015, "npc"),
+                             type="closed"),
+               colour="darkgray",
+               linewidth =0.8,
+               alpha=0)+
+  geom_text(data = subset(fort2, score =='species'),
+            mapping = aes(label=label, x=NMDS1*1.1, y=NMDS2*1.1))+
+  geom_abline(intercept = 0,slope = 0,linetype="dashed", linewidth=0.8,colour="gray")+
+  geom_vline(aes(xintercept=0), linetype="dashed", linewidth=0.8, colour="gray")+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.line = element_line(colour = "black"))
+
+
+
+z <- per.rtt <- adonis2(region.TT~Treat_Type, data = region.meta) #no longer significant
+
+x <- per.reg <- adonis2(region.TT~Region, data = region.meta) #still siginifcant
+
+x <- per.reg <- adonis2(region.TT~Region*Treat_Type, data = region.meta) #interaction won't work in this model
+
+print(x)
+
+
+rm(x, z, fort2, r.test_2d, region.TT, region.meta, region.rel_veg5, veg_reg)
 
 
 

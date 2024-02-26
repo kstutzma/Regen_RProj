@@ -9,9 +9,15 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown code for understory vegetative communty
+## R Markdown code for understory vegetative community (quick look)
 
-### [Veg NMDS for TD](Markdown/vegNMDS_TDKD.html)
+### [NH & ME NMDS](Markdown/Veg_NH.ME.html)
+
+### [MA & LI NMDS](Markdown/Veg_MA.LI.html)
+
+### [APB NMDS](Markdown/Veg_APB.html)
+
+### [Veg NMDS overall](Markdown/vegNMDS_TDKD.html)
 
 
 ### Below are the full scripts for generating models above

@@ -11,9 +11,9 @@
 
 <meta name="author" content="Kathleen Stutzman" />
 
-<meta name="date" content="2023-10-02" />
+<meta name="date" content="2024-02-26" />
 
-<title>Pitch Pine Project R Code webpage repo</title>
+<title>Understory veg ordination for MA &amp; LI</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -350,67 +350,208 @@ display: none;
 
 
 
-<h1 class="title toc-ignore">Pitch Pine Project R Code webpage repo</h1>
+<h1 class="title toc-ignore">Understory veg ordination for MA &amp;
+LI</h1>
 <h4 class="author">Kathleen Stutzman</h4>
-<h4 class="date">2023-10-02</h4>
+<h4 class="date">2024-02-26</h4>
 
 </div>
 
 
-<div id="r-markdown-code-for-understory-vegetative-community-quick-look" class="section level2">
-<h2>R Markdown code for understory vegetative community (quick
-look)</h2>
-<div id="nh-me-nmds" class="section level3">
-<h3><a href="Markdown/Veg_NH.ME.html">NH &amp; ME NMDS</a></h3>
+<p>Libraries:</p>
+<pre class="r"><code># libraries -------------------
+library(ggplot2)
+library(vegan)
+library(ggvegan)
+library(tidyverse)</code></pre>
+<p>Set working directory</p>
+<pre class="r"><code>knitr::opts_knit$set(root.dir = &#39;/Users/user/Desktop/Data/Regen_RProj/&#39;)</code></pre>
+<p>Functions:</p>
+<pre class="r"><code># functions -------------------
+source(&quot;Functions/veganCovEllipse.R&quot;)</code></pre>
+<div id="source-tranform-select-and-relativize-ma-li-veg-data-hidden" class="section level4">
+<h4>Source, tranform, select, and relativize MA &amp; LI veg data
+(hidden)</h4>
 </div>
-<div id="ma-li-nmds" class="section level3">
-<h3><a href="Markdown/Veg_MA.LI.html">MA &amp; LI NMDS</a></h3>
-</div>
-<div id="apb-nmds" class="section level3">
-<h3><a href="Markdown/Veg_APB.html">APB NMDS</a></h3>
-</div>
-<div id="veg-nmds-overall" class="section level3">
-<h3><a href="Markdown/vegNMDS_TDKD.html">Veg NMDS overall</a></h3>
-</div>
-<div id="below-are-the-full-scripts-for-generating-models-above" class="section level3">
-<h3>Below are the full scripts for generating models above</h3>
-<div id="veg-nmds-code" class="section level4">
-<h4><a href="veg_NMDS.html">Veg NMDS code</a></h4>
-</div>
-<div id="vegetation-descriptive-statistics" class="section level4">
-<h4><a href="Markdown/Veg_DS_bySite.html">Vegetation descriptive
-statistics</a></h4>
-<p>Species richness, species diversity, species number, evenness, and
-beta diversity</p>
-</div>
-</div>
-</div>
-<div id="r-markdown-code-for-pitch-pine-regeneration-project" class="section level2">
-<h2>R Markdown code for Pitch Pine Regeneration project</h2>
-<div id="small-seedling-models-for-td-kd" class="section level3">
-<h3><a href="Markdown/SS_Models_TDKD.html">Small seedling models for TD
-&amp; KD</a></h3>
-</div>
-<div id="large-seedling-models-for-td-kd" class="section level3">
-<h3><a href="Markdown/LS_Models_TDKD.html">Large seedling models for TD
-&amp; KD</a></h3>
-</div>
-<div id="sapling-models-for-td-kd" class="section level3">
-<h3><a href="Markdown/SA_Models_TDKD.html">Sapling models for TD &amp;
-KD</a></h3>
-</div>
-<div id="below-are-the-full-scripts-for-generating-models-above-1" class="section level3">
-<h3>Below are the full scripts for generating models above</h3>
-<div id="small-seedling-glmm-code" class="section level4">
-<h4><a href="Markdown/SS_LR.html">Small seedling GLMM code</a></h4>
-</div>
-<div id="large-seedling-glmm-code" class="section level4">
-<h4><a href="Markdown/LS_LR.html">Large seedling GLMM code</a></h4>
-</div>
-<div id="sapling-glmm-code" class="section level4">
-<h4><a href="Markdown/SA_LR.html">Sapling GLMM code</a></h4>
+<div id="whats-different-about-5-min-plot-species-for-this-region" class="section level3">
+<h3>What’s different about 5% min plot species for this region?</h3>
+<pre class="r"><code>mali_wider_log &lt;- as.data.frame(lapply(mali_wider, as.logical))
+
+ma.li &lt;- as.data.frame(colSums(mali_wider_log)) %&gt;% 
+  rownames_to_column(var = &quot;Species&quot;)
+
+# Species from the other 5% calcs
+# In NH/ME - no LYQU, CEOR, PAQU, CEAM, ARME, LYBO, RHGL
+
+# For this data set , 5% is ~11 plots:
+# Would add: SMGL
+# If I stuck to at least 11, would lose: ACRU, COPE, PRSE, PIST, POUN11
+
+rm(mali_wider_log, ma.li)</code></pre>
+<div id="source-and-transform-envr-categorical-data-merge-for-predictor-df-to-compare-nmds-against-hidden" class="section level4">
+<h4>Source and transform envr &amp; categorical data; merge for
+predictor df to compare nmds against (hidden)</h4>
 </div>
 </div>
+<div id="run-nmds" class="section level3">
+<h3>Run NMDS</h3>
+<pre class="r"><code># 3 dimensions
+mali_3d &lt;- metaMDS(rel_mali5,
+                   distance = &#39;bray&#39;,
+                   k = 3,
+                   trymax = 20,
+                   autotransform = FALSE)</code></pre>
+<pre><code>## Run 0 stress 0.1395122 
+## Run 1 stress 0.1341822 
+## ... New best solution
+## ... Procrustes: rmse 0.1064061  max resid 0.3615204 
+## Run 2 stress 0.1341823 
+## ... Procrustes: rmse 0.0002191824  max resid 0.0006763288 
+## ... Similar to previous best
+## Run 3 stress 0.1376191 
+## Run 4 stress 0.1368222 
+## Run 5 stress 0.1358963 
+## Run 6 stress 0.1388097 
+## Run 7 stress 0.1465265 
+## Run 8 stress 0.1395228 
+## Run 9 stress 0.1387796 
+## Run 10 stress 0.1395123 
+## Run 11 stress 0.1368227 
+## Run 12 stress 0.135896 
+## Run 13 stress 0.1387803 
+## Run 14 stress 0.1341821 
+## ... New best solution
+## ... Procrustes: rmse 0.0002199461  max resid 0.0004804589 
+## ... Similar to previous best
+## Run 15 stress 0.1368224 
+## Run 16 stress 0.1405407 
+## Run 17 stress 0.1341827 
+## ... Procrustes: rmse 0.0006880923  max resid 0.001450803 
+## ... Similar to previous best
+## Run 18 stress 0.1531564 
+## Run 19 stress 0.1369328 
+## Run 20 stress 0.1358958 
+## *** Best solution repeated 2 times</code></pre>
+<pre class="r"><code># converges, stress of 0.13 - 0.15
+
+# 2 dimensions
+mali_2d &lt;- metaMDS(rel_mali5, 
+                   distance = &#39;bray&#39;, 
+                   k = 2,
+                   try = 40,
+                   trymax = 40,
+                   autotransform = FALSE)</code></pre>
+<pre><code>## Run 0 stress 0.2239971 
+## Run 1 stress 0.2227553 
+## ... New best solution
+## ... Procrustes: rmse 0.07733632  max resid 0.1942004 
+## Run 2 stress 0.2220537 
+## ... New best solution
+## ... Procrustes: rmse 0.05220656  max resid 0.1489696 
+## Run 3 stress 0.2178582 
+## ... New best solution
+## ... Procrustes: rmse 0.1204446  max resid 0.3826711 
+## Run 4 stress 0.2242031 
+## Run 5 stress 0.2216094 
+## Run 6 stress 0.2270845 
+## Run 7 stress 0.2132488 
+## ... New best solution
+## ... Procrustes: rmse 0.05229695  max resid 0.2261112 
+## Run 8 stress 0.2183321 
+## Run 9 stress 0.2233112 
+## Run 10 stress 0.2047205 
+## ... New best solution
+## ... Procrustes: rmse 0.1526776  max resid 0.3448524 
+## Run 11 stress 0.2206167 
+## Run 12 stress 0.2047201 
+## ... New best solution
+## ... Procrustes: rmse 0.0002066176  max resid 0.0006984417 
+## ... Similar to previous best
+## Run 13 stress 0.2082141 
+## Run 14 stress 0.2254435 
+## Run 15 stress 0.2220426 
+## Run 16 stress 0.2360426 
+## Run 17 stress 0.2159436 
+## Run 18 stress 0.2247703 
+## Run 19 stress 0.2159933 
+## Run 20 stress 0.223631 
+## Run 21 stress 0.22326 
+## Run 22 stress 0.2231773 
+## Run 23 stress 0.2164487 
+## Run 24 stress 0.2080346 
+## Run 25 stress 0.2238295 
+## Run 26 stress 0.2331456 
+## Run 27 stress 0.2199517 
+## Run 28 stress 0.2274364 
+## Run 29 stress 0.2132487 
+## Run 30 stress 0.2064067 
+## Run 31 stress 0.2156335 
+## Run 32 stress 0.2135559 
+## Run 33 stress 0.2066459 
+## Run 34 stress 0.2253327 
+## Run 35 stress 0.2135572 
+## Run 36 stress 0.2193826 
+## Run 37 stress 0.2248676 
+## Run 38 stress 0.2135561 
+## Run 39 stress 0.2183826 
+## Run 40 stress 0.2047197 
+## ... New best solution
+## ... Procrustes: rmse 0.0004499474  max resid 0.001520019 
+## ... Similar to previous best
+## *** Best solution repeated 1 times</code></pre>
+<pre class="r"><code># stress is too high to represent in 2 dimensions</code></pre>
+</div>
+<div id="make-correlation-data-for-bi-plots" class="section level3">
+<h3>Make correlation data for bi-plots</h3>
+<pre class="r"><code>ma.veg_enr &lt;- envfit(mali_3d, ma.meta.data_veg)
+ma.veg_spc.envr &lt;- envfit(mali_3d, rel_mali5)
+
+# site data -------------------
+ma.site.scrs &lt;- as.data.frame(scores(mali_3d, display = &quot;sites&quot;))
+
+ma.site.scrs &lt;- cbind(ma.site.scrs, Treat_Type = ma.meta.data_veg$Treat_Type)
+ma.site.scrs &lt;- cbind(ma.site.scrs, Region = ma.meta.data_veg$Region)
+
+# species data   -------------------
+ma.spp.scrs &lt;- as.data.frame(scores(ma.veg_spc.envr, display = &quot;vectors&quot;))
+ma.spp.scrs &lt;- cbind(ma.spp.scrs, Species = rownames(ma.spp.scrs))
+ma.spp.scrs &lt;- cbind(ma.spp.scrs, pval = ma.veg_spc.envr$vectors$pvals)
+
+sig.ma_spp.scrs &lt;- subset(ma.spp.scrs, pval&lt;=0.05)
+
+# envr data -------------------
+ma.envr.scrs &lt;- as.data.frame(scores(ma.veg_enr, display = &quot;vectors&quot;))
+ma.envr.scrs &lt;- cbind(ma.envr.scrs, env.variables = rownames(ma.envr.scrs))
+ma.envr.scrs &lt;- cbind(ma.envr.scrs, pval = ma.veg_enr$vectors$pvals)
+ma.sig_envr.scrs &lt;- subset(ma.envr.scrs, pval&lt;=0.05)</code></pre>
+</div>
+<div id="need-to-think-about-how-to-represent-3d" class="section level3">
+<h3>Need to think about how to represent 3D</h3>
+</div>
+<div id="run-permanova-to-look-at-the-impacts-of-region-and-treatment-on-community-composition" class="section level3">
+<h3>Run PerMANOVA to look at the impacts of region and treatment on
+community composition</h3>
+<pre class="r"><code>summary(as.factor(ma.meta.data_veg$Treat_Type))</code></pre>
+<pre><code>##  Control   FallRx  Harvest    MowRx SpringRx 
+##        5        3        6        3        6</code></pre>
+<pre class="r"><code>ma.tt &lt;- adonis2(rel_mali5 ~ Treat_Type*Region, data = ma.meta.data_veg)
+
+print(ma.tt)</code></pre>
+<pre><code>## Permutation test for adonis under reduced model
+## Terms added sequentially (first to last)
+## Permutation: free
+## Number of permutations: 999
+## 
+## adonis2(formula = rel_mali5 ~ Treat_Type * Region, data = ma.meta.data_veg)
+##                   Df SumOfSqs      R2      F Pr(&gt;F)    
+## Treat_Type         4   1.7888 0.26616 1.8764  0.003 ** 
+## Region             1   0.7921 0.11786 3.3236  0.001 ***
+## Treat_Type:Region  2   0.5649 0.08406 1.1852  0.253    
+## Residual          15   3.5749 0.53192                  
+## Total             22   6.7207 1.00000                  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<pre class="r"><code>#each are significant, but the interaction is not</code></pre>
 </div>
 
 

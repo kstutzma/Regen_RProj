@@ -1,0 +1,261 @@
+---
+title: "Understory veg ordination for MA & LI"
+author: "Kathleen Stutzman"
+date: "2024-02-26"
+output: html_document
+---
+
+Libraries:
+```{r, message=FALSE, warning=FALSE}
+# libraries -------------------
+library(ggplot2)
+library(vegan)
+library(ggvegan)
+library(tidyverse)
+```
+
+Set working directory
+```{r, setup}
+knitr::opts_knit$set(root.dir = '/Users/user/Desktop/Data/Regen_RProj/')
+```
+
+Functions:
+```{r}
+# functions -------------------
+source("Functions/veganCovEllipse.R")
+```
+
+
+#### Source, tranform, select, and relativize MA & LI veg data (hidden)
+```{r, include=FALSE}
+source("Scripts/Veg_Data.R")
+rm(veg3)
+
+#split overall data from veg cover
+meta_mali <- veg2 %>%
+  filter(Region == c("MA", "LI")) %>% 
+  select(Region, Treat_Type, Site, Plot_No) %>% 
+  distinct(Plot_No, .keep_all = TRUE)
+
+#pivot veg data wider and fill in zeros
+mali_wider <- veg2 %>% 
+  filter(Region == c("MA", "LI")) %>% 
+  select(Plot_No, Species_Code, SP_Cover_midpoint) %>% 
+  group_by(Plot_No) %>% 
+  pivot_wider(names_from = Species_Code, values_from = SP_Cover_midpoint, values_fill = 0) 
+
+#create dataframe of site and plot
+mali_site <- veg2 %>% 
+  filter(Region == c("MA", "LI")) %>% 
+  select(Site, Plot_No) %>% 
+  group_by(Site) %>% 
+  distinct(Plot_No, .keep_all = TRUE)
+
+# merge site and veg data; remove plot number
+mer.mali <- merge(mali_site, mali_wider, by = "Plot_No") %>% 
+  select(-Plot_No)
+
+#THIS IS 25 plots or more
+mali_5PERC <- mali_wider %>% 
+  select(Plot_No,
+         QUIL,
+         GAPR,
+         VAPA,
+         CAPE,
+         GABA,
+         VAAN,
+         PTAQ,
+         RUSP,
+         KAAN,
+         PIRI,
+         ACRU,
+         #LYQU,
+         QUCO,
+         MELI,
+         #CEOR,
+         COPE,
+         PRSE,
+         QUPR,
+         #PAQU,
+         #CEAM,
+         QUAL,
+         PIST,
+         #ARME,
+         #LYBO,
+         POUN11,
+         #RHGL
+         )
+
+# add site and lose plot number -------------------
+mali5 <- merge(mali_5PERC, mali_site) %>% 
+  select(-Plot_No) %>% 
+  select(Site, everything())
+
+mali5_avg <- mali5 %>% 
+  group_by(Site) %>% 
+  summarise_at(vars(QUIL:POUN11), mean) %>% 
+  column_to_rownames(var = "Site")
+
+rm(mali5, mali_5PERC, mer.mali)
+
+# relativize data, dividing each cell by the column total (to bring common and rare species closer together) -------------------
+rel_mali5 <- decostand(mali5_avg, method = 'total', MARGIN = 2)
+```
+
+
+### What's different about 5% min plot species for this region?
+```{r}
+mali_wider_log <- as.data.frame(lapply(mali_wider, as.logical))
+
+ma.li <- as.data.frame(colSums(mali_wider_log)) %>% 
+  rownames_to_column(var = "Species")
+
+# Species from the other 5% calcs
+# In NH/ME - no LYQU, CEOR, PAQU, CEAM, ARME, LYBO, RHGL
+
+# For this data set , 5% is ~11 plots:
+# Would add: SMGL
+# If I stuck to at least 11, would lose: ACRU, COPE, PRSE, PIST, POUN11
+
+rm(mali_wider_log, ma.li)
+```
+
+#### Source and transform envr & categorical data; merge for predictor df to compare nmds against (hidden)
+```{r, include=FALSE}
+time_since <- read_csv("CleanData/Treat_Year_Data.csv") # this is a dataframe with one row for each site
+
+# make sure ggpubs not on, or this won't load
+source("Scripts/Add_BA.R") #work on prism_BA, has total BA figures - do I need to change these as they were collected on a different scale?
+
+ma.prism1 <- prism_BA %>% 
+  select(Plot_No, BA_HA, PIRI.BA_HA)
+
+ma.prism2 <- merge(ma.prism1, mali_site, by = "Plot_No") %>% 
+  select(-Plot_No) %>% 
+  select(Site, everything())
+
+ma.prism4veg <- ma.prism2 %>% 
+  group_by(Site) %>% 
+  summarise_at(vars(BA_HA:PIRI.BA_HA), mean)
+
+rm(prism_BA, ma.prism1, ma.prism2)
+
+
+source("Scripts/Ground_Data.R") #work on ground 3
+
+ma.ground4 <- ground3 %>% 
+  select(Plot_No, Lichen, Moss, Rock, Mineral_Soil, Wood, Litter_Duff, avgLD)
+
+ma.ground5 <- merge(ma.ground4, mali_site, by = "Plot_No") %>% 
+  select(Site, everything()) %>% 
+  select(-c(Plot_No))
+
+ma.ground4veg <- ma.ground5 %>% 
+  group_by(Site) %>% 
+  summarise_at(vars(Lichen:avgLD), mean)
+
+rm(ground3, ma.ground4, ground)
+
+ma2 <- meta_mali %>% 
+  select(Region, Treat_Type, Site) %>% 
+  distinct(Site, .keep_all = TRUE)
+
+mam1 <- merge(ma2, time_since, by = "Site")
+
+mam2 <- merge(mam1, ma.ground4veg, by = "Site")
+
+ma.meta.data_veg <- merge(mam2, ma.prism4veg, by = "Site") %>% 
+  select(-c(Inventory_Yr, Treat_Yr))
+
+
+rm(mam2, mam1, time_since, ma.ground4veg, ma.prism4veg)
+
+rm(prism, veg2)
+```
+
+### Run NMDS
+```{r}
+# 3 dimensions
+mali_3d <- metaMDS(rel_mali5,
+                   distance = 'bray',
+                   k = 3,
+                   trymax = 20,
+                   autotransform = FALSE)
+# converges, stress of 0.13 - 0.15
+
+# 2 dimensions
+mali_2d <- metaMDS(rel_mali5, 
+                   distance = 'bray', 
+                   k = 2,
+                   try = 40,
+                   trymax = 40,
+                   autotransform = FALSE)
+# stress is too high to represent in 2 dimensions
+```
+
+
+### Make correlation data for bi-plots
+```{r}
+ma.veg_enr <- envfit(mali_3d, ma.meta.data_veg)
+ma.veg_spc.envr <- envfit(mali_3d, rel_mali5)
+
+# site data -------------------
+ma.site.scrs <- as.data.frame(scores(mali_3d, display = "sites"))
+
+ma.site.scrs <- cbind(ma.site.scrs, Treat_Type = ma.meta.data_veg$Treat_Type)
+ma.site.scrs <- cbind(ma.site.scrs, Region = ma.meta.data_veg$Region)
+
+# species data   -------------------
+ma.spp.scrs <- as.data.frame(scores(ma.veg_spc.envr, display = "vectors"))
+ma.spp.scrs <- cbind(ma.spp.scrs, Species = rownames(ma.spp.scrs))
+ma.spp.scrs <- cbind(ma.spp.scrs, pval = ma.veg_spc.envr$vectors$pvals)
+
+sig.ma_spp.scrs <- subset(ma.spp.scrs, pval<=0.05)
+
+# envr data -------------------
+ma.envr.scrs <- as.data.frame(scores(ma.veg_enr, display = "vectors"))
+ma.envr.scrs <- cbind(ma.envr.scrs, env.variables = rownames(ma.envr.scrs))
+ma.envr.scrs <- cbind(ma.envr.scrs, pval = ma.veg_enr$vectors$pvals)
+ma.sig_envr.scrs <- subset(ma.envr.scrs, pval<=0.05)
+```
+
+
+## Need to think about how to represent 3D
+
+
+
+### Run PerMANOVA to look at the impacts of region and treatment on community composition
+```{r}
+summary(as.factor(ma.meta.data_veg$Treat_Type))
+```
+
+```{r}
+ma.tt <- adonis2(rel_mali5 ~ Treat_Type*Region, data = ma.meta.data_veg)
+
+print(ma.tt)
+
+#each are significant, but the interaction is not
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

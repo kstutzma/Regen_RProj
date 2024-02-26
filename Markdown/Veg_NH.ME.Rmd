@@ -1,0 +1,397 @@
+---
+title: "Understory veg data for NH & ME"
+author: "Kathleen Stutzman"
+date: "2024-02-23"
+output: html_document
+---
+
+Libraries:
+```{r, message=FALSE, warning=FALSE}
+# libraries -------------------
+library(ggplot2)
+library(vegan)
+library(ggvegan)
+library(tidyverse)
+```
+
+Set working directory
+```{r, setup}
+knitr::opts_knit$set(root.dir = '/Users/user/Desktop/Data/Regen_RProj/')
+```
+
+Functions:
+```{r}
+# functions -------------------
+source("Functions/veganCovEllipse.R")
+```
+
+#### Source, tranform, select, and relativize NH & ME veg data (hidden)
+```{r, include=FALSE}
+source("Scripts/Veg_Data.R")
+rm(veg3)
+
+#split overall data from veg cover
+meta_nhme <- veg2 %>%
+  filter(Region == c("NH", "ME")) %>% 
+  select(Region, Treat_Type, Site, Plot_No) %>% 
+  distinct(Plot_No, .keep_all = TRUE)
+
+#pivot veg data wider and fill in zeros
+nhme_wider <- veg2 %>% 
+  filter(Region == c("NH", "ME")) %>% 
+  select(Plot_No, Species_Code, SP_Cover_midpoint) %>% 
+  group_by(Plot_No) %>% 
+  pivot_wider(names_from = Species_Code, values_from = SP_Cover_midpoint, values_fill = 0) 
+
+#create dataframe of site and plot
+nhme_site <- veg2 %>% 
+  filter(Region == c("NH", "ME")) %>% 
+  select(Site, Plot_No) %>% 
+  group_by(Site) %>% 
+  distinct(Plot_No, .keep_all = TRUE)
+
+# merge site and veg data; remove plot number
+mer.nhme <- merge(nhme_site, nhme_wider, by = "Plot_No") %>% 
+  select(-Plot_No)
+
+#THIS IS 25 plots or more
+nhme_5PERC <- nhme_wider %>% 
+  select(Plot_No,
+         QUIL,
+         GAPR,
+         #VAPA,
+         CAPE,
+         GABA,
+         VAAN,
+         PTAQ,
+         RUSP,
+         KAAN,
+         PIRI,
+         ACRU,
+         LYQU,
+         #QUCO,
+         MELI,
+         #CEOR,
+         COPE,
+         PRSE,
+         #QUPR,
+         #PAQU,
+         #CEAM,
+         #QUAL,
+         PIST,
+         ARME,
+         LYBO,
+         #POUN11,
+         #RHGL
+         )
+
+# add site and lose plot number -------------------
+nhme5 <- merge(nhme_5PERC, nhme_site) %>% 
+  select(-Plot_No) %>% 
+  select(Site, everything())
+
+nhme5_avg <- nhme5 %>% 
+  group_by(Site) %>% 
+  summarise_at(vars(QUIL:LYBO), mean) %>% 
+  column_to_rownames(var = "Site")
+
+rm(nhme5, nhme_5PERC, mer.nhme)
+
+# relativize data, dividing each cell by the column total (to bring common and rare species closer together) -------------------
+rel_nhme5 <- decostand(nhme5_avg, method = 'total', MARGIN = 2)
+```
+
+### What's different about 5% min plot species for this region?
+```{r}
+nhme_wider_log <- as.data.frame(lapply(nhme_wider, as.logical))
+
+nh.me <- as.data.frame(colSums(nhme_wider_log)) %>% 
+  rownames_to_column(var = "Species")
+
+# Species from the other 5% calcs
+# In NH/ME - no VAPA, QUCO, CEOR, QUPR, PAQU, CEAM, QUAL, POUN11, & RHGL
+
+# For this data set , 5% is ~7 plots:
+# Would add: VAMY, MICA
+# If I stuck to at least 7, would lose: GABA, RUSP, LYQU, PRSE 
+
+rm(nhme_wider_log, nh.me)
+```
+
+#### Source and transform envr & categorical data; merge for predictor df to compare nmds against (hidden)
+```{r, include=FALSE}
+time_since <- read_csv("CleanData/Treat_Year_Data.csv") # this is a dataframe with one row for each site
+
+# make sure ggpubs not on, or this won't load
+source("Scripts/Add_BA.R") #work on prism_BA, has total BA figures - do I need to change these as they were collected on a different scale?
+
+nh.prism1 <- prism_BA %>% 
+  select(Plot_No, BA_HA, PIRI.BA_HA)
+
+nh.prism2 <- merge(nh.prism1, nhme_site, by = "Plot_No") %>% 
+  select(-Plot_No) %>% 
+  select(Site, everything())
+
+nh.prism4veg <- nh.prism2 %>% 
+  group_by(Site) %>% 
+  summarise_at(vars(BA_HA:PIRI.BA_HA), mean)
+
+rm(prism_BA, nh.prism1, nh.prism2)
+
+
+source("Scripts/Ground_Data.R") #work on ground 3
+
+nh.ground4 <- ground3 %>% 
+  select(Plot_No, Lichen, Moss, Rock, Mineral_Soil, Wood, Litter_Duff, avgLD)
+
+nh.ground5 <- merge(nh.ground4, nhme_site, by = "Plot_No") %>% 
+  select(Site, everything()) %>% 
+  select(-c(Plot_No))
+
+nh.ground4veg <- nh.ground5 %>% 
+  group_by(Site) %>% 
+  summarise_at(vars(Lichen:avgLD), mean)
+
+rm(ground3, nh.ground4, ground)
+
+nh2 <- meta_nhme %>% 
+  select(Region, Treat_Type, Site) %>% 
+  distinct(Site, .keep_all = TRUE)
+
+nhm1 <- merge(nh2, time_since, by = "Site")
+
+nhm2 <- merge(nhm1, nh.ground4veg, by = "Site")
+
+nh.meta.data_veg <- merge(nhm2, nh.prism4veg, by = "Site") %>% 
+  select(-c(Inventory_Yr, Treat_Yr))
+
+
+rm(nhm2, nhm1, time_since, nh.ground4veg, nh.prism4veg)
+
+rm(prism, veg2)
+```
+
+### Run NMDS
+```{r}
+# 3 dimensions
+# nhme_3d <- metaMDS(rel_nhme5, 
+#                    distance = 'bray', 
+#                    k = 3, 
+#                    trymax = 20,
+#                    autotransform = FALSE)
+# converges, stress of 0.088 - 0.13
+
+# 2 dimensions
+nhme_2d <- metaMDS(rel_nhme5, 
+                   distance = 'bray', 
+                   k = 2, 
+                   trymax = 20,
+                   autotransform = FALSE)
+# this works and yields stress values of 0.17 - 0.25
+```
+
+
+### Make correlation data for bi-plots
+```{r}
+nh.veg_envr.data <- envfit(nhme_2d, nh.meta.data_veg)
+nh.veg_spc.envr <- envfit(nhme_2d, rel_nhme5)
+
+# site data -------------------
+nh.site.scrs <- as.data.frame(scores(nhme_2d, display = "sites"))
+
+nh.site.scrs <- cbind(nh.site.scrs, Treat_Type = nh.meta.data_veg$Treat_Type)
+nh.site.scrs <- cbind(nh.site.scrs, Region = nh.meta.data_veg$Region)
+
+# species data   -------------------
+nh.spp.scrs <- as.data.frame(scores(nh.veg_spc.envr, display = "vectors"))
+nh.spp.scrs <- cbind(nh.spp.scrs, Species = rownames(nh.spp.scrs))
+nh.spp.scrs <- cbind(nh.spp.scrs, pval = nh.veg_spc.envr$vectors$pvals)
+
+sign.nh_spp.scrs <- subset(nh.spp.scrs, pval<=0.05)
+
+# envr data -------------------
+nh.envr.scrs <- as.data.frame(scores(nh.veg_envr.data, display = "vectors"))
+nh.envr.scrs <- cbind(nh.envr.scrs, env.variables = rownames(nh.envr.scrs))
+nh.envr.scrs <- cbind(nh.envr.scrs, pval = nh.veg_envr.data$vectors$pvals)
+nh.sig_envr.scrs <- subset(nh.envr.scrs, pval<=0.05)
+```
+
+
+## GGPlot
+```{r, fig.align='center'}
+nh.nmds.plot <-  ggplot(nh.site.scrs, aes(x=NMDS1, y=NMDS2))+
+  geom_point(aes(NMDS1, NMDS2, colour = factor(nh.site.scrs$Treat_Type), shape = factor(nh.site.scrs$Region)), size = 2)+
+  coord_fixed()+
+  theme_classic()+
+  theme(panel.background = element_blank()) +
+  labs(colour = "Treatment Type", shape = "Region")+
+  theme(legend.position = "right", legend.text = element_text(size = 12), legend.title = element_text(size = 12), axis.text = element_text(size = 10))
+
+nh.nmds.plot + labs(title = "NH/ME basic ordination plot")
+
+# add significant species -------------------
+
+nh.nmds.plot +
+  geom_segment(data = sign.nh_spp.scrs, aes(x=0, xend=NMDS1, y=0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")), colour = "grey10", lwd = 0.3)+
+  ggrepel::geom_text_repel(data = sign.nh_spp.scrs, aes(x=NMDS1, y=NMDS2, label = Species), cex = 3, direction = "both", segment.size = 0.25)+
+  labs(title = "NH/ME Ordination with species vectors")
+
+# add significant envr factors -------------------
+
+nh.nmds.plot +
+  geom_segment(data = nh.sig_envr.scrs, aes(x = 0, xend = NMDS1, y = 0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")))+
+  ggrepel::geom_text_repel(data = nh.sig_envr.scrs, aes(x=NMDS1, y=NMDS2, label = env.variables), cex = 4, direction = "both", segment.size = 0.25) +
+  labs(title = "NH/ME Ordination with environmental vectors")
+```
+
+
+### Ellipse
+```{r, fig.align='center'}
+df_ell.nh <- data.frame()
+
+nh.site.scrs$Treat_Type <- as.factor(nh.site.scrs$Treat_Type)
+
+
+for(i in levels(nh.site.scrs$Treat_Type)){
+  df_ell.nh <- rbind(df_ell.nh, cbind(as.data.frame(with(nh.site.scrs [nh.site.scrs$Treat_Type==i,],
+                                                         veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2))))) ,Treat_Type=i))
+}
+
+# data for labelling the ellipse
+NMDS.mean.veg=aggregate(nh.site.scrs[ ,c("NMDS1", "NMDS2")], 
+                         list(group = nh.site.scrs$Treat_Type), "mean")
+ 
+# data for labelling the ellipse
+NMDS.mean=aggregate(nh.site.scrs[,c("NMDS1", "NMDS2")], 
+                    list(group = nh.site.scrs$Treat_Type), "mean")
+
+nh.nmds.plot+
+  geom_path(data = df_ell.nh, aes(x=NMDS1, y=NMDS2, color = Treat_Type), show.legend = FALSE)
+
+```
+
+
+
+## One plot to rule them all?
+```{r, fig.align='center'}
+nh.nmds.plot+
+  geom_path(data = df_ell.nh, aes(x=NMDS1, y=NMDS2, color = Treat_Type), show.legend = FALSE) +
+  geom_segment(data = sign.nh_spp.scrs, aes(x=0, xend=NMDS1, y=0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")), colour = "purple", lwd = 0.3)+
+  ggrepel::geom_text_repel(data = sign.nh_spp.scrs, aes(x=NMDS1, y=NMDS2, label = Species), cex = 3, direction = "both", segment.size = 0.25)+
+  geom_segment(data = nh.sig_envr.scrs, aes(x = 0, xend = NMDS1, y = 0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")))+
+  ggrepel::geom_text_repel(data = nh.sig_envr.scrs, aes(x=NMDS1, y=NMDS2, label = env.variables), cex = 4, direction = "both", segment.size = 0.25) +
+  labs(title = "NH & ME Ordination plot")
+```
+
+
+
+
+
+
+
+
+
+
+```{r, fig.align='center', fig.width=10, include = FALSE}
+#plot 
+fort.nh<- fortify(nhme_2d)
+
+
+ggplot() +
+  geom_point(data = subset(fort.nh, score =='sites'),
+             mapping = aes(x = NMDS1, y = NMDS2, color = nh.meta.data_veg$Treat_Type),
+             alpha=0.75)+
+  geom_segment(data = subset(fort.nh, score == 'species'),
+               mapping = aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2),
+               arrow = arrow(length = unit(0.015, "npc"),
+                             type="closed"),
+               colour="darkgray",
+               linewidth =0.8,
+               alpha=0)+
+  geom_text(data = subset(fort.nh, score =='species'),
+            mapping = aes(label=label, x=NMDS1*1.1, y=NMDS2*1.1))+
+  geom_abline(intercept = 0,slope = 0,linetype="dashed", linewidth=0.8,colour="gray")+
+  geom_vline(aes(xintercept=0), linetype="dashed", linewidth=0.8, colour="gray")+
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.line = element_line(colour = "black"),
+        panel.background = element_blank())
+
+# seeing more grouping of treatment type - control with pist, acru, prse etc...
+```
+
+### Run PerMANOVA to look at the impacts of region and treatment on community composition
+```{r}
+summary(as.factor(nh.meta.data_veg$Treat_Type))
+```
+
+
+```{r, include=FALSE, eval=FALSE}
+#first look
+nh.tt <- adonis2(rel_nhme5 ~ Treat_Type + Region + Region*Treat_Type, data = nh.meta.data_veg)
+
+print(nh.tt)
+# TT not significant; can see a grouping - what does this mean?
+# Region is significant 
+
+nh.r <- adonis2(rel_nhme5 ~ Region, data = nh.meta.data_veg)
+
+print(nh.r)
+#region not significant on it's own
+
+nh.r <- adonis2(rel_nhme5 ~ Region + Treat_Type, data = nh.meta.data_veg)
+
+print(nh.r) #now TT is signficant, that is was put in second position --- seems not good
+```
+
+
+### PerMANOVA for TT
+```{r}
+nh.r <- adonis2(rel_nhme5 ~ Region*Treat_Type, data = nh.meta.data_veg)
+
+print(nh.r) #TT is significant --- should order of variables cause this change???
+
+nh.r2 <- adonis2(rel_nhme5 ~ Treat_Type*Region, data = nh.meta.data_veg)
+
+print(nh.r2) #now only region - not sure what this means
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,324 @@
+---
+title: "NMDS on understory veg data for APB"
+author: "Kathleen Stutzman"
+date: "2024-02-26"
+output: html_document
+---
+
+Libraries:
+```{r, message=FALSE, warning=FALSE}
+# libraries -------------------
+library(ggplot2)
+library(vegan)
+library(ggvegan)
+library(tidyverse)
+```
+
+Set working directory
+```{r, setup}
+knitr::opts_knit$set(root.dir = '/Users/user/Desktop/Data/Regen_RProj/')
+```
+
+Functions:
+```{r}
+# functions -------------------
+source("Functions/veganCovEllipse.R")
+```
+
+#### Source, tranform, select, and relativize ALB veg data (hidden)
+```{r, include=FALSE}
+source("Scripts/Veg_Data.R")
+rm(veg3)
+
+#split overall data from veg cover
+meta_apb <- veg2 %>%
+  filter(Region == "ALB") %>% 
+  select(Region, Treat_Type, Site, Plot_No) %>% 
+  distinct(Plot_No, .keep_all = TRUE)
+
+#pivot veg data wider and fill in zeros
+apb_wider <- veg2 %>% 
+  filter(Region == c("ALB")) %>% 
+  select(Plot_No, Species_Code, SP_Cover_midpoint) %>% 
+  group_by(Plot_No) %>% 
+  pivot_wider(names_from = Species_Code, values_from = SP_Cover_midpoint, values_fill = 0) 
+
+#create dataframe of site and plot
+apb_site <- veg2 %>% 
+  filter(Region == c("ALB")) %>% 
+  select(Site, Plot_No) %>% 
+  group_by(Site) %>% 
+  distinct(Plot_No, .keep_all = TRUE)
+
+# merge site and veg data; remove plot number
+mer.apb <- merge(apb_site, apb_wider, by = "Plot_No") %>% 
+  select(-Plot_No)
+
+#THIS IS 25 plots or more
+apb_5PER <- apb_wider %>% 
+  select(Plot_No,
+         QUIL,
+         GAPR,
+         VAPA,
+         CAPE,
+         GABA,
+         VAAN,
+         PTAQ,
+         RUSP,
+         #KAAN,
+         PIRI,
+         ACRU,
+         LYQU,
+         QUCO,
+         MELI,
+         CEOR,
+         COPE,
+         PRSE,
+         QUPR,
+         PAQU,
+         CEAM,
+         #QUAL,
+         PIST,
+         ARME,
+         LYBO,
+         POUN11,
+         RHGL
+         )
+
+# add site and lose plot number -------------------
+apb5 <- merge(apb_5PER, apb_site) %>% 
+  select(-Plot_No) %>% 
+  select(Site, everything())
+
+apb5_avg <- apb5 %>% 
+  group_by(Site) %>% 
+  summarise_at(vars(QUIL:RHGL), mean) %>% 
+  column_to_rownames(var = "Site")
+
+rm(apb5, apb_5PER, mer.apb)
+
+# relativize data, dividing each cell by the column total (to bring common and rare species closer together) -------------------
+rel_apb5 <- decostand(apb5_avg, method = 'total', MARGIN = 2)
+```
+
+### What's different about 5% min plot species for this region?
+```{r}
+apb_log_wider <- as.data.frame(lapply(apb_wider, as.logical))
+
+apb <- as.data.frame(colSums(apb_log_wider)) %>% 
+  rownames_to_column(var = "Species")
+
+# Species from the other 5% calcs
+# In NH/ME - no KAAN, QUAL
+
+# For this data set , 5% is ~6 plots:
+# Would add: FRSP, LOSP, SORU, VIDE, COAM, CICA, SOUN1, MICA, COSP, FRAL, ARNU, LUPE, AMSP, RHHI, SOUN2
+# If I stuck to at least 6, would lose: GAPR, PIST, LYBO
+
+rm(apb_log_wider, apb)
+```
+
+#### Source and transform envr & categorical data; merge for predictor df to compare nmds against (hidden)
+```{r, include=FALSE}
+time_since <- read_csv("CleanData/Treat_Year_Data.csv") # this is a dataframe with one row for each site
+
+# make sure ggpubs not on, or this won't load
+source("Scripts/Add_BA.R") #work on prism_BA, has total BA figures - do I need to change these as they were collected on a different scale?
+
+APB.PRISM1 <- prism_BA %>% 
+  select(Plot_No, BA_HA, PIRI.BA_HA)
+
+apb.prism2 <- merge(APB.PRISM1, apb_site, by = "Plot_No") %>% 
+  select(-Plot_No) %>% 
+  select(Site, everything())
+
+apb.prism4veg <- apb.prism2 %>% 
+  group_by(Site) %>% 
+  summarise_at(vars(BA_HA:PIRI.BA_HA), mean)
+
+rm(prism_BA, APB.PRISM1, apb.prism2)
+
+
+source("Scripts/Ground_Data.R") #work on ground 3
+
+apb.ground4 <- ground3 %>% 
+  select(Plot_No, Lichen, Moss, Rock, Mineral_Soil, Wood, Litter_Duff, avgLD)
+
+apb.ground5 <- merge(apb.ground4, apb_site, by = "Plot_No") %>% 
+  select(Site, everything()) %>% 
+  select(-c(Plot_No))
+
+apb.ground4veg <- apb.ground5 %>% 
+  group_by(Site) %>% 
+  summarise_at(vars(Lichen:avgLD), mean)
+
+rm(ground3, apb.ground4, ground)
+
+apb2 <- meta_apb %>% 
+  select(Region, Treat_Type, Site) %>% 
+  distinct(Site, .keep_all = TRUE)
+
+apbm1 <- merge(apb2, time_since, by = "Site")
+
+apbm2 <- merge(apbm1, apb.ground4veg, by = "Site")
+
+apb.meta_for.veg <- merge(apbm2, apb.prism4veg, by = "Site") %>% 
+  select(-c(Inventory_Yr, Treat_Yr))
+
+
+rm(apbm2, apbm1, time_since, apb.ground4veg, apb.prism4veg)
+
+rm(prism, veg2)
+```
+
+### Run NMDS
+```{r}
+# 3 dimensions
+# apb_3d <- metaMDS(rel_apb5,
+#                    distance = 'bray',
+#                    k = 3,
+#                    trymax = 20,
+#                    autotransform = FALSE)
+# converges, stress of 0.06 - 0.1
+
+# 2 dimensions
+apb_2d <- metaMDS(rel_apb5, 
+                   distance = 'bray', 
+                   k = 2, 
+                   trymax = 20,
+                   autotransform = FALSE)
+# this works and yields stress values of 0.12 - 0.35
+
+#rm(apb_3d)
+```
+
+
+### Make correlation data for bi-plots
+```{r, warning=FALSE}
+apb.veg_envr.data <- envfit(apb_2d, apb.meta_for.veg) #getting big SD is 0 warning
+apb.veg_spc.envr <- envfit(apb_2d, rel_apb5)
+
+
+
+# site data -------------------
+apb.site.scrs <- as.data.frame(scores(apb_2d, display = "sites"))
+
+apb.site.scrs <- cbind(apb.site.scrs , Treat_Type = apb.meta_for.veg$Treat_Type)
+
+# species data   -------------------
+apb.spp.scrs <- as.data.frame(scores(apb.veg_spc.envr, display = "vectors"))
+apb.spp.scrs <- cbind(apb.spp.scrs, Species = rownames(apb.spp.scrs))
+apb.spp.scrs <- cbind(apb.spp.scrs, pval = apb.veg_spc.envr$vectors$pvals)
+
+sig.apb_spp.scrs <- subset(apb.spp.scrs, pval<=0.05)
+
+# envr data -------------------
+apb.enr.scrs <- as.data.frame(scores(apb.veg_envr.data, display = "vectors"))
+apb.enr.scrs <- cbind(apb.enr.scrs, env.variables = rownames(apb.enr.scrs))
+apb.enr.scrs <- cbind(apb.enr.scrs, pval = apb.veg_envr.data$vectors$pvals)
+
+apb.sig_envr.scrs <- subset(apb.enr.scrs, pval<=0.05)
+```
+
+## GGPlot
+```{r}
+apb.nmds.plot <-  ggplot(apb.site.scrs, aes(x=NMDS1, y=NMDS2))+
+  geom_point(aes(NMDS1, NMDS2, colour = factor(apb.site.scrs$Treat_Type)), size = 2)+
+  coord_fixed()+
+  theme_classic()+
+  theme(panel.background = element_blank()) +
+  labs(colour = "Treatment Type", shape = "Region")+
+  theme(legend.position = "right", legend.text = element_text(size = 12), legend.title = element_text(size = 12), axis.text = element_text(size = 10))
+
+apb.nmds.plot + labs(title = "APB basic ordination plot")
+
+# add significant species -------------------
+
+apb.nmds.plot +
+  geom_segment(data = sig.apb_spp.scrs, aes(x=0, xend=NMDS1, y=0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")), colour = "grey10", lwd = 0.3)+
+  ggrepel::geom_text_repel(data = sig.apb_spp.scrs, aes(x=NMDS1, y=NMDS2, label = Species), cex = 3, direction = "both", segment.size = 0.25)+
+  labs(title = "NH/ME Ordination with species vectors")
+
+# add significant envr factors -------------------
+
+apb.nmds.plot +
+  geom_segment(data = apb.sig_envr.scrs, aes(x = 0, xend = NMDS1, y = 0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")))+
+  ggrepel::geom_text_repel(data = apb.sig_envr.scrs, aes(x=NMDS1, y=NMDS2, label = env.variables), cex = 4, direction = "both", segment.size = 0.25) +
+  labs(title = "APB Ordination with environmental vectors")
+```
+
+
+
+### Ellipse - there is some problem in rendering this, though I can run it in R
+```{r, eval=FALSE}
+
+
+
+
+df_ell.apb <- data.frame()
+
+apb.site.scrs$Treat_Type <- as.factor(apb.site.scrs$Treat_Type)
+
+
+for(i in levels(apb.site.scrs$Treat_Type)){
+  df_ell.apb <- rbind(df_ell.apb, cbind(as.data.frame(with(apb.site.scrs [apb.site.scrs$Treat_Type==i,],
+                                                         veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2))))) ,Treat_Type=i))
+}
+
+# data for labelling the ellipse
+NMDS.mean.veg=aggregate(apb.site.scrs[ ,c("NMDS1", "NMDS2")], 
+                         list(group = apb.site.scrs$Treat_Type), "mean")
+ 
+# data for labelling the ellipse
+NMDS.mean=aggregate(apb.site.scrs[,c("NMDS1", "NMDS2")], 
+                    list(group = apb.site.scrs$Treat_Type), "mean")
+
+apb.nmds.plot+
+  geom_path(data = df_ell.apb, aes(x=NMDS1, y=NMDS2, color = Treat_Type), show.legend = FALSE)
+```
+
+
+### Everything plotted together
+```{r}
+apb.nmds.plot+
+  #geom_path(data = df_ell.apb, aes(x=NMDS1, y=NMDS2, color = Treat_Type), show.legend = FALSE) +
+  geom_segment(data = sig.apb_spp.scrs, aes(x=0, xend=NMDS1, y=0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")), colour = "purple", lwd = 0.3)+
+  ggrepel::geom_text_repel(data = sig.apb_spp.scrs, aes(x=NMDS1, y=NMDS2, label = Species), cex = 3, direction = "both", segment.size = 0.25)+
+  geom_segment(data = apb.sig_envr.scrs, aes(x = 0, xend = NMDS1, y = 0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")))+
+  ggrepel::geom_text_repel(data = apb.sig_envr.scrs, aes(x=NMDS1, y=NMDS2, label = env.variables), cex = 4, direction = "both", segment.size = 0.25) +
+  labs(title = "APB Ordination plot")
+```
+
+### Run PerMANOVA to look at the impacts of region and treatment on community composition
+```{r}
+summary(as.factor(apb.meta_for.veg$Treat_Type))
+```
+
+
+```{r}
+adonis2(rel_apb5~Treat_Type, data = apb.meta_for.veg)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
