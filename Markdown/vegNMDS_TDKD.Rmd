@@ -19,6 +19,12 @@ Set working directory
 knitr::opts_knit$set(root.dir = '/Users/user/Desktop/Data/Regen_RProj/')
 ```
 
+Functions:
+```{r}
+# functions -------------------
+source("Functions/veganCovEllipse.R")
+```
+
 #### Hidden below is the import, transformation, and relativization of veg data
 ```{r, include=FALSE}
 source("Scripts/Veg_Data.R")
@@ -155,6 +161,106 @@ test_2d <- metaMDS(rel_veg5,
                    trymax = 20,
                    autotransform = FALSE)
 ```
+
+### Correlations for bi-plots (hidden)
+```{r, include  = FALSE}
+veg.envr <-  envfit(test_2d, meta.data_veg)
+veg.spc.envr <- envfit(test_2d, rel_veg5)
+
+site.scores <- as.data.frame(scores(test_2d, display = "sites")) #save NMDS results into dataframe
+site.scores <- cbind(site.scores, Treat_Type = meta.data_veg$Treat_Type) #add grouping variable treat type to dataframe
+site.scores <- cbind(site.scores, Region = meta.data_veg$Region)
+#site.scrs <- cbind(site.scrs, Site = rownames(site.scrs)) #add site names as variable if you want to display on plot
+
+
+# now for species -------------------
+spp.scrs <- as.data.frame(scores(veg.spc.envr, display = "vectors")) #save species intrinsic values into dataframe
+spp.scrs <- cbind(spp.scrs, Species = rownames(spp.scrs)) #add species names to dataframe
+spp.scrs <- cbind(spp.scrs, pval = veg.spc.envr$vectors$pvals) #add pvalues to dataframe so you can select species which are significant
+
+sig.spp.scrs <- subset(spp.scrs, pval<=0.003) #subset data to show species significant at 0.05
+
+
+# now for envr data -------------------
+env.scores.veg <- as.data.frame(scores(veg.envr, display = "vectors")) #extracts relevant scores from envifit
+env.scores.veg <- cbind(env.scores.veg, env.variables = rownames(env.scores.veg)) #and then gives them their names
+
+env.scores.veg <- cbind(env.scores.veg, pval = veg.envr$vectors$pvals) # add pvalues to dataframe
+sig.env.scrs <- subset(env.scores.veg, pval<=0.05) #subset data to show variables significant at 0.05
+```
+
+
+
+## Updated graphs
+```{r, fig.align='center'}
+nmds.plot.vegall <- ggplot(site.scores, aes(x=NMDS1, y=NMDS2))+ #sets up the plot
+  geom_point(aes(NMDS1, NMDS2, colour = factor(site.scores$Treat_Type), shape = factor(site.scores$Region)), size = 2)+ #adds site points to plot, shape determined by Landuse, colour determined by Management
+  coord_fixed()+
+  theme_classic()+ 
+  theme(panel.background = element_rect(fill = NA, colour = "black", size = 1, linetype = "solid"))+
+  labs(colour = "Treatment Type", shape = "Region")+ # add legend labels for Management and Landuse
+  theme(legend.position = "right", legend.text = element_text(size = 12), legend.title = element_text(size = 12), axis.text = element_text(size = 10)) # add legend at right of plot
+
+nmds.plot.vegall + labs(title = "Basic ordination plot") #displays plot
+
+
+
+
+
+
+nmds.plot.vegall+
+  geom_segment(data = sig.spp.scrs, aes(x = 0, xend=NMDS1, y=0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")), colour = "grey10", lwd=0.3) + #add vector arrows of significant species
+  ggrepel::geom_text_repel(data = sig.spp.scrs, aes(x=NMDS1, y=NMDS2, label = Species), cex = 3, direction = "both", segment.size = 0.25)+ #add labels for species, use ggrepel::geom_text_repel so that labels do not overlap
+  labs(title = "Ordination with species vectors")
+
+#maybe I should set a lower p value than 0.5? Set to 0.005, still too many - we'll also look per region-group analysis
+
+nmds.plot.vegall+
+  geom_segment(data = sig.env.scrs, aes(x = 0, xend=NMDS1, y=0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")), colour = "grey10", lwd=0.3) + #add vector arrows of significant env variables
+  ggrepel::geom_text_repel(data = sig.env.scrs, aes(x=NMDS1, y=NMDS2, label = env.variables), cex = 4, direction = "both", segment.size = 0.25)+ #add labels for env variables
+  labs(title="Ordination with environmental vectors")
+```
+
+### Ellipses (hidden)
+```{r, include=FALSE}
+#data for ellipse, in this case using the management factor
+df_ell.region <- data.frame() #sets up a data frame before running the function.
+ site.scores$Region <- as.factor(site.scores$Region)
+
+for(i in levels(site.scores$Region)){
+  df_ell.region <- rbind(df_ell.region, cbind(as.data.frame(with(site.scores [site.scores$Region==i,],
+                                                         veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2))))) ,Region=i))
+}
+ 
+
+ 
+# data for labelling the ellipse
+NMDS.mean.veg=aggregate(site.scores[ ,c("NMDS1", "NMDS2")], 
+                         list(group = site.scores$Region), "mean")
+ 
+# data for labelling the ellipse
+NMDS.mean=aggregate(site.scores[,c("NMDS1", "NMDS2")], 
+                    list(group = site.scores$Region), "mean")
+```
+
+## Overall graph
+```{r, fig.align='center'}
+nmds.plot.vegall+ 
+geom_path(data = df_ell.region, aes(x = NMDS1, y = NMDS2, color = Region)) +
+  geom_segment(data = sig.env.scrs, aes(x = 0, xend=NMDS1, y=0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")), colour = "purple", lwd=0.3) + #add vector arrows of significant env variables
+  ggrepel::geom_text_repel(data = sig.env.scrs, aes(x=NMDS1, y=NMDS2, label = env.variables), cex = 4, direction = "both", segment.size = 0.25)+#this is the ellipse, seperate ones by Site.
+  geom_segment(data = sig.spp.scrs, aes(x = 0, xend=NMDS1, y=0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")), colour = "grey10", lwd=0.3) + #add vector arrows of significant species
+  ggrepel::geom_text_repel(data = sig.spp.scrs, aes(x=NMDS1, y=NMDS2, label = Species), cex = 3, direction = "both", segment.size = 0.25)+
+  labs(title = "Overall NMDS with significant environmental and species vectors")
+```
+```
+
+
+
+
+
+
+
 
 ### Plot outcome in ordiplot for quick visual
 ```{r, fig.align='center'}
