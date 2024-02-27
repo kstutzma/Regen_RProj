@@ -1,5 +1,5 @@
 ---
-title: "Understory veg data for NH & ME"
+title: "NMDS on understory vegetation in Northern Barrens group (NH & ME)"
 author: "Kathleen Stutzman"
 date: "2024-02-23"
 output: html_document
@@ -54,36 +54,34 @@ nhme_site <- veg2 %>%
 mer.nhme <- merge(nhme_site, nhme_wider, by = "Plot_No") %>% 
   select(-Plot_No)
 
-#THIS IS 25 plots or more
+# FIND WHAT IS 5% FOR THIS REGION-GROUP (~7 plots)
+
+nhme_wider_log <- as.data.frame(lapply(nhme_wider, as.logical))
+
+nh.me <- as.data.frame(colSums(nhme_wider_log)) %>% 
+  rownames_to_column(var = "Species")
+
+#THIS IS 7 plots or more
 nhme_5PERC <- nhme_wider %>% 
   select(Plot_No,
-         QUIL,
-         GAPR,
-         #VAPA,
          CAPE,
-         GABA,
          VAAN,
+         GAPR,
+         QUIL,
          PTAQ,
-         RUSP,
-         KAAN,
-         PIRI,
          ACRU,
-         LYQU,
-         #QUCO,
-         MELI,
-         #CEOR,
+         KAAN,
          COPE,
-         PRSE,
-         #QUPR,
-         #PAQU,
-         #CEAM,
-         #QUAL,
-         PIST,
+         VAMY,
+         MELI,
          ARME,
          LYBO,
-         #POUN11,
-         #RHGL
+         PIST,
+         PIRI,
+         MICA
          )
+
+rm(nhme_wider_log, nh.me)
 
 # add site and lose plot number -------------------
 nhme5 <- merge(nhme_5PERC, nhme_site) %>% 
@@ -92,7 +90,7 @@ nhme5 <- merge(nhme_5PERC, nhme_site) %>%
 
 nhme5_avg <- nhme5 %>% 
   group_by(Site) %>% 
-  summarise_at(vars(QUIL:LYBO), mean) %>% 
+  summarise_at(vars(CAPE:MICA), mean) %>% 
   column_to_rownames(var = "Site")
 
 rm(nhme5, nhme_5PERC, mer.nhme)
@@ -101,22 +99,9 @@ rm(nhme5, nhme_5PERC, mer.nhme)
 rel_nhme5 <- decostand(nhme5_avg, method = 'total', MARGIN = 2)
 ```
 
-### What's different about 5% min plot species for this region?
-```{r}
-nhme_wider_log <- as.data.frame(lapply(nhme_wider, as.logical))
+Species found in at least 5% (7 plots) of plots in Northern Barrens are:
+CAPE, VAAN, GAPR, QUIL, PTAQ, ACRU, KAAN, COPE, VAMY, MELI, ARME, LYBO, PIST, PIRI, & MICA
 
-nh.me <- as.data.frame(colSums(nhme_wider_log)) %>% 
-  rownames_to_column(var = "Species")
-
-# Species from the other 5% calcs
-# In NH/ME - no VAPA, QUCO, CEOR, QUPR, PAQU, CEAM, QUAL, POUN11, & RHGL
-
-# For this data set , 5% is ~7 plots:
-# Would add: VAMY, MICA
-# If I stuck to at least 7, would lose: GABA, RUSP, LYQU, PRSE 
-
-rm(nhme_wider_log, nh.me)
-```
 
 #### Source and transform envr & categorical data; merge for predictor df to compare nmds against (hidden)
 ```{r, include=FALSE}
@@ -174,12 +159,12 @@ rm(prism, veg2)
 ### Run NMDS
 ```{r}
 # 3 dimensions
-# nhme_3d <- metaMDS(rel_nhme5, 
-#                    distance = 'bray', 
-#                    k = 3, 
+# nhme_3d <- metaMDS(rel_nhme5,
+#                    distance = 'bray',
+#                    k = 3,
 #                    trymax = 20,
 #                    autotransform = FALSE)
-# converges, stress of 0.088 - 0.13
+# converges, stress of 0.095 - 0.11
 
 # 2 dimensions
 nhme_2d <- metaMDS(rel_nhme5, 
@@ -187,7 +172,7 @@ nhme_2d <- metaMDS(rel_nhme5,
                    k = 2, 
                    trymax = 20,
                    autotransform = FALSE)
-# this works and yields stress values of 0.17 - 0.25
+# this works and yields stress values of 0.15 - 0.22
 ```
 
 
@@ -328,7 +313,7 @@ summary(as.factor(nh.meta.data_veg$Treat_Type))
 
 ```{r, include=FALSE, eval=FALSE}
 #first look
-nh.tt <- adonis2(rel_nhme5 ~ Treat_Type + Region + Region*Treat_Type, data = nh.meta.data_veg)
+nh.tt <- adonis2(rel_nhme5 ~ Treat_Type, data = nh.meta.data_veg)
 
 print(nh.tt)
 # TT not significant; can see a grouping - what does this mean?
@@ -347,31 +332,84 @@ print(nh.r) #now TT is signficant, that is was put in second position --- seems 
 
 ### PerMANOVA for TT
 ```{r}
-nh.r <- adonis2(rel_nhme5 ~ Region*Treat_Type, data = nh.meta.data_veg)
+#create treated vs. untreated category
+nh.meta.data_veg$Trt_Ctl <- ifelse((nh.meta.data_veg$Treat_Type != "Control"), 'treated', 'untreated')
 
-print(nh.r) #TT is significant --- should order of variables cause this change???
+nh.t_ut <- adonis2(rel_nhme5 ~Trt_Ctl, data = nh.meta.data_veg) 
 
-nh.r2 <- adonis2(rel_nhme5 ~ Treat_Type*Region, data = nh.meta.data_veg)
+print(nh.t_ut) # not significant
 
-print(nh.r2) #now only region - not sure what this means
+nh.t <- adonis2(rel_nhme5 ~ Treat_Type, data = nh.meta.data_veg) 
+
+print(nh.t) # not significant
+
+nh.rtt <- adonis2(rel_nhme5 ~ Region*Treat_Type, data = nh.meta.data_veg)
+
+print(nh.rtt) #TT now significant, still changes with order of variables - maybe this is because mowing only exists in NH?
+
+nh.rt_ut <- adonis2(rel_nhme5 ~ Trt_Ctl*Region, data = nh.meta.data_veg)
+
+print(nh.rt_ut) #not significant (either order)
+
+rm(nh.t, nh.t_ut, nh.rt_ut, nh.rtt)
 ```
 
 
 
 
+### Pairwise analysis of treatment type
+```{r, warning=FALSE, message=FALSE}
+library(pairwiseAdonis)
+
+pairwise.adonis2(rel_nhme5 ~ Treat_Type, data = nh.meta.data_veg)
+# not significant - mow and fall rx almost closest, but not really, now that I've changed the species to reflect the region-group as opposed to the overall
+```
 
 
 
+### Indicator species analysis
+Will want to run for each treatment type
+```{r, warning=FALSE, message=FALSE}
+require(labdsv)
+
+# I don't think I should calculate this on relativized data, so : nhme5_avg & nh.meta.data_veg
+
+#create group #s for treatments
+
+
+nh.meta.data_veg$Treat_Group <- NA
+
+nh.meta.data_veg$Treat_Group <- ifelse( nh.meta.data_veg$Treat_Type == "FallRx", 1, nh.meta.data_veg$Treat_Group)
+
+nh.meta.data_veg$Treat_Group <- ifelse( nh.meta.data_veg$Treat_Type == "MowRx", 2, nh.meta.data_veg$Treat_Group)
+
+nh.meta.data_veg$Treat_Group<- ifelse( nh.meta.data_veg$Treat_Type == "Control", 3, nh.meta.data_veg$Treat_Group)
 
 
 
+# indicator species analysis
+nhme_isa <- indval(nhme5_avg, nh.meta.data_veg$Treat_Group)
 
 
+summary(nhme_isa)
+
+gr <- nhme_isa$maxcls[nhme_isa$pval <= 0.05]
+iv <- nhme_isa$indcls[nhme_isa$pval <= 0.05]
+pv <- nhme_isa$pval[nhme_isa$pval <= 0.05]
+fr <- apply(nhme5_avg > 0, 2, sum)[nhme_isa$pval <= 0.05]
+fridg <- data.frame(group=gr, indval=iv, pvalue=pv, freq=fr)
+fridg <- fridg[order(fridg$group, -fridg$indval),]
+
+print(fridg)
+# 1 is FallRx
+# 2 is MowRx
+# 3 is Control
+
+```
 
 
-
-
-
+#### NH_ME MowRx indicator : COPE
+#### NH_ME Control indicator : PIST
 
 
 

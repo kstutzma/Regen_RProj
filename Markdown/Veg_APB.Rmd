@@ -1,5 +1,5 @@
 ---
-title: "NMDS on understory veg data for APB"
+title: "NMDS on understory vegetation in Inland Barrens group (APB)"
 author: "Kathleen Stutzman"
 date: "2024-02-26"
 output: html_document
@@ -54,36 +54,54 @@ apb_site <- veg2 %>%
 mer.apb <- merge(apb_site, apb_wider, by = "Plot_No") %>% 
   select(-Plot_No)
 
-#THIS IS 25 plots or more
+# Find what is 5% os this region-group (~6 plots)
+apb_log_wider <- as.data.frame(lapply(apb_wider, as.logical))
+
+apb <- as.data.frame(colSums(apb_log_wider)) %>% 
+  rownames_to_column(var = "Species")
+
+
+#THIS IS 6 plots or more
 apb_5PER <- apb_wider %>% 
   select(Plot_No,
-         QUIL,
-         GAPR,
-         VAPA,
-         CAPE,
-         GABA,
-         VAAN,
-         PTAQ,
          RUSP,
-         #KAAN,
-         PIRI,
-         ACRU,
+         CAPE,
          LYQU,
-         QUCO,
-         MELI,
          CEOR,
-         COPE,
-         PRSE,
-         QUPR,
+         QUIL,
+         PTAQ,
+         VAPA,
          PAQU,
          CEAM,
-         #QUAL,
-         PIST,
-         ARME,
-         LYBO,
+         ACRU,
+         GABA,
+         PRSE,
+         RHGL,
          POUN11,
-         RHGL
-         )
+         QUPR,
+         FRSP,
+         COPE,
+         LOSP,
+         PIRI,
+         SORU,
+         VIDE,
+         COAM,
+         CICA,
+         SOUN1,
+         MELI,
+         MICA,
+         COSP,
+         ARME,
+         FRAL,
+         ARNU,
+         QUCO, 
+         LUPE,
+         AMSP,
+         RHHI,
+         VAAN,
+         SOUN2)
+
+rm(apb_log_wider, apb)
 
 # add site and lose plot number -------------------
 apb5 <- merge(apb_5PER, apb_site) %>% 
@@ -92,7 +110,7 @@ apb5 <- merge(apb_5PER, apb_site) %>%
 
 apb5_avg <- apb5 %>% 
   group_by(Site) %>% 
-  summarise_at(vars(QUIL:RHGL), mean) %>% 
+  summarise_at(vars(RUSP:SOUN2), mean) %>% 
   column_to_rownames(var = "Site")
 
 rm(apb5, apb_5PER, mer.apb)
@@ -101,22 +119,9 @@ rm(apb5, apb_5PER, mer.apb)
 rel_apb5 <- decostand(apb5_avg, method = 'total', MARGIN = 2)
 ```
 
-### What's different about 5% min plot species for this region?
-```{r}
-apb_log_wider <- as.data.frame(lapply(apb_wider, as.logical))
+Species found in at least 5% (6 plots) of plots in Inland Barrens are:
+RUSP, CAPE, LYQU, CEOR, QUIL, PTAQ, VAPA, PAQU, CEAM, ACRU, GABA, PRSE, RHGL, POUN11, QUPR, FRSP, COPE, LOSP, PIRI, SORU, VIDE, COAM, CICA, SOUN1, MELI, MICA, COSP, ARME, FRAL, ARNU, QUCO, LUPE, AMSP, RHHI, VAAN, SOUN2
 
-apb <- as.data.frame(colSums(apb_log_wider)) %>% 
-  rownames_to_column(var = "Species")
-
-# Species from the other 5% calcs
-# In NH/ME - no KAAN, QUAL
-
-# For this data set , 5% is ~6 plots:
-# Would add: FRSP, LOSP, SORU, VIDE, COAM, CICA, SOUN1, MICA, COSP, FRAL, ARNU, LUPE, AMSP, RHHI, SOUN2
-# If I stuck to at least 6, would lose: GAPR, PIST, LYBO
-
-rm(apb_log_wider, apb)
-```
 
 #### Source and transform envr & categorical data; merge for predictor df to compare nmds against (hidden)
 ```{r, include=FALSE}
@@ -187,7 +192,7 @@ apb_2d <- metaMDS(rel_apb5,
                    k = 2, 
                    trymax = 20,
                    autotransform = FALSE)
-# this works and yields stress values of 0.12 - 0.35
+# this works and yields stress values of 0.12 - 0.25
 
 #rm(apb_3d)
 ```
@@ -246,10 +251,10 @@ apb.nmds.plot +
   ggrepel::geom_text_repel(data = apb.sig_envr.scrs, aes(x=NMDS1, y=NMDS2, label = env.variables), cex = 4, direction = "both", segment.size = 0.25) +
   labs(title = "APB Ordination with environmental vectors")
 ```
+Could lower the pval to reduce # of species, range from 0.004 - 0.044
 
 
-
-### Ellipse - there is some problem in rendering this, though I can run it in R
+### Ellipse - there is a problem with chol(cov) within veganCovEllipse function - need to find another way
 ```{r, eval=FALSE}
 
 
@@ -298,19 +303,57 @@ summary(as.factor(apb.meta_for.veg$Treat_Type))
 ```{r}
 adonis2(rel_apb5~Treat_Type, data = apb.meta_for.veg)
 ```
+this changes with each run; from 0.04 - 0.06
+
+
+### Pairwise analysis of treatment type
+```{r}
+library(pairwiseAdonis)
+
+pairwise.adonis2(rel_apb5 ~ Treat_Type, data = apb.meta_for.veg)
+
+```
+
+
+#### MowRx significantly different from Control
 
 
 
 
 
+### Indicator species analysis
+```{r, warning=FALSE, message=FALSE}
+library(labdsv)
+
+apb.meta_for.veg$Treat_Group <- NA
+
+apb.meta_for.veg$Treat_Group <- ifelse( apb.meta_for.veg$Treat_Type == "SpringRx", 1, apb.meta_for.veg$Treat_Group)
+
+apb.meta_for.veg$Treat_Group <- ifelse( apb.meta_for.veg$Treat_Type == "MowRx", 2, apb.meta_for.veg$Treat_Group)
+
+apb.meta_for.veg$Treat_Group<- ifelse( apb.meta_for.veg$Treat_Type == "Control", 3, apb.meta_for.veg$Treat_Group)
 
 
+apb_isa <- indval(apb5_avg, apb.meta_for.veg$Treat_Group)
+
+summary(apb_isa)
 
 
+gr <- apb_isa$maxcls[apb_isa$pval <= 0.05]
+iv <- apb_isa$indcls[apb_isa$pval <= 0.05]
+pv <- apb_isa$pval[apb_isa$pval <= 0.05]
+fr <- apply(apb5_avg > 0, 2, sum)[apb_isa$pval <= 0.05]
+fridg <- data.frame(group=gr, indval=iv, pvalue=pv, freq=fr)
+fridg <- fridg[order(fridg$group, -fridg$indval),]
 
+print(fridg)
+# 1 is SpringRx
+# 2 is MowRx
+# 3 is Control
+```
 
-
-
+### APB MowRx indicator: QUIL
+### APB Control indicators: VIDE, MICA, & PRSE
 
 
 

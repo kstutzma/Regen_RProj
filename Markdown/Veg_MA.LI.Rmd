@@ -1,5 +1,5 @@
 ---
-title: "Understory veg ordination for MA & LI"
+title: "NMDS on understory vegetation in Coastal Barrens group (MA & LI)"
 author: "Kathleen Stutzman"
 date: "2024-02-26"
 output: html_document
@@ -55,36 +55,34 @@ mali_site <- veg2 %>%
 mer.mali <- merge(mali_site, mali_wider, by = "Plot_No") %>% 
   select(-Plot_No)
 
-#THIS IS 25 plots or more
+mali_wider_log <- as.data.frame(lapply(mali_wider, as.logical))
+
+ma.li <- as.data.frame(colSums(mali_wider_log)) %>% 
+  rownames_to_column(var = "Species")
+
+
+
+#THIS IS 11 plots or more
 mali_5PERC <- mali_wider %>% 
   select(Plot_No,
+         VAPA,
+         GABA,
          QUIL,
          GAPR,
-         VAPA,
-         CAPE,
-         GABA,
          VAAN,
          PTAQ,
-         RUSP,
-         KAAN,
-         PIRI,
-         ACRU,
-         #LYQU,
          QUCO,
+         PIRI,
+         KAAN,
          MELI,
-         #CEOR,
-         COPE,
-         PRSE,
-         QUPR,
-         #PAQU,
-         #CEAM,
+         RUSP,
+         CAPE,
          QUAL,
-         PIST,
-         #ARME,
-         #LYBO,
-         POUN11,
-         #RHGL
+         SMGL,
+         QUPR
          )
+
+rm(mali_wider_log, ma.li)
 
 # add site and lose plot number -------------------
 mali5 <- merge(mali_5PERC, mali_site) %>% 
@@ -93,7 +91,7 @@ mali5 <- merge(mali_5PERC, mali_site) %>%
 
 mali5_avg <- mali5 %>% 
   group_by(Site) %>% 
-  summarise_at(vars(QUIL:POUN11), mean) %>% 
+  summarise_at(vars(VAPA:QUPR), mean) %>% 
   column_to_rownames(var = "Site")
 
 rm(mali5, mali_5PERC, mer.mali)
@@ -102,23 +100,10 @@ rm(mali5, mali_5PERC, mer.mali)
 rel_mali5 <- decostand(mali5_avg, method = 'total', MARGIN = 2)
 ```
 
+Species found in at least 5% (11 plots) of plots in Coastal Barrens are:
+VAPA, GABA, QUIL, GAPR, VAAN, PTAQ, QUCO, PIRI, KAAN, MELI, RUSP, CAPE, QUAL, SMGL, & QUPR
 
-### What's different about 5% min plot species for this region?
-```{r}
-mali_wider_log <- as.data.frame(lapply(mali_wider, as.logical))
 
-ma.li <- as.data.frame(colSums(mali_wider_log)) %>% 
-  rownames_to_column(var = "Species")
-
-# Species from the other 5% calcs
-# In NH/ME - no LYQU, CEOR, PAQU, CEAM, ARME, LYBO, RHGL
-
-# For this data set , 5% is ~11 plots:
-# Would add: SMGL
-# If I stuck to at least 11, would lose: ACRU, COPE, PRSE, PIST, POUN11
-
-rm(mali_wider_log, ma.li)
-```
 
 #### Source and transform envr & categorical data; merge for predictor df to compare nmds against (hidden)
 ```{r, include=FALSE}
@@ -181,8 +166,9 @@ mali_3d <- metaMDS(rel_mali5,
                    k = 3,
                    trymax = 20,
                    autotransform = FALSE)
-# converges, stress of 0.13 - 0.15
+# converges, stress of 0.127 - 0.128
 
+set.seed(2)
 # 2 dimensions
 mali_2d <- metaMDS(rel_mali5, 
                    distance = 'bray', 
@@ -190,7 +176,9 @@ mali_2d <- metaMDS(rel_mali5,
                    try = 40,
                    trymax = 40,
                    autotransform = FALSE)
-# stress is too high to represent in 2 dimensions
+# stress still too high to represent in 2 dimensions, lowest is ~ 0.2
+
+rm(mali_2d)
 ```
 
 
@@ -221,8 +209,9 @@ ma.sig_envr.scrs <- subset(ma.envr.scrs, pval<=0.05)
 
 
 ## Need to think about how to represent 3D
+Really need to figure out how to represent in 2D: figure out the % variation represented by each axis and use the 2 that represent the most variation (can also do multiple 2D graphs)
 
-```{r}
+```{r, message=FALSE}
 library(plotly)
 
 fort.mali3 <- fortify(mali_3d) %>% 
@@ -246,18 +235,60 @@ summary(as.factor(ma.meta.data_veg$Treat_Type))
 ```
 
 ```{r}
-ma.tt <- adonis2(rel_mali5 ~ Treat_Type*Region, data = ma.meta.data_veg)
+ma.tt <- adonis2(rel_mali5 ~ Treat_Type, data = ma.meta.data_veg)
 
 print(ma.tt)
-
-#each are significant, but the interaction is not
 ```
 
 
 
+### Pairwise follow up
+```{r, warning=FALSE, message=FALSE}
+library(pairwiseAdonis)
+
+pairwise.adonis2(rel_mali5 ~ Treat_Type, data = ma.meta.data_veg)
+
+#significant: SpringRx vs. MowRx; SpringRx vs. Harvest (borderline at 0.051); MowRx vs. Harvest; MowRx vs Control; Harvest vs Control
+```
+
+### Indicator species analysis
+```{r, warning=FALSE, message=FALSE}
+library(labdsv)
+
+ma.meta.data_veg$Treat_Group <- NA
+
+ma.meta.data_veg$Treat_Group <- ifelse( ma.meta.data_veg$Treat_Type == "FallRx", 1, ma.meta.data_veg$Treat_Group)
+
+ma.meta.data_veg$Treat_Group <- ifelse( ma.meta.data_veg$Treat_Type == "MowRx", 2, ma.meta.data_veg$Treat_Group)
+
+ma.meta.data_veg$Treat_Group<- ifelse( ma.meta.data_veg$Treat_Type == "SpringRx", 3, ma.meta.data_veg$Treat_Group)
+
+ma.meta.data_veg$Treat_Group<- ifelse( ma.meta.data_veg$Treat_Type == "Harvest", 4, ma.meta.data_veg$Treat_Group)
+
+ma.meta.data_veg$Treat_Group<- ifelse( ma.meta.data_veg$Treat_Type == "Control", 5, ma.meta.data_veg$Treat_Group)
+
+mali_isa <- indval(mali5_avg, ma.meta.data_veg$Treat_Group)
+
+summary(mali_isa)
 
 
+gr <- mali_isa$maxcls[mali_isa$pval <= 0.05]
+iv <- mali_isa$indcls[mali_isa$pval <= 0.05]
+pv <- mali_isa$pval[mali_isa$pval <= 0.05]
+fr <- apply(mali5_avg > 0, 2, sum)[mali_isa$pval <= 0.05]
+fridg <- data.frame(group=gr, indval=iv, pvalue=pv, freq=fr)
+fridg <- fridg[order(fridg$group, -fridg$indval),]
 
+print(fridg)
+# 1 is FallRx
+# 2 is MowRx
+# 3 is SpringRx
+# 4 is Harvest
+# 5 is Control
+```
+
+### MA_LI MowRx indicators: QUPR, KAAN, RUSP
+### MA_LI Harvest indicator: SMGL
 
 
 
