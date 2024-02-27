@@ -222,6 +222,22 @@ ma.sig_envr.scrs <- subset(ma.envr.scrs, pval<=0.05)
 
 ## Need to think about how to represent 3D
 
+```{r}
+library(plotly)
+
+fort.mali3 <- fortify(mali_3d) %>% 
+  filter(score == "sites")
+
+
+
+plot_ly(x = fort.mali3$NMDS1, y = fort.mali3$NMDS2, z= fort.mali3$NMDS3, type = "scatter3d", mode = "markers", color = ma.meta.data_veg$Treat_Type, symbols = ma.meta.data_veg$Region)
+
+
+```
+
+
+
+
 
 
 ### Run PerMANOVA to look at the impacts of region and treatment on community composition
