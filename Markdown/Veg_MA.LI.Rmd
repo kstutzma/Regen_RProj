@@ -12,6 +12,7 @@ library(ggplot2)
 library(vegan)
 library(ggvegan)
 library(tidyverse)
+library(ggordiplots)
 ```
 
 Set working directory
@@ -22,7 +23,7 @@ knitr::opts_knit$set(root.dir = '/Users/user/Desktop/Data/Regen_RProj/')
 Functions:
 ```{r}
 # functions -------------------
-source("Functions/veganCovEllipse.R")
+
 ```
 
 
@@ -200,32 +201,128 @@ ma.spp.scrs <- cbind(ma.spp.scrs, pval = ma.veg_spc.envr$vectors$pvals)
 
 sig.ma_spp.scrs <- subset(ma.spp.scrs, pval<=0.05)
 
+print(sig.ma_spp.scrs)
+
+# create species vectors for indicator species -------------------
+mali.ind.spp <- ma.spp.scrs %>% 
+  filter(Species %in% c('QUPR', "KAAN", "RUSP", "SMGL"))
+
 # envr data -------------------
 ma.envr.scrs <- as.data.frame(scores(ma.veg_enr, display = "vectors"))
 ma.envr.scrs <- cbind(ma.envr.scrs, env.variables = rownames(ma.envr.scrs))
 ma.envr.scrs <- cbind(ma.envr.scrs, pval = ma.veg_enr$vectors$pvals)
 ma.sig_envr.scrs <- subset(ma.envr.scrs, pval<=0.05)
+
+print(ma.sig_envr.scrs)
+
+ma.sig_envr.scrs <- ma.sig_envr.scrs %>% 
+  filter(env.variables != "BA_HA")
 ```
 
+#### Significant species are: GAPR, VAAN, QUCO, PIRI, KAAN, MELI, RUSP, SMGL, QUPR
 
-## Need to think about how to represent 3D
-Really need to figure out how to represent in 2D: figure out the % variation represented by each axis and use the 2 that represent the most variation (can also do multiple 2D graphs)
+#### Significant environmental factors are: Moss, Basal area per hectare, and PIRI basal area per hectare. 
+I'm only going to keep one BA measure; PIRI has a lower p value, so thinking that one, but open to other ideas.
 
-```{r, message=FALSE}
+## This is a 3D ordination being represented by 2D
+Using the first two axes, which represent the most variation in the ordination space
+
+```{r, message=FALSE, fig.align='center'}
 library(plotly)
 
 fort.mali3 <- fortify(mali_3d) %>% 
   filter(score == "sites")
 
+plot_ly(x = fort.mali3$NMDS1, y = fort.mali3$NMDS2, z= fort.mali3$NMDS3, type = "scatter3d", mode = "markers", color = ma.meta.data_veg$Treat_Type, )
+# Here is a 3D plot, just to show
 
+stressplot(mali_3d)
 
-plot_ly(x = fort.mali3$NMDS1, y = fort.mali3$NMDS2, z= fort.mali3$NMDS3, type = "scatter3d", mode = "markers", color = ma.meta.data_veg$Treat_Type, symbols = ma.meta.data_veg$Region)
-
-
+ordicloud(mali_3d)
 ```
 
 
+## GG plot
+```{r, fig.align='center'}
+# based on the idea that NMDS scores express the highest variation in first axis and on down, I will plot the 1st two and take a look -------------------
+# control = yellow, fallrx = dark green, harvest = beige, mowrx = light green, spring rx = red
 
+colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")
+
+# create ellipse plot -------------------
+mali.plot.e <- gg_ordiplot(mali_3d, groups = ma.meta.data_veg$Treat_Type)
+
+# pull out ellipse data -------------------
+ellipse.mali <- fortify(mali.plot.e$df_ellipse) %>% 
+  group_by(Group)
+
+# base plot -------------------
+ma.nmds.plot <-  ggplot(ma.site.scrs, aes(x=NMDS1, y=NMDS2))+
+  geom_point(aes(NMDS1, NMDS2, colour = factor(ma.site.scrs$Treat_Type), shape = factor(ma.site.scrs$Region)), size = 2)+
+  scale_color_manual(values =  c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15"))+
+  coord_fixed()+
+  theme_classic()+
+  theme(panel.background = element_blank()) +
+  labs(colour = "Treatment Type", shape = "Region")+
+  theme(legend.position = "right", legend.text = element_text(size = 12), legend.title = element_text(size = 12), axis.text = element_text(size = 10))
+
+# plot with ellipse -------------------
+ma.nmds.plot + 
+  geom_path(data = ellipse.mali, aes(x=x, y=y, color=Group),  linejoin = "round", show.legend = FALSE)+
+  labs(title = "Coastal barrens ordination \n (Axes 1 & 2")+
+  theme(plot.title=element_text(hjust=0.5, size=20))
+
+# add significant species -------------------
+ma.nmds.plot +
+  geom_path(data = ellipse.mali, aes(x=x, y=y, color=Group),  linejoin = "round", show.legend = FALSE)+
+  geom_segment(data = sig.ma_spp.scrs, aes(x=0, xend=NMDS1, y=0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")), colour = "grey10", lwd = 0.3)+
+  ggrepel::geom_text_repel(data = sig.ma_spp.scrs, aes(x=NMDS1, y=NMDS2, label = Species), cex = 3, direction = "both", segment.size = 0.25)+
+  labs(title = "Coastal barrens ordination with \n significant species (Axes 1 & 2)")+
+  theme(plot.title=element_text(hjust=0.5, size=20))
+
+# add indicators species -------------------
+ind.sp.mali_color <- c("QUPR" = "#81A88D", "KAAN" = "#81A88D", "SMGL" = "#A2A475", "RUSP" = "#81A88D")
+
+ma.nmds.plot +
+  geom_path(data = ellipse.mali, aes(x=x, y=y, color=Group),  linejoin = "round", show.legend = FALSE)+
+  geom_segment(data = mali.ind.spp, aes(x=0, xend=NMDS1, y=0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")), colour = ind.sp.mali_color, lwd = 0.75)+
+  ggrepel::geom_text_repel(data = mali.ind.spp, aes(x=NMDS1, y=NMDS2, label = Species), cex = 3, direction = "both", segment.size = 0.25)+
+  labs(title = "Coastal barrens ordination with \n indicator species (Axes 1 & 2)")+
+  theme(plot.title=element_text(hjust=0.5, size=20))
+
+# add significant envr factors -------------------
+
+ma.nmds.plot +
+  geom_path(data = ellipse.mali, aes(x=x, y=y, color=Group),  linejoin = "round", show.legend = FALSE)+
+  geom_segment(data = ma.sig_envr.scrs, aes(x = 0, xend = NMDS1, y = 0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")))+
+  ggrepel::geom_text_repel(data = ma.sig_envr.scrs, aes(x=NMDS1, y=NMDS2, label = env.variables), cex = 4, direction = "both", segment.size = 0.25) +
+  labs(title = "Coastal barrens ordination with \n environmental vectors (Axes 1 & 2)")+
+  theme(plot.title=element_text(hjust=0.5, size=20))
+```
+
+### Plot with significant species & envr factors
+```{r, fig.align='center'}
+ma.nmds.plot +
+  geom_path(data = ellipse.mali, aes(x=x, y=y, color=Group),  linejoin = "round", show.legend = FALSE)+
+  geom_segment(data = sig.ma_spp.scrs, aes(x=0, xend=NMDS1, y=0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")), colour = "grey10", lwd = 0.3)+
+  ggrepel::geom_text_repel(data = sig.ma_spp.scrs, aes(x=NMDS1, y=NMDS2, label = Species), cex = 3, direction = "both", segment.size = 0.25)+
+  geom_segment(data = mali.ind.spp, aes(x=0, xend=NMDS1, y=0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")), colour = ind.sp.mali_color, lwd = 0.75)+
+  ggrepel::geom_text_repel(data = mali.ind.spp, aes(x=NMDS1, y=NMDS2, label = Species), cex = 3, direction = "both", segment.size = 0.25)+
+  labs(title = "Coastal barrens ordination with significant \n species & environmental factors (Axes 1 & 2)")+
+  theme(plot.title=element_text(hjust=0.5, size=20))
+```
+
+### Plot with indcator species & envr factors
+```{r, fig.align='center'}
+ma.nmds.plot +
+  geom_path(data = ellipse.mali, aes(x=x, y=y, color=Group),  linejoin = "round", show.legend = FALSE)+
+  geom_segment(data = mali.ind.spp, aes(x=0, xend=NMDS1, y=0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")), colour = ind.sp.mali_color, lwd = 0.75)+
+  ggrepel::geom_text_repel(data = mali.ind.spp, aes(x=NMDS1, y=NMDS2, label = Species), cex = 3, direction = "both", segment.size = 0.25)+
+  geom_segment(data = ma.sig_envr.scrs, aes(x = 0, xend = NMDS1, y = 0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")))+
+  ggrepel::geom_text_repel(data = ma.sig_envr.scrs, aes(x=NMDS1, y=NMDS2, label = env.variables), cex = 4, direction = "both", segment.size = 0.25) +
+  labs(title = "Coastal barrens ordination with indicator \n species & environmental factors (Axes 1 & 2)")+
+  theme(plot.title=element_text(hjust=0.5, size=20))
+```
 
 
 

@@ -12,6 +12,7 @@ library(ggplot2)
 library(vegan)
 library(ggvegan)
 library(tidyverse)
+library(ggordiplots)
 ```
 
 Set working directory
@@ -22,7 +23,7 @@ knitr::opts_knit$set(root.dir = '/Users/user/Desktop/Data/Regen_RProj/')
 Functions:
 ```{r}
 # functions -------------------
-source("Functions/veganCovEllipse.R")
+
 ```
 
 #### Source, tranform, select, and relativize NH & ME veg data (hidden)
@@ -194,84 +195,118 @@ nh.spp.scrs <- cbind(nh.spp.scrs, pval = nh.veg_spc.envr$vectors$pvals)
 
 sign.nh_spp.scrs <- subset(nh.spp.scrs, pval<=0.05)
 
+print(sign.nh_spp.scrs)
+
+# create species vectors for indicator species -------------------
+
+nh.indc.spp <- nh.spp.scrs %>% 
+  filter(Species %in% c("COPE", "PIST"))
+
 # envr data -------------------
 nh.envr.scrs <- as.data.frame(scores(nh.veg_envr.data, display = "vectors"))
 nh.envr.scrs <- cbind(nh.envr.scrs, env.variables = rownames(nh.envr.scrs))
 nh.envr.scrs <- cbind(nh.envr.scrs, pval = nh.veg_envr.data$vectors$pvals)
 nh.sig_envr.scrs <- subset(nh.envr.scrs, pval<=0.05)
+
+print(nh.sig_envr.scrs)
 ```
 
+#### Significant species are: VAAN, QUIL, ACRU, KAAN, COPE, MELI, & LYBO
+
+#### Significant environmental factors are: average leaf litter depth
 
 ## GGPlot
 ```{r, fig.align='center'}
+
+# I'd like the colors to represent the same treatment types across all regions, so I want to set a color vector to draw on. I'll need 5 colors - keep consistent with GLMMs?
+colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")
+
+# control = yellow, fallrx = dark green, harvest = beige, mowrx = light green, spring rx = red
+
+
+# Can make an ellipse/hull plot and then pull out ellipse and/or hull data to feed into later ggplots
+nh.plot.e <- gg_ordiplot(nhme_2d, groups = nh.meta.data_veg$Treat_Type)
+
+hull <- fortify(nh.plot.e$df_hull) %>% 
+  group_by(Group)
+
+elipse <- fortify(nh.plot.e$df_ellipse) %>% 
+  group_by(Group)
+
 nh.nmds.plot <-  ggplot(nh.site.scrs, aes(x=NMDS1, y=NMDS2))+
   geom_point(aes(NMDS1, NMDS2, colour = factor(nh.site.scrs$Treat_Type), shape = factor(nh.site.scrs$Region)), size = 2)+
+  scale_color_manual(values = c("#D8B70A", "#02401B", "#81A88D"))+
   coord_fixed()+
   theme_classic()+
   theme(panel.background = element_blank()) +
   labs(colour = "Treatment Type", shape = "Region")+
   theme(legend.position = "right", legend.text = element_text(size = 12), legend.title = element_text(size = 12), axis.text = element_text(size = 10))
 
-nh.nmds.plot + labs(title = "NH/ME basic ordination plot")
+
+nh.nmds.plot + 
+  geom_path(data = elipse, aes(x=x, y=y, color=Group),  linejoin = "round", show.legend = FALSE)+
+  labs(title = "Northern Barrens Ordination")+
+  theme(plot.title=element_text(hjust=0.5, size=20))
 
 # add significant species -------------------
 
 nh.nmds.plot +
+  geom_path(data = elipse, aes(x=x, y=y, color=Group),  linejoin = "round", show.legend = FALSE)+
   geom_segment(data = sign.nh_spp.scrs, aes(x=0, xend=NMDS1, y=0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")), colour = "grey10", lwd = 0.3)+
   ggrepel::geom_text_repel(data = sign.nh_spp.scrs, aes(x=NMDS1, y=NMDS2, label = Species), cex = 3, direction = "both", segment.size = 0.25)+
-  labs(title = "NH/ME Ordination with species vectors")
+  labs(title = "Northern Barrens Ordination \n with species vectors")+
+  theme(plot.title=element_text(hjust=0.5, size=20))
+
+# add indicators species -------------------
+
+indc.sp.nh_color <- c("COPE" = "#81A88D", "PIST" = "#D8B70A")
+
+nh.nmds.plot +
+  geom_path(data = elipse, aes(x=x, y=y, color=Group),  linejoin = "round", show.legend = FALSE)+
+  geom_segment(data = nh.indc.spp, aes(x=0, xend=NMDS1, y=0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")), colour = indc.sp.nh_color, lwd = 0.75, show.legend = FALSE)+
+  ggrepel::geom_text_repel(data = nh.indc.spp, aes(x=NMDS1, y=NMDS2, label = Species), cex = 3, direction = "both", segment.size = 0.25)+
+  labs(title = "Northern Barrens Ordination \n with indicator species")+
+  theme(plot.title=element_text(hjust=0.5, size=20))
 
 # add significant envr factors -------------------
 
 nh.nmds.plot +
+  geom_path(data = elipse, aes(x=x, y=y, color=Group),  linejoin = "round", show.legend = FALSE)+
   geom_segment(data = nh.sig_envr.scrs, aes(x = 0, xend = NMDS1, y = 0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")))+
   ggrepel::geom_text_repel(data = nh.sig_envr.scrs, aes(x=NMDS1, y=NMDS2, label = env.variables), cex = 4, direction = "both", segment.size = 0.25) +
-  labs(title = "NH/ME Ordination with environmental vectors")
-```
-
-
-### Ellipse
-```{r, fig.align='center'}
-df_ell.nh <- data.frame()
-
-nh.site.scrs$Treat_Type <- as.factor(nh.site.scrs$Treat_Type)
-
-
-for(i in levels(nh.site.scrs$Treat_Type)){
-  df_ell.nh <- rbind(df_ell.nh, cbind(as.data.frame(with(nh.site.scrs [nh.site.scrs$Treat_Type==i,],
-                                                         veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2))))) ,Treat_Type=i))
-}
-
-# data for labelling the ellipse
-NMDS.mean.veg=aggregate(nh.site.scrs[ ,c("NMDS1", "NMDS2")], 
-                         list(group = nh.site.scrs$Treat_Type), "mean")
- 
-# data for labelling the ellipse
-NMDS.mean=aggregate(nh.site.scrs[,c("NMDS1", "NMDS2")], 
-                    list(group = nh.site.scrs$Treat_Type), "mean")
-
-nh.nmds.plot+
-  geom_path(data = df_ell.nh, aes(x=NMDS1, y=NMDS2, color = Treat_Type), show.legend = FALSE)
-
+  labs(title = "Northern Barrens Ordination \n with environmental vectors")+
+  theme(plot.title=element_text(hjust=0.5, size=20))
 ```
 
 
 
-## One plot to rule them all?
+### Plot with significant species & envr factors
 ```{r, fig.align='center'}
 nh.nmds.plot+
-  geom_path(data = df_ell.nh, aes(x=NMDS1, y=NMDS2, color = Treat_Type), show.legend = FALSE) +
+  geom_path(data = elipse, aes(x=x, y=y, color=Group),  linejoin = "round", show.legend = FALSE)+
   geom_segment(data = sign.nh_spp.scrs, aes(x=0, xend=NMDS1, y=0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")), colour = "purple", lwd = 0.3)+
   ggrepel::geom_text_repel(data = sign.nh_spp.scrs, aes(x=NMDS1, y=NMDS2, label = Species), cex = 3, direction = "both", segment.size = 0.25)+
   geom_segment(data = nh.sig_envr.scrs, aes(x = 0, xend = NMDS1, y = 0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")))+
   ggrepel::geom_text_repel(data = nh.sig_envr.scrs, aes(x=NMDS1, y=NMDS2, label = env.variables), cex = 4, direction = "both", segment.size = 0.25) +
-  labs(title = "NH & ME Ordination plot")
+  labs(title = "Northern Barrens Ordination with significant \n species & environmental factors") +
+  theme(plot.title=element_text(hjust=0.5, size=20))
+
 ```
 
 
 
 
-
+### Plot with indcator species & envr factors
+```{r, fig.align='center'}
+nh.nmds.plot+
+  geom_path(data = elipse, aes(x=x, y=y, color=Group),  linejoin = "round", show.legend = FALSE)+
+  geom_segment(data = nh.indc.spp, aes(x=0, xend=NMDS1, y=0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")), colour = indc.sp.nh_color, lwd = 0.75, show.legend = FALSE)+
+  ggrepel::geom_text_repel(data = nh.indc.spp, aes(x=NMDS1, y=NMDS2, label = Species), cex = 3, direction = "both", segment.size = 0.25)+
+  geom_segment(data = nh.sig_envr.scrs, aes(x = 0, xend = NMDS1, y = 0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")))+
+  ggrepel::geom_text_repel(data = nh.sig_envr.scrs, aes(x=NMDS1, y=NMDS2, label = env.variables), cex = 4, direction = "both", segment.size = 0.25) +
+  labs(title = "Northern Barrens Ordination with indicator \n species & environmental factors")+
+  theme(plot.title=element_text(hjust=0.5, size=20))
+```
 
 
 
@@ -370,7 +405,7 @@ pairwise.adonis2(rel_nhme5 ~ Treat_Type, data = nh.meta.data_veg)
 ### Indicator species analysis
 Will want to run for each treatment type
 ```{r, warning=FALSE, message=FALSE}
-require(labdsv)
+library(labdsv)
 
 # I don't think I should calculate this on relativized data, so : nhme5_avg & nh.meta.data_veg
 
@@ -404,7 +439,6 @@ print(fridg)
 # 1 is FallRx
 # 2 is MowRx
 # 3 is Control
-
 ```
 
 

@@ -12,6 +12,7 @@ library(ggplot2)
 library(vegan)
 library(ggvegan)
 library(tidyverse)
+library(ggordiplots)
 ```
 
 Set working directory
@@ -22,7 +23,7 @@ knitr::opts_knit$set(root.dir = '/Users/user/Desktop/Data/Regen_RProj/')
 Functions:
 ```{r}
 # functions -------------------
-source("Functions/veganCovEllipse.R")
+
 ```
 
 #### Source, tranform, select, and relativize ALB veg data (hidden)
@@ -198,11 +199,12 @@ apb_2d <- metaMDS(rel_apb5,
 ```
 
 
-### Make correlation data for bi-plots
-```{r, warning=FALSE}
-apb.veg_envr.data <- envfit(apb_2d, apb.meta_for.veg) #getting big SD is 0 warning
-apb.veg_spc.envr <- envfit(apb_2d, rel_apb5)
+# Getting a big issue for mapping envr factors. I need to investigate that and then see if fixing that trickles down to the ellipse
 
+### Make correlation data for bi-plots
+```{r}
+apb.veg_envr.data <- envfit(apb_2d, apb.meta_for.veg) #getting big SD is 0 warning; vector with no variation? check data
+apb.veg_spc.envr <- envfit(apb_2d, rel_apb5)
 
 
 # site data -------------------
@@ -217,82 +219,119 @@ apb.spp.scrs <- cbind(apb.spp.scrs, pval = apb.veg_spc.envr$vectors$pvals)
 
 sig.apb_spp.scrs <- subset(apb.spp.scrs, pval<=0.05)
 
+print(sig.apb_spp.scrs)
+
+# create species vectors for indicator species -------------------
+apb.ind.spp <- apb.spp.scrs %>% 
+  filter(Species %in% c("QUIL", "VIDE", "MICA", "PRSE"))
+
 # envr data -------------------
 apb.enr.scrs <- as.data.frame(scores(apb.veg_envr.data, display = "vectors"))
 apb.enr.scrs <- cbind(apb.enr.scrs, env.variables = rownames(apb.enr.scrs))
 apb.enr.scrs <- cbind(apb.enr.scrs, pval = apb.veg_envr.data$vectors$pvals)
 
 apb.sig_envr.scrs <- subset(apb.enr.scrs, pval<=0.05)
+
+print(apb.sig_envr.scrs)
+
+# Time from treatment is technically significant, but I don't think it really adds to the graph, so I'm going to drop it
+
+apb.sig_envr.scrs <-  apb.sig_envr.scrs %>% 
+  filter(env.variables == "BA_HA")
 ```
 
+#### Significant species are: QUIL, PAQU, GABA, RHGL, VIDE, CICA, MICA, COSP, FRAL, & ARNU
+
+#### Significant environmental factors are: BASAL AREA PER HECTARE (and time from treatment)
+
+
+
 ## GGPlot
-```{r}
+```{r, fig.align='center'}
+# control = yellow, fallrx = dark green, harvest = beige, mowrx = light green, spring rx = red
+
+colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")
+
+# create ellipse plot -------------------
+apb.plot.e <- gg_ordiplot(apb_2d, groups = apb.meta_for.veg$Treat_Type)
+# I get this warning for the ellipse and I'm not sure what it means: Warning: the matrix is either rank-deficient or indefinite
+
+# pull out ellipse data -------------------
+elipse.apb <- fortify(apb.plot.e$df_ellipse) %>% 
+  group_by(Group)
+
+# base plot -------------------
 apb.nmds.plot <-  ggplot(apb.site.scrs, aes(x=NMDS1, y=NMDS2))+
   geom_point(aes(NMDS1, NMDS2, colour = factor(apb.site.scrs$Treat_Type)), size = 2)+
+  scale_color_manual(values = c("#D8B70A", "#81A88D", "#972D15"))+
   coord_fixed()+
   theme_classic()+
   theme(panel.background = element_blank()) +
   labs(colour = "Treatment Type", shape = "Region")+
   theme(legend.position = "right", legend.text = element_text(size = 12), legend.title = element_text(size = 12), axis.text = element_text(size = 10))
 
-apb.nmds.plot + labs(title = "APB basic ordination plot")
+# plot with ellipse -------------------
+apb.nmds.plot + 
+  geom_path(data = elipse.apb, aes(x=x, y=y, color=Group),  linejoin = "round", show.legend = FALSE)+
+  labs(title = "Inland Barrens Ordination")+
+  theme(plot.title=element_text(hjust=0.5, size=20))
 
 # add significant species -------------------
-
 apb.nmds.plot +
+  geom_path(data = elipse.apb, aes(x=x, y=y, color=Group),  linejoin = "round", show.legend = FALSE)+
   geom_segment(data = sig.apb_spp.scrs, aes(x=0, xend=NMDS1, y=0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")), colour = "grey10", lwd = 0.3)+
   ggrepel::geom_text_repel(data = sig.apb_spp.scrs, aes(x=NMDS1, y=NMDS2, label = Species), cex = 3, direction = "both", segment.size = 0.25)+
-  labs(title = "NH/ME Ordination with species vectors")
+  labs(title = "Inland Barrens Ordination with significant species") +
+  theme(plot.title=element_text(hjust=0.5, size=20))
 
-# add significant envr factors -------------------
+# add indicators species -------------------
+
+ind.sp.apb_color <- c("QUIL" = "#81A88D", "VIDE" = "#D8B70A", "MICA" = "#D8B70A", "PRSE" = "#D8B70A")
 
 apb.nmds.plot +
+  geom_path(data = elipse.apb, aes(x=x, y=y, color=Group),  linejoin = "round", show.legend = FALSE)+
+  geom_segment(data = apb.ind.spp, aes(x=0, xend=NMDS1, y=0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")), colour = ind.sp.apb_color, lwd = 0.75, show.legend = FALSE)+
+  ggrepel::geom_text_repel(data = apb.ind.spp, aes(x=NMDS1, y=NMDS2, label = Species), cex = 3, direction = "both", segment.size = 0.25)+
+  labs(title = "Inland Barrens Ordination \n with indicator species") +
+  theme(plot.title=element_text(hjust=0.5, size=20))
+
+# add significant envr factors -------------------
+apb.nmds.plot +
+    geom_path(data = elipse.apb, aes(x=x, y=y, color=Group),  linejoin = "round", show.legend = FALSE)+
   geom_segment(data = apb.sig_envr.scrs, aes(x = 0, xend = NMDS1, y = 0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")))+
   ggrepel::geom_text_repel(data = apb.sig_envr.scrs, aes(x=NMDS1, y=NMDS2, label = env.variables), cex = 4, direction = "both", segment.size = 0.25) +
-  labs(title = "APB Ordination with environmental vectors")
-```
-Could lower the pval to reduce # of species, range from 0.004 - 0.044
-
-
-### Ellipse - there is a problem with chol(cov) within veganCovEllipse function - need to find another way
-```{r, eval=FALSE}
-
-
-
-
-df_ell.apb <- data.frame()
-
-apb.site.scrs$Treat_Type <- as.factor(apb.site.scrs$Treat_Type)
-
-
-for(i in levels(apb.site.scrs$Treat_Type)){
-  df_ell.apb <- rbind(df_ell.apb, cbind(as.data.frame(with(apb.site.scrs [apb.site.scrs$Treat_Type==i,],
-                                                         veganCovEllipse(cov.wt(cbind(NMDS1,NMDS2),wt=rep(1/length(NMDS1),length(NMDS1)))$cov,center=c(mean(NMDS1),mean(NMDS2))))) ,Treat_Type=i))
-}
-
-# data for labelling the ellipse
-NMDS.mean.veg=aggregate(apb.site.scrs[ ,c("NMDS1", "NMDS2")], 
-                         list(group = apb.site.scrs$Treat_Type), "mean")
- 
-# data for labelling the ellipse
-NMDS.mean=aggregate(apb.site.scrs[,c("NMDS1", "NMDS2")], 
-                    list(group = apb.site.scrs$Treat_Type), "mean")
-
-apb.nmds.plot+
-  geom_path(data = df_ell.apb, aes(x=NMDS1, y=NMDS2, color = Treat_Type), show.legend = FALSE)
+  labs(title = "Inland Barrens Ordination \n with environmental vectors")
 ```
 
 
-### Everything plotted together
-```{r}
-apb.nmds.plot+
-  #geom_path(data = df_ell.apb, aes(x=NMDS1, y=NMDS2, color = Treat_Type), show.legend = FALSE) +
-  geom_segment(data = sig.apb_spp.scrs, aes(x=0, xend=NMDS1, y=0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")), colour = "purple", lwd = 0.3)+
+
+
+
+### Plot with significant species & envr factors
+```{r, fig.align='center'}
+apb.nmds.plot +
+  geom_path(data = elipse.apb, aes(x=x, y=y, color=Group),  linejoin = "round", show.legend = FALSE)+
+  geom_segment(data = sig.apb_spp.scrs, aes(x=0, xend=NMDS1, y=0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")), colour = "grey10", lwd = 0.3)+
   ggrepel::geom_text_repel(data = sig.apb_spp.scrs, aes(x=NMDS1, y=NMDS2, label = Species), cex = 3, direction = "both", segment.size = 0.25)+
   geom_segment(data = apb.sig_envr.scrs, aes(x = 0, xend = NMDS1, y = 0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")))+
   ggrepel::geom_text_repel(data = apb.sig_envr.scrs, aes(x=NMDS1, y=NMDS2, label = env.variables), cex = 4, direction = "both", segment.size = 0.25) +
-  labs(title = "APB Ordination plot")
+  labs(title = "Inland Barrens Ordination with significant \n species & environmental factors") +
+  theme(plot.title=element_text(hjust=0.5, size=20))
 ```
+
+### Plot with indcator species & envr factors
+```{r}
+apb.nmds.plot +
+  geom_path(data = elipse.apb, aes(x=x, y=y, color=Group),  linejoin = "round", show.legend = FALSE)+
+  geom_segment(data = apb.ind.spp, aes(x=0, xend=NMDS1, y=0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")), colour = ind.sp.apb_color, lwd = 0.75, show.legend = FALSE)+
+  ggrepel::geom_text_repel(data = apb.ind.spp, aes(x=NMDS1, y=NMDS2, label = Species), cex = 3, direction = "both", segment.size = 0.25)+
+  labs(title = "Inland Barrens Ordination with indicator \n species & environmental factors") +
+  geom_segment(data = apb.sig_envr.scrs, aes(x = 0, xend = NMDS1, y = 0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")))+
+  ggrepel::geom_text_repel(data = apb.sig_envr.scrs, aes(x=NMDS1, y=NMDS2, label = env.variables), cex = 4, direction = "both", segment.size = 0.25) +
+  theme(plot.title=element_text(hjust=0.5, size=20))
+```
+
+
 
 ### Run PerMANOVA to look at the impacts of region and treatment on community composition
 ```{r}
