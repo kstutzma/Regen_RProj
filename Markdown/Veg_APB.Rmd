@@ -148,7 +148,15 @@ rm(prism_BA, APB.PRISM1, apb.prism2)
 source("Scripts/Ground_Data.R") #work on ground 3
 
 apb.ground4 <- ground3 %>% 
-  select(Plot_No, Lichen, Moss, Rock, Mineral_Soil, Wood, Litter_Duff, avgLD)
+  select(Plot_No, 
+         Lichen, 
+         Moss, 
+         #Rock, 
+         Mineral_Soil, 
+         Wood, 
+         Litter_Duff, 
+         avgLD)
+#I am removing rock here, as it wasn't encoutered at all and I think it is causing problems in my envfit calculations down the line
 
 apb.ground5 <- merge(apb.ground4, apb_site, by = "Plot_No") %>% 
   select(Site, everything()) %>% 
@@ -194,16 +202,18 @@ apb_2d <- metaMDS(rel_apb5,
                    trymax = 20,
                    autotransform = FALSE)
 # this works and yields stress values of 0.12 - 0.25
-
 #rm(apb_3d)
 ```
 
 
-# Getting a big issue for mapping envr factors. I need to investigate that and then see if fixing that trickles down to the ellipse
-
 ### Make correlation data for bi-plots
 ```{r}
-apb.veg_envr.data <- envfit(apb_2d, apb.meta_for.veg) #getting big SD is 0 warning; vector with no variation? check data
+apb.veg_envr.data <- envfit(apb_2d, apb.meta_for.veg) #was getting a big error; rock was in data set but with 0 values across the board. removed rock and solved warning
+
+# this is how I figured it out 
+# apb.veg_envr.data$vectors
+
+
 apb.veg_spc.envr <- envfit(apb_2d, rel_apb5)
 
 
@@ -244,6 +254,65 @@ apb.sig_envr.scrs <-  apb.sig_envr.scrs %>%
 
 #### Significant environmental factors are: BASAL AREA PER HECTARE (and time from treatment)
 
+```{r, eval=FALSE, include=FALSE}
+#what would it mean to drop control from this figure and see if that solves the rank deficiency issue?
+
+ctr_test <-  rel_apb5 %>% 
+  rownames_to_column(var = "Site") %>% 
+  filter(Site != ("APB_Hippo")) %>% 
+  filter(Site != ("APB_Hydro")) %>% 
+  column_to_rownames(var = "Site") %>% 
+  select(-VIDE)
+
+
+ctrtst_2D <- metaMDS(ctr_test, 
+                   distance = 'bray', 
+                   k = 2, 
+                   trymax = 20,
+                   autotransform = FALSE)
+
+ctrtst.meta <-  apb.meta_for.veg %>% 
+  filter(Site != ("APB_Hippo")) %>% 
+  filter(Site != ("APB_Hydro"))
+
+envr.data <- envfit(ctrtst_2D, ctrtst.meta) #was getting a big error; rock was in data set but with 0 values across the board. removed rock and solved warning
+
+# this is how I figured it out 
+# apb.veg_envr.data$vectors
+
+
+tst.spc.envr <- envfit(ctrtst_2D, ctr_test)
+
+
+# site data -------------------
+test.site.scr <- as.data.frame(scores(ctrtst_2D, display = "sites"))
+
+test.site.scr <- cbind(test.site.scr , Treat_Type = ctrtst.meta$Treat_Type)
+
+# species data   -------------------
+tst.spp.scrs <- as.data.frame(scores(tst.spc.envr, display = "vectors"))
+tst.spp.scrs <- cbind(tst.spp.scrs, Species = rownames(tst.spp.scrs))
+tst.spp.scrs <- cbind(tst.spp.scrs, pval = tst.spc.envr$vectors$pvals)
+
+sig.apb_spp.scrs <- subset(tst.spp.scrs, pval<=0.05)
+
+
+# envr data -------------------
+tst.enrv.scrs <- as.data.frame(scores(tst.spc.envr, display = "vectors"))
+tst.enrv.scrs <- cbind(tst.enrv.scrs, env.variables = rownames(tst.enrv.scrs))
+tst.enrv.scrs <- cbind(tst.enrv.scrs, pval = tst.spc.envr$vectors$pvals)
+
+apb.sig_envr.scrs <- subset(tst.enrv.scrs, pval<=0.05)
+
+
+# Time from treatment is technically significant, but I don't think it really adds to the graph, so I'm going to drop it
+
+apb.sig_envr.scrs <-  apb.sig_envr.scrs %>% 
+  filter(env.variables == "BA_HA")
+
+tst.plot.e <- gg_ordiplot(ctrtst_2D, groups = ctrtst.meta$Treat_Type)
+
+```
 
 
 ## GGPlot
@@ -254,7 +323,8 @@ colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")
 
 # create ellipse plot -------------------
 apb.plot.e <- gg_ordiplot(apb_2d, groups = apb.meta_for.veg$Treat_Type)
-# I get this warning for the ellipse and I'm not sure what it means: Warning: the matrix is either rank-deficient or indefinite
+
+# I get a warning for this. Ran a test of everything without control and this warning didn't come up. I think it is due to the fact that there are only 2 control plots and so not enough data technically for a ellipse. Not sure what to do
 
 # pull out ellipse data -------------------
 elipse.apb <- fortify(apb.plot.e$df_ellipse) %>% 
@@ -346,11 +416,10 @@ this changes with each run; from 0.04 - 0.06
 
 
 ### Pairwise analysis of treatment type
-```{r}
+```{r, message=FALSE, warning=FALSE}
 library(pairwiseAdonis)
 
 pairwise.adonis2(rel_apb5 ~ Treat_Type, data = apb.meta_for.veg)
-
 ```
 
 

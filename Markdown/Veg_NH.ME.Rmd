@@ -397,6 +397,7 @@ rm(nh.t, nh.t_ut, nh.rt_ut, nh.rtt)
 library(pairwiseAdonis)
 
 pairwise.adonis2(rel_nhme5 ~ Treat_Type, data = nh.meta.data_veg)
+
 # not significant - mow and fall rx almost closest, but not really, now that I've changed the species to reflect the region-group as opposed to the overall
 ```
 
