@@ -23,7 +23,6 @@ knitr::opts_knit$set(root.dir = '/Users/user/Desktop/Data/Regen_RProj/')
 Functions:
 ```{r}
 # functions -------------------
-
 ```
 
 #### Source, tranform, select, and relativize NH & ME veg data (hidden)
@@ -178,7 +177,7 @@ nhme_2d <- metaMDS(rel_nhme5,
 
 
 ### Make correlation data for bi-plots
-```{r}
+```{r, echo=FALSE}
 nh.veg_envr.data <- envfit(nhme_2d, nh.meta.data_veg)
 nh.veg_spc.envr <- envfit(nhme_2d, rel_nhme5)
 
@@ -215,15 +214,8 @@ print(nh.sig_envr.scrs)
 
 #### Significant environmental factors are: average leaf litter depth
 
-## GGPlot
-```{r, fig.align='center'}
 
-# I'd like the colors to represent the same treatment types across all regions, so I want to set a color vector to draw on. I'll need 5 colors - keep consistent with GLMMs?
-colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")
-
-# control = yellow, fallrx = dark green, harvest = beige, mowrx = light green, spring rx = red
-
-
+```{r, include=FALSE}
 # Can make an ellipse/hull plot and then pull out ellipse and/or hull data to feed into later ggplots
 nh.plot.e <- gg_ordiplot(nhme_2d, groups = nh.meta.data_veg$Treat_Type)
 
@@ -232,6 +224,17 @@ hull <- fortify(nh.plot.e$df_hull) %>%
 
 elipse <- fortify(nh.plot.e$df_ellipse) %>% 
   group_by(Group)
+```
+
+
+## GGPlot
+```{r, fig.align='center', include=FALSE}
+
+# I'd like the colors to represent the same treatment types across all regions, so I want to set a color vector to draw on. I'll need 5 colors - keep consistent with GLMMs?
+colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")
+
+# control = yellow, fallrx = dark green, harvest = beige, mowrx = light green, spring rx = red
+
 
 nh.nmds.plot <-  ggplot(nh.site.scrs, aes(x=NMDS1, y=NMDS2))+
   geom_point(aes(NMDS1, NMDS2, colour = factor(nh.site.scrs$Treat_Type), shape = factor(nh.site.scrs$Region)), size = 2)+
@@ -281,7 +284,7 @@ nh.nmds.plot +
 
 
 ### Plot with significant species & envr factors
-```{r, fig.align='center'}
+```{r, fig.align='center', echo=FALSE}
 nh.nmds.plot+
   geom_path(data = elipse, aes(x=x, y=y, color=Group),  linejoin = "round", show.legend = FALSE)+
   geom_segment(data = sign.nh_spp.scrs, aes(x=0, xend=NMDS1, y=0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")), colour = "purple", lwd = 0.3)+
@@ -297,7 +300,7 @@ nh.nmds.plot+
 
 
 ### Plot with indcator species & envr factors
-```{r, fig.align='center'}
+```{r, fig.align='center', echo=FALSE}
 nh.nmds.plot+
   geom_path(data = elipse, aes(x=x, y=y, color=Group),  linejoin = "round", show.legend = FALSE)+
   geom_segment(data = nh.indc.spp, aes(x=0, xend=NMDS1, y=0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")), colour = indc.sp.nh_color, lwd = 0.75, show.legend = FALSE)+
