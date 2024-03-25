@@ -138,3 +138,13 @@ rm(small_seedling,
    check_SS)
 
 #Now the small seedling data has been imported, labeled, and sorted. Species have been grouped and totaled and implied 0s have become express for all 1001 plots.
+
+
+
+
+
+
+
+
+
+

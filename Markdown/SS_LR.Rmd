@@ -20,6 +20,8 @@ library(TMB)
 library(emmeans)
 library(DHARMa)
 library(lmtest)
+library(ggeffects)
+library(performance)
 ```
 
 Set working directory
@@ -49,7 +51,7 @@ ss_merge2 <- ss_merge2 %>%
 ```
 
 Import time since data and add it to the small seedling dataset
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE}
 time_since <- read_csv("CleanData/Treat_Year_Data.csv")
 
 ss_merge3 <- merge(ss_merge2, time_since, by = "Site")
@@ -58,7 +60,7 @@ ss_merge3$l.TFT <- log(ss_merge3$Time_from_Treat)
 ```
 
 Run the 'Add_BA' script and merge with dataset:
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE}
 source("Scripts/Add_BA.R")
 
 # merge with ss dataset -------------------
@@ -74,8 +76,7 @@ ss_merge5 <- merge(ss_merge4, ground3, by = "Plot_No")
 
 rm(ss_merge2,
    ss_merge3,
-   ss_merge4,
-   time_since)
+   ss_merge4)
 ```
 
 Source and add veg data
@@ -125,6 +126,871 @@ Can see the correlation coefficients for linear (Pearsons) relationships. None o
 
 Full dataset is called ss.all2. 
 
+#### Check to see if PIRI seedlings are found in each region and treatment type
+```{r}
+tapply(ss.all2$PIRI, ss.all2$Region, summary)
+tapply(ss.all2$PIRI, ss.all2$Treat_Type, summary) 
+# PIRI exist in every region and TT
+```
+
+
+
+
+
+# Pitch pine GLMM
+
+
+
+
+Model step wise elimination with treatment type included
+```{r}
+ss.m1 <- glmmTMB(PIRI ~ Treat_Type + l.SO + l.other + l.BA_HA + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all2,
+                 family = poisson)
+AIC(ss.m1) #724.86
+
+#would like to test ba vs ba piri
+ss.m2a <- glmmTMB(PIRI ~ Treat_Type + l.SO + l.other + l.BA_HA + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all2,
+                 family = poisson)
+AIC(ss.m2a) #723.6
+
+lrtest(ss.m1, ss.m2a) # p = .4
+
+ss.m2b <- glmmTMB(PIRI ~ Treat_Type + l.SO + l.other + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all2,
+                 family = poisson)
+AIC(ss.m2b) #725.9
+
+lrtest(ss.m1, ss.m2b) # p =.08, so not important
+
+rm(ss.m2a, ss.m2b)
+
+# test ld vs mineral exposure
+ss.m3a <- glmmTMB(PIRI ~ Treat_Type + l.SO + l.other + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all2,
+                 family = poisson)
+AIC(ss.m3a) #723.0
+
+lrtest(ss.m1, ss.m3a) #p=.25
+
+ss.m3b <- glmmTMB(PIRI ~ Treat_Type + l.SO + l.other + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all2,
+                 family = poisson)
+AIC(ss.m3b) #730.1 
+
+lrtest(ss.m1, ss.m3b) # p = 0.01, loss of avg ld significant
+
+rm(ss.m1, ss.m3b)
+
+# test l.other
+ss.m4 <- glmmTMB(PIRI ~ Treat_Type + l.SO + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all2,
+                 family = poisson)
+AIC(ss.m4) #722.6
+
+lrtest(ss.m3a, ss.m4) #p=.2, can drop other
+rm(ss.m3a)
+
+# test l.SO
+ss.m5 <- glmmTMB(PIRI ~ Treat_Type + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all2,
+                 family = poisson)
+AIC(ss.m5) #725.5
+
+lrtest(ss.m4, ss.m5) #p = 0.03, l.so important
+rm(ss.m5)
+
+#test veg
+ss.m6 <- glmmTMB(PIRI ~ Treat_Type + l.SO + avgLD_l + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all2,
+                 family = poisson)
+AIC(ss.m6) #727
+
+lrtest(ss.m4, ss.m6) # p = 0.011, veg important
+rm(ss.m6)
+```
+
+
+do pairwise on variables of interest from reduced model
+```{r}
+ss.pair <- ss.all2 %>% 
+  select(Region, Treat_Type, l.PIRI, l.SO, l.Veg_Total, avgLD_l, l.TFT)
+
+ggpairs(ss.pair, aes(color = Treat_Type))
+rm(ss.pair)
+```
+Not seeing any clear, strong correlations
+
+
+
+Best model:
+```{r}
+ss.m4 <- glmmTMB(PIRI ~ Treat_Type + l.SO + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all2,
+                 family = poisson)
+summary(ss.m4) #722.6
+
+check_collinearity(ss.m4) # all with low collinearity
+
+#checking nbinom2
+ss.m4a <- glmmTMB(PIRI ~ Treat_Type + l.SO + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all2,
+                 family = nbinom2)
+AIC(ss.m4a) #higher with nbinom 1 & 2
+```
+
+
+Checking model fit:
+```{r}
+ss.m4_sr <- simulateResiduals(ss.m4, n = 1000, plot = TRUE) #looks pretty good
+
+testResiduals(ss.m4_sr) #passes uniformity, dispersion, and outliers
+testQuantiles(ss.m4_sr) #passes
+testZeroInflation(ss.m4_sr) #passes
+```
+
+## Model 4 has the lowest AIC and great model fit
+Time to pairwise test
+```{r}
+emmeans(ss.m4, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
+```
+
+FallRx, Harvest, MowRx, SpringRx all significantly different from Control - no treatment significantly different from another 
+
+
+Model ss.m4 uses Treatment Type, Scrub Oak presence, average leaf litter depth, and total veg cover as predictors. Make a graph for each
+
+#### GGPlot graphics for PIRI
+```{r, fig.align='center'}
+ss.p1 <- ggpredict(ss.m4, terms = c("avgLD_l", "Treat_Type"))
+
+
+ggplot(ss.p1, aes(x, predicted, color = group))+
+  geom_line(linewidth = 1.25,  show.legend = FALSE) +
+  scale_color_manual(values = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15"))+
+  theme_classic()+
+  theme(panel.background = element_blank()) +
+  theme(axis.text = element_text(size = 14), axis.title = element_text(size = 20))+
+  labs(x = "Average leaf litter depth (log transformed)",
+       y = "Pitch pine stems \n (corrected for time from treatment)")
+
+# PIRI SS plot 2 -------------------
+ss.p2 <- ggpredict(ss.m4, terms = c("l.Veg_Total", "Treat_Type"))
+
+
+ggplot(ss.p2, aes(x, predicted, color = group))+
+  geom_line(linewidth = 1.25,  show.legend = FALSE) +
+  scale_color_manual(values = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15"))+
+  theme_classic()+
+  theme(panel.background = element_blank()) +
+  theme(axis.text = element_text(size = 14), axis.title = element_text(size = 20))+
+  labs(x = "Average understory vegetation cover \n (log transformed)",
+       y = "Pitch pine stems \n (corrected for time from treatment)")
+
+
+# PIRI SS plot 3 -------------------
+ss.p3 <- ggpredict(ss.m4, terms = c("l.SO", "Treat_Type"))
+
+
+ggplot(ss.p3, aes(x, predicted, color = group))+
+  geom_line(linewidth = 1.25) +
+  scale_color_manual(values = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15"))+
+  theme_classic()+
+  theme(panel.background = element_blank()) +
+  theme(axis.text = element_text(size = 14), axis.title = element_text(size = 20),
+        legend.position = "right", legend.text = element_text(size = 18), legend.title = element_text(size = 22))+
+  labs(x = "Shrub oak seedling counts (log transformed)",
+       y = "Pitch pine stems \n (corrected for time from treatment)",
+       color = "Treatment Type")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Shrub oak GLMM
+
+### Check to see SO is present in very region and TT
+```{r}
+tapply(ss.all2$Shrub_Oak, ss.all2$Region, summary)
+tapply(ss.all2$Shrub_Oak, ss.all2$Treat_Type, summary) 
+# SO exist in every region and TT
+```
+
+
+
+
+
+Begin model elimination - did this previously with poission, but had distribution issues
+```{r}
+so.ss1 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all2,
+                 family = nbinom1)
+AIC(so.ss1) #1853.6
+
+#test piri BA
+so.ss2 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all2,
+                 family = nbinom1)
+AIC(so.ss2) #1852.2
+
+# test total ba
+so.ss3 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all2,
+                 family = nbinom1)
+AIC(so.ss3) #1850.4
+
+# test mineral
+so.ss4 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all2,
+                 family = nbinom1)
+AIC(so.ss4) #1848.5
+
+# test litter depth
+so.ss5 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all2,
+                 family = nbinom1)
+AIC(so.ss5) #1847
+
+# test other seedling
+so.ss6 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all2,
+                 family = nbinom1)
+AIC(so.ss6) #1846.3
+
+lrtest(so.ss5, so.ss6) # p = .25
+
+# test PIRI seedling
+so.ss7 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all2,
+                 family = nbinom1)
+AIC(so.ss7) #1848.8
+
+lrtest(so.ss6, so.ss7) # p = 0.03, so l.PIRI is important
+
+# add PIRI back in, test veg cover
+so.ss8 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all2,
+                 family = nbinom1)
+AIC(so.ss8) #1847.3
+
+lrtest(so.ss6, so.ss8) # p = 0.08
+
+rm(so.ss1,
+   so.ss2,
+   so.ss3,
+   so.ss4,
+   so.ss5,
+   so.ss6,
+   so.ss7)
+```
+
+
+Best model, then test
+```{r}
+so.ss8 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all2,
+                 family = nbinom1)
+summary(so.ss8)
+
+check_collinearity(so.ss8)
+
+so.ss8_sr <- simulateResiduals(so.ss8, n = 1000, plot = TRUE) #passes KS, quantile deviations signficant
+
+testResiduals(so.ss8_sr)
+testQuantiles(so.ss8_sr) # p < 0.000000000000002ish
+
+
+#try again with nbinom2
+so.ss9 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all2,
+                 family = nbinom2)
+summary(so.ss9) #1867.6
+
+so.ss9_sr <- simulateResiduals(so.ss9, n = 1000, plot = TRUE)
+testResiduals(so.ss9_sr) # fails dispersion
+```
+
+#### Testing the effect on the model of zero inflation
+```{r}
+so.ss1a <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all2,
+                 ziformula = ~Region,
+                 family = nbinom1)
+AIC(so.ss1a) #1850.1
+
+#test piri BA
+so.ss2a <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all2,
+                 ziformula = ~Region,
+                 family = nbinom1)
+AIC(so.ss2a) #1848.1
+
+# test total ba
+so.ss3a <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all2,
+                 ziformula = ~Region,
+                 family = nbinom1)
+AIC(so.ss3a) #1846.2
+
+# test mineral
+so.ss4a <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all2,
+                 ziformula = ~Region,
+                 family = nbinom1)
+AIC(so.ss4a) #1844.3
+
+# test litter depth
+so.ss5a <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all2,
+                 ziformula = ~Region,
+                 family = nbinom1)
+AIC(so.ss5a) #1842.5
+
+lrtest(so.ss5a, so.ss4a, so.ss3a, so.ss2a, so.ss1a)
+
+# test other seedling
+so.ss6a <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all2,
+                 ziformula = ~Region,
+                 family = nbinom1)
+AIC(so.ss6a) #1843
+
+lrtest(so.ss5a, so.ss6a) # p = .11
+
+# test PIRI seedling
+so.ss7a <- glmmTMB(Shrub_Oak ~ Treat_Type + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all2,
+                 ziformula = ~Region,
+                 family = nbinom1)
+AIC(so.ss7a) #1843.8
+
+lrtest(so.ss6a, so.ss7a) # p = 0.09
+
+# test veg cover
+so.ss8a <- glmmTMB(Shrub_Oak ~ Treat_Type + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all2,
+                 ziformula = ~Region,
+                 family = nbinom1)
+AIC(so.ss8a) #1845.2
+
+lrtest(so.ss7a, so.ss8a) # p = 0.06
+
+rm(so.ss1a,
+   so.ss2a,
+   so.ss3a,
+   so.ss4a,
+   so.ss5a,
+   so.ss6a,
+   so.ss7a)
+```
+Tested residuals on so.ss7, so.ss6 as well - both were worse
+
+
+### test residuals on the zi model with nbinom1 distro
+```{r}
+# seemly best model
+so.ss8a <- glmmTMB(Shrub_Oak ~ Treat_Type + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all2,
+                 ziformula = ~Region,
+                 family = nbinom1)
+AIC(so.ss8a) #1845.2
+
+
+so.ss8a_sr <- simulateResiduals(so.ss8a, n = 1000, plot = TRUE)
+testResiduals(so.ss8a_sr) #passes
+testQuantiles(so.ss8a_sr) # p = 0.000006; this is the best so far
+```
+
+#### Pairwise on model
+```{r}
+emmeans(so.ss8a, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
+```
+FallRx, MowRx, and SpringRx significantly different than control; none of the treatments significantly different from each other
+
+
+#### Test nbinom2 distro
+```{r}
+so.ss8nb2 <- glmmTMB(Shrub_Oak ~ Treat_Type + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all2,
+                 ziformula = ~Region,
+                 family = nbinom2)
+AIC(so.ss8nb2) #1852.6
+
+
+so.ss8nb2_sr <- simulateResiduals(so.ss8nb2, n = 1000, plot = TRUE)
+testResiduals(so.ss8nb2_sr) #dispersion is at 0.048
+testQuantiles(so.ss8nb2_sr) # p = 0.001; this is the best so far, but has higher AIC and borderline dispersion
+
+emmeans(so.ss8nb2, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response') #same
+
+# i did do model elimination from the start with nbinom2 distro, no difference in important fixed effects
+```
+
+
+
+
+#### Now graph
+```{r, fig.align='center'}
+so.p1 <- ggpredict(so.ss8a, terms = c("l.TFT", "Treat_Type"))
+
+
+ggplot(so.p1, aes(x, predicted, color = group))+
+  geom_line(linewidth = 1.25) +
+  scale_color_manual(values = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15"))+
+  theme_classic()+
+  theme(panel.background = element_blank()) +
+  theme(axis.text = element_text(size = 14), axis.title = element_text(size = 20), legend.position = "right", legend.text = element_text(size = 14), legend.title = element_text(size = 18)) +
+  labs(x = "Time from Treatment (log transformed)",
+       y = "Shrub Oak Stems \n (corrected for time from treatment)",
+       color = "Treatment Type")
+
+# this should really be a boxplot?, not sure how this should be visulaized, as TFT isn't really a variable but a factor in the model
+
+
+
+ggplot(so.p1, aes(x, predicted, color = group))+
+  geom_boxplot() +
+  scale_color_manual(values = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15"))+
+  theme_classic()+
+  theme(panel.background = element_blank()) +
+  theme(axis.text = element_text(size = 14), axis.title = element_text(size = 20), legend.position = "right", legend.text = element_text(size = 14), legend.title = element_text(size = 18)) +
+  labs(x=NULL,
+       y = "Shrub Oak Small Seedlings \n (corrected for time from treatment)",
+       color = "Treatment Type")
+
+```
+
+
+```{r, eval=FALSE,include=FALSE}
+#This is SJPLOT package - have switched to ggplot2
+
+# SS SO plot 1 ------------------- PIRI vs. TT
+
+plot_model(test1, 
+                       type = 'pred', 
+                       terms = c('l.PIRI', 'Treat_Type'),
+                       axis.title = c("Pitch pine small seedling counts (log transformed)", "Total Count of Shrub Oak"),
+                       title = "Predicted Counts of Shrub Oak \n Seedlings <50cm",
+           legend.title = "Treatment Type",
+           line.size = 1,
+           value.offset = 'Treat_Type',
+           ci.lvl = NA,
+           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")) 
+```
+
+
+
+
+
+```{r, include=FALSE, eval=FALSE}
+
+#i just want to check some stuff and play around to see if I can resolve residual issues and improve model fit (previously using poisson distro)
+
+
+test1 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + offset(l.TFT) + (1|Site/Plot_No),
+                 ziformula = ~Region,
+                 data = ss.all2,
+                 family = nbinom1)
+AIC(test1)
+# AIC 1847
+#~Region, AIC 1843.6; passes residuals, quantiles are 0.0000072
+#~1, AIC 1843.4; passes residuals; quantiles are 0.00000321
+# no zi, AIC is 1847.3; passes residuals; quantiles are 0.00000000002 (ish), much higher
+# nbinom2 has dispersion issues, tried zi but still significant
+
+test1.sr <- simulateResiduals(test1, n = 1000, plot = T)
+testResiduals(test1.sr)
+testZeroInflation(test1.sr)
+testQuantiles(test1.sr) # zi ~1 pval 0.000003, pval way higher without zi
+
+# seems to pass all tests better. Better on dispersion, less residual fit issues; still quanitle issues, but less; better quantile fit with nbinom2, but the dispersion issues are way bigger/significant (even using 1 / Region for zi)
+
+testQuantiles(test1.sr)
+
+emmeans(test1, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
+
+# this model has better quantile fit, but is underdispersed. I added zero inflation (~1, ~Region, ~Treat_Type, ~l.TFT), which improved dispersion issues but they were still at a significant level; so nbinom1 is overall a better fit
+test2 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all2,
+                 ziformula = ~ l.TFT,
+                 family = nbinom2)
+summary(test2) #1843.3
+
+test2.sr <- simulateResiduals(test2, n = 1000, plot = T)
+testResiduals(test2.sr)
+testZeroInflation(test2.sr)
+```
+
+
+
+## DS on germinates
+```{r}
+ss_germ <- merge(ss_merge, time_since, by = "Site")
+
+
+germ_piri <- ss_germ %>% 
+  filter(Species_Groups == "PIRI") %>% 
+  rename(PIRI_Germ = Germinate) %>% 
+  select(Plot_No, PIRI_Germ)
+
+ss.all3 <- merge(ss.all2, germ_piri, by = "Plot_No")
+
+tapply(ss.all3$PIRI_Germ, ss.all3$Region, summary)
+
+tapply(ss.all3$PIRI_Germ, ss.all3$Treat_Type, summary)
+
+tapply(ss.all3$PIRI_Germ, ss.all3$Time_from_Treat, summary)
+```
+
+
+
+
+
+
+
+
+I did all this but only ~20 germs plots come through due to 1/2 for adding veg etc data. It is too few to model and get anything useful from (though I spent a bunch of time doing this thinking it was a good idea)
+```{r}
+ger.m1 <- glmmTMB(PIRI_Germ ~ Treat_Type + l.SO + l.other + l.BA_HA + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all3,
+                 family = nbinom1)
+# Won't converge
+
+#remove other
+ger.m2 <- glmmTMB(PIRI_Germ ~ Treat_Type + l.SO + l.BA_HA + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all3,
+                 family = nbinom1)
+AIC(ger.m2) #189.2
+
+#test so
+ger.m3 <- glmmTMB(PIRI_Germ ~ Treat_Type +l.BA_HA + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all3,
+                 family = nbinom1)
+AIC(ger.m3) #187.4
+
+#test piri ba
+ger.m4 <- glmmTMB(PIRI_Germ ~ Treat_Type + l.BA_HA +  l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all3,
+                 family = nbinom1)
+AIC(ger.m4) #186.2
+
+#test veg
+ger.m5 <- glmmTMB(PIRI_Germ ~ Treat_Type + l.BA_HA + avgLD_l + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all3,
+                 family = nbinom1)
+AIC(ger.m5) #186.8 
+
+lrtest(ger.m2, ger.m3, ger.m4, ger.m5) 
+
+#test mineral
+ger.m6 <- glmmTMB(PIRI_Germ ~ Treat_Type + l.BA_HA + avgLD_l + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all3,
+                 family = nbinom1)
+AIC(ger.m6) #185.7
+
+lrtest(ger.m5, ger.m4)
+
+#won't converge without l.BA HA or avgLD (i.e. with only one as predictor)
+
+ger.m7 <- glmmTMB(PIRI_Germ ~ Treat_Type +  avgLD_l + l.BA_piri + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all3,
+                 family = nbinom1)
+AIC(ger.m7) #185.6
+check_collinearity(ger.m7)
+
+ger.m7a <- glmmTMB(PIRI_Germ ~ Treat_Type +  avgLD_l + l.BA_piri + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all3,
+                 family = poisson)
+AIC(ger.m7) #185.5
+
+ger.m7b <- glmmTMB(PIRI_Germ ~ Treat_Type +  avgLD_l + l.BA_piri + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ss.all3,
+                 ziformula = ~Region,
+                 family = nbinom1)
+AIC(ger.m7) #185.6, won't work with nbinom2 (zi or not) or poisson
+```
+
+
+
+```{r}
+ger.m6_sr <- simulateResiduals(ger.m6, n = 1000, plot = TRUE) #passes
+testResiduals(ger.m6_sr) #passes
+testZeroInflation(ger.m6_sr) #passes
+
+ger.m7_sr <- simulateResiduals(ger.m7, n = 1000, plot = TRUE) #passes, better fit than 7
+testResiduals(ger.m7_sr) #passes
+testZeroInflation(ger.m7_sr) #passes
+```
+
+```{r}
+emmeans(ger.m7, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response') #none different from each other
+```
+
+
+```{r, fig.align='center', echo=FALSE}
+gr.p1 <- ggpredict(ger.m7, terms = c("avgLD_l", "Treat_Type"))
+
+
+ggplot(gr.p1, aes(x, predicted, color = group))+
+  geom_line(linewidth = 1.25,  show.legend = FALSE) +
+  scale_color_manual(values = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15"))+
+  theme_classic()+
+  theme(panel.background = element_blank()) +
+  theme(axis.text = element_text(size = 14), axis.title = element_text(size = 20))+
+  labs(x = "Average leaf litter depth (log transformed)",
+       y = "Pitch pine germinates \n (corrected for time from treatment)")
+
+# PIRI SS plot 2 -------------------
+gr.p2 <- ggpredict(ger.m7, terms = c("l.BA_piri", "Treat_Type"))
+
+
+ggplot(gr.p2, aes(x, predicted, color = group))+
+  geom_line(linewidth = 1.25,  show.legend = FALSE) +
+  scale_color_manual(values = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15"))+
+  theme_classic()+
+  theme(panel.background = element_blank()) +
+  theme(axis.text = element_text(size = 14), axis.title = element_text(size = 20))+
+  labs(x = "Average pitch pine basal area per hectare \n (log transformed)",
+       y = "Pitch pine stems \n (corrected for time from treatment)")
+
+
+
+gr.p3 <- ggpredict(ger.m7, terms = c("l.TFT", "Treat_Type"))
+
+
+ggplot(gr.p3, aes(x, predicted, color = group))+
+  geom_line(linewidth = 1.25,  show.legend = FALSE) +
+  scale_color_manual(values = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15"))+
+  theme_classic()+
+  theme(panel.background = element_blank()) +
+  theme(axis.text = element_text(size = 14), axis.title = element_text(size = 20))+
+  labs(x = "Time from Treatment \n (log transformed)",
+       y = "Pitch pine stems \n (corrected for time from treatment)")
+
+#this is not what I would expect to see
+```
+
+
+
+
+
+
+## Doing some data exploration via scatterplots
+This analysis can be seen in the pair plots at the top of script
+```{r, include=FALSE, eval=FALSE}
+# create a log transformed total seedling count variable in order to compare with other log transformed variables -------------------
+
+ss_LR2$l.Total <- log(ss_LR2$Total + 1)
+
+# PIRI seedlings vs. Veg cover
+ggplot(ss_LR2, aes(x=Total, y=Veg_Total, color = Treat_Type))+
+  geom_point()
+# log transformed
+ggplot(ss_LR2, aes(x=l.Total, y=l.Veg_Total))+
+  geom_point()
+# smooth, with linear model
+ggplot(ss_LR2, aes(x=l.Total, y=l.Veg_Total))+
+  geom_smooth(method = lm)
+#some increase in seedling counts with decrease in total understory cover, but pretty wide margins
+
+# None of these lm graphs account for pseudo-replication, but it gives some indication of relationships
+
+
+# PIRI seedlings vs. avg Litter Depth
+ggplot(ss_LR2, aes(x=Total, y=avgLD))+
+  geom_point()
+ggplot(ss_LR2, aes(x=l.Total, y=avgLD_l))+
+  geom_point()
+ggplot(ss_LR2, aes(x=l.Total, y=avgLD_l))+
+  geom_smooth(method = lm)
+#general trend of increasing seedlings with decreasing litter depth
+
+
+
+#PIRI seedlings vs. basal area per hectare
+ggplot(ss_LR2, aes(x=Total, y=BA_HA))+
+  geom_point()
+ggplot(ss_LR2, aes(x=l.Total, y=l.BA_HA))+
+  geom_point()
+ggplot(ss_LR2, aes(x=l.Total, y=l.BA_HA))+
+  geom_smooth(method = lm)
+# some increase of seedlings with increased basal area per hectare, but very wide margins as total climbs
+
+
+
+#PIRI seedlings vs. PIRI basal area per hectare
+ggplot(ss_LR2, aes(x=Total, y=PIRI.BA_HA))+
+  geom_point()
+ggplot(ss_LR2, aes(x=l.Total, y=l.BA_piri))+
+  geom_point()
+ggplot(ss_LR2, aes(x=l.Total, y=l.BA_piri))+
+  geom_smooth(method = lm)
+#very small trend of increase in total seedlings with increase is piri BA, again with very wide margins
+
+
+
+#PIRI seedlings vs. mineral soil exposure
+ggplot(ss_LR2, aes(x=Total, y=Mineral_Soil))+
+  geom_point()
+ggplot(ss_LR2, aes(x=l.Total, y=l.Mineral))+
+  geom_point()
+ggplot(ss_LR2, aes(x=l.Total, y=l.Mineral))+
+  geom_smooth(method = lm)
+#increase in total seedlings with increase in mineral soil exposure, wide margins but trend seems pretty clear
+
+
+
+#PIRI seedlings vs. litter/duff
+ggplot(ss_LR2, aes(x=Total, y=Litter_Duff))+
+  geom_point()
+ss_LR2$l.litter_duff <- log(ss_LR2$Litter_Duff + 1)
+ggplot(ss_LR2, aes(x=l.Total, y=l.litter_duff))+
+  geom_point()
+ggplot(ss_LR2, aes(x=l.Total, y=l.litter_duff))+
+  geom_smooth(method = lm)
+#some small increase, but very large margins and small effect - only 9 plots are not in the 4 region, so not a lot of spread - but hey, I looked at it
+
+
+# PIRI seedlings vs. time from treatment
+ggplot(ss_LR2, aes(x=Total, y=Time_from_Treat))+
+  geom_point()
+ggplot(ss_LR2, aes(x=l.Total, y=l.TFT))+
+  geom_point()
+ggplot(ss_LR2, aes(x=l.Total, y=l.TFT))+
+  geom_smooth(method = lm)
+#clear trend, total increases as time from treatment decreases
+
+#quick look at categorical
+ggplot(ss_LR2, aes(x=Region, y=l.Total))+
+  geom_violin()
+ggplot(ss_LR2, aes(x=Treat_Type, y=l.Total))+
+  geom_violin()
+ggplot(ss_LR2, aes(x=Region, y=l.Total, color = Treat_Type))+
+  geom_violin()
+#i'm surprised that mowing averages out and isn't significant in a pairwise, i guess NH really brings it down. 
+```
+
+Veg cover, average litter depth, and time from treatment all have a clear negative relationship (as they decrease, total increases), some more significant than others
+
+Basal area per hectare and mineral soil exposure have positive relationship (as they increase, total increase), these relationships appear weaker than the above negative relationships
+
+
+
+More scatterplots hidden below; see pairwise at beginning of script
+```{r, include=FALSE, eval=FALSE}
+#all dataset names would need to be changed/checked
+
+ggplot(all.ssf, aes(x=PIRI, y=Shrub_Oak))+
+  geom_point()
+ggplot(all.ssf, aes(x=l.PIRI, y=l.SO))+
+  geom_point()
+ggplot(all.ssf, aes(x=l.PIRI, y=l.SO))+
+  geom_smooth(method = lm)
+# appears to have a negative relationship. As SO presence decreases, so does PIRI presence increase
+
+ggplot(all.ssf, aes(x=PIRI, y=Other))+
+  geom_point()
+ggplot(all.ssf, aes(x=l.PIRI, y=l.other))+
+  geom_point()
+ggplot(all.ssf, aes(x=l.PIRI, y=l.other))+
+  geom_smooth(method = lm)
+#similar, but not as clear or as strong
+
+
+ggplot(all.ssf, aes(x=avgLD, y=Veg_Total))+
+  geom_point()
+ggplot(all.ssf, aes(x=avgLD_l, y=l.Veg_Total))+
+  geom_point()
+ggplot(all.ssf, aes(x=avgLD_l, y=l.Veg_Total))+
+  geom_smooth(method = lm)
+#negative relationship, as ld increases, veg cover decreases
+
+
+#these two are kind of duh
+ggplot(all.ssf, aes(x=l.Mineral, y=l.Veg_Total))+
+  geom_smooth(method = lm)
+# also negative, makes sense - exposed mineral soil doesn't have plants in it ...
+#kind of the same thing if i looked at avgLD and exposed mineral soil 
+ggplot(all.ssf, aes(x=l.Mineral, y=avgLD_l))+
+  geom_smooth(method = lm)
+
+#start with LD and TFT
+ggplot(all.ssf, aes(x=Time_from_Treat, y=avgLD))+
+  geom_point() +
+  geom_smooth(method = lm)
+ggplot(all.ssf, aes(x=l.TFT, y=avgLD_l))+
+  geom_point() +
+  geom_smooth(method = lm)
+ggplot(all.ssf, aes(x=l.TFT, y=avgLD_l))+
+  geom_smooth(method = lm)
+# very clear positive relationship - leaf litter depth increases as time from treatment grows
+
+#mineral soil and TFT
+ggplot(all.ssf, aes(x=Time_from_Treat, y=Mineral_Soil))+
+  geom_point()
+ggplot(all.ssf, aes(x=l.TFT, y=l.Mineral))+
+  geom_point()
+ggplot(all.ssf, aes(x=l.TFT, y=l.Mineral))+
+  geom_smooth(method = lm)
+# very clear negative relationship - mineral soil exposures decreases as time from treatment grows
+
+#veg cover and TFT
+ggplot(all.ssf, aes(x=Time_from_Treat, y=Veg_Total))+
+  geom_point()
+ggplot(all.ssf, aes(x=l.TFT, y=l.Veg_Total))+
+  geom_point()+
+  geom_smooth(method = lm)
+ggplot(all.ssf, aes(x=l.TFT, y=l.Veg_Total))+
+  geom_smooth(method = lm)
+# very clear negative relationship - veg cover decreases as time from treatment grows
+
+justnum <- all.ssf %>% 
+  select(l.PIRI, l.SO, l.other, l.TFT, l.BA_HA, l.BA_piri, l.Mineral, avgLD_l, l.Veg_Total)
+pairs(justnum)
+
+cor(justnum)
+
+justnum2 <- all.ssf %>% 
+  select(PIRI, Shrub_Oak, Other, Time_from_Treat, BA_HA, PIRI.BA_HA, Mineral_Soil, avgLD, Veg_Total)
+pairs(justnum2)
+
+cor(justnum2)
+```
 
 Hidden below is the original analysis and step by step model elimination conducted without treatment type included. Best model without treatment type had a higher AIC and is underdispersed according to DHARMa tests
 ```{r, include=FALSE, eval=FALSE}
@@ -234,133 +1100,8 @@ lrtest(ss.m6, ss.m8) #treatment type is important, p val of <0.001
 rm(ss.m6, ss.m7, mod6_sr, mod7_sr)
 ```
 
-
-
-
-# Pitch pine GLMM
-
-
-
-
-Model step wise elimination with treatment type included
-```{r}
-ss.m1 <- glmmTMB(PIRI ~ Treat_Type + l.SO + l.other + l.BA_HA + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ss.all2,
-                 family = poisson)
-AIC(ss.m1) #724.86
-
-#would like to test ba vs ba piri
-ss.m2a <- glmmTMB(PIRI ~ Treat_Type + l.SO + l.other + l.BA_HA + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ss.all2,
-                 family = poisson)
-AIC(ss.m2a) #723.6
-
-lrtest(ss.m1, ss.m2a) # p = .4
-
-ss.m2b <- glmmTMB(PIRI ~ Treat_Type + l.SO + l.other + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ss.all2,
-                 family = poisson)
-AIC(ss.m2b) #725.9
-
-lrtest(ss.m1, ss.m2b) # p =.08, so not important
-
-rm(ss.m2a, ss.m2b)
-
-# test ld vs mineral exposure
-ss.m3a <- glmmTMB(PIRI ~ Treat_Type + l.SO + l.other + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ss.all2,
-                 family = poisson)
-AIC(ss.m3a) #723.0
-
-lrtest(ss.m1, ss.m3a) #p=.25
-
-ss.m3b <- glmmTMB(PIRI ~ Treat_Type + l.SO + l.other + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ss.all2,
-                 family = poisson)
-AIC(ss.m3b) #730.1 
-
-lrtest(ss.m1, ss.m3b) # p = 0.01, loss of avg ld significant
-
-rm(ss.m1, ss.m3b)
-
-# test l.other
-ss.m4 <- glmmTMB(PIRI ~ Treat_Type + l.SO + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ss.all2,
-                 family = poisson)
-AIC(ss.m4) #722.6
-
-lrtest(ss.m3a, ss.m4) #p=.2, can drop other
-rm(ss.m3a)
-
-# test l.SO
-ss.m5 <- glmmTMB(PIRI ~ Treat_Type + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ss.all2,
-                 family = poisson)
-AIC(ss.m5) #725.5
-
-lrtest(ss.m4, ss.m5) #p = 0.03, l.so important
-rm(ss.m5)
-
-#test veg
-ss.m6 <- glmmTMB(PIRI ~ Treat_Type + l.SO + avgLD_l + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ss.all2,
-                 family = poisson)
-AIC(ss.m6) #727
-
-lrtest(ss.m4, ss.m6) # p = 0.011, veg important
-rm(ss.m6)
-```
-
-
-do pairwise on variables of interest from reduced model
-```{r}
-ss.pair <- ss.all2 %>% 
-  select(Region, Treat_Type, l.PIRI, l.SO, l.Veg_Total, avgLD_l, l.TFT)
-
-ggpairs(ss.pair, aes(color = Treat_Type))
-rm(ss.pair)
-```
-Not seeing any clear, strong correlations
-
-
-
-Best model:
-```{r}
-ss.m4 <- glmmTMB(PIRI ~ Treat_Type + l.SO + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ss.all2,
-                 family = poisson)
-summary(ss.m4) #722.6
-
-#This is exactly the same, just checking Maria's comment
-ss.m4a <- glmmTMB(PIRI ~ Treat_Type + l.SO + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site) + (1|Plot_No),
-                 data = ss.all2,
-                 family = poisson)
-summary(ss.m4a)
-```
-
-
-Checking model fit:
-```{r}
-ss.m4_sr <- simulateResiduals(ss.m4, n = 1000, plot = TRUE) #looks pretty good
-
-testResiduals(ss.m4_sr) #passes uniformity, dispersion, and outliers
-testQuantiles(ss.m4_sr) #passes
-testZeroInflation(ss.m4_sr) #passes
-```
-
-## Model 4 has the lowest AIC and great model fit
-Time to pairwise test
-```{r}
-emmeans(ss.m4, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
-```
-
-FallRx, Harvest, MowRx, SpringRx all significantly different from Control - no treatment significantly different from another 
-
-
-Model ss.m4 uses Treatment Type, Scrub Oak presence, average leaf litter depth, and total veg cover as predictors. Make a graph for each
-
-I'd like to see some graphs before I close out
-```{r, warning=FALSE, message=FALSE}
+##### Hidden below sjPlot for graphing
+```{r, message=FALSE, include=FALSE, eval=FALSE}
 
 library(sjPlot)
 library(sjlabelled)
@@ -369,16 +1110,21 @@ library(sjmisc)
 
 set_theme(base = theme_classic(),
           theme.font = 'serif',
-          axis.title.size = 1.5,
+          axis.title.size = 2,
           axis.textsize.x = 1.5,
           axis.textsize.y = 1.5,
           title.size = 2.5,
           title.align = "center",
           legend.pos = "right",
-          legend.size = 1.5,
-          legend.title.size = 1.5,
+          legend.size = 0,
+          legend.title.size = 0,
           #legend.bordercol = "black",
-          legend.item.size = .75)
+          legend.item.size = .75,
+          legend.item.backcol = "white")
+
+
+
+
 
 plot_model(ss.m4) #this is incidence rate ratios
 
@@ -391,23 +1137,27 @@ plot_model(ss.m4,
            terms = 'Treat_Type') #plot marginal effects (i might have done this wrong)
 
 # SS PIRI plot 1 ------------------- LD vs. TT
+png('PIRI_SS_avgld.png', pointsize=10, width=1400, height=960, res=300)
 plot_model(ss.m4, 
                        type = 'pred', 
                        terms = c('avgLD_l', 'Treat_Type'),
-                       axis.title = c("Average Leaf Litter Depth (log transformed)", "Total Count of Pitch Pine"),
-                       title = "Predicted Counts of Pitch Pine Seedlings <50cm",
-           legend.title = "Treatment Type",
-           line.size = 1,
+                       axis.title = c("Average Leaf Litter Depth \n (log transformed)", "Pitch Pine Stem Counts \n (standardized for time from treatment)"),
+           title = NULL,
+           line.size = 1.5,
            value.offset = 'Treat_Type',
            ci.lvl = NA,
            colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")) 
+
+dev.off()
+
+# title = "Predicted Counts of Pitch Pine Seedlings <50cm",
 
 
 # SS PIRI plot 2 ------------------- Veg vs TT
 plot_model(ss.m4, 
                        type = 'pred', 
                        terms = c('l.Veg_Total', 'Treat_Type'),
-                       axis.title = c("Average Understory Vegetation Cover (log transformed)", "Total Count of Pitch Pine"),
+                       axis.title = c("Average Understory Vegetation Cover (log transformed)", "Rate of Pitch Pine (count/time from treatment)"),
                        title = "Predicted Counts of Pitch Pine Seedlings <50cm",
            legend.title = "Treatment Type",
            line.size = 1,
@@ -420,7 +1170,7 @@ plot_model(ss.m4,
 plot_model(ss.m4, 
                        type = 'pred', 
                        terms = c('l.SO', 'Treat_Type'),
-                       axis.title = c("Shrub oak small seedling counts (log transformed)", "Total Count of Pitch Pine"),
+                       axis.title = c("Shrub oak seedling counts <50cm (log transformed)", "Total Count of Pitch Pine"),
                        title = "Predicted Counts of Pitch Pine Seedlings <50cm",
            legend.title = "Treatment Type",
            line.size = 1,
@@ -441,415 +1191,6 @@ plot_model(ss.m4,
            value.offset = 'Treat_Type',
            ci.lvl = NA,
            colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")) 
-
-
-
-```
-
-
-
-
-Next steps:
-
-2e. other interaction terms to think about?
-3. take another look at treat type glmms
-4. looks at lr sans treat type. Better AIC or fit? stronger predictors? maybe in LS or SA models?
-6. start with full models post scatter plot analysis
-7. are there other ways that I want to think about veg cover? e.g., just pulling out SO cover? VA/GA cover?
-
-
-
-
-
-# Shrub oak GLMM
-
-
-
-
-
-Begin model elimination
-```{r}
-so.ss1 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ss.all2,
-                 family = poisson)
-AIC(so.ss1) #1897.4
-
-#test piri BA
-so.ss2 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ss.all2,
-                 family = poisson)
-AIC(so.ss2) #1896
-
-# test total ba
-so.ss3 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ss.all2,
-                 family = poisson)
-AIC(so.ss3) #1894.1
-
-# test mineral
-so.ss4 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ss.all2,
-                 family = poisson)
-AIC(so.ss4) #1892.3
-
-# test litter depth
-so.ss5 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ss.all2,
-                 family = poisson)
-AIC(so.ss5) #1890.1
-
-# test other seedling
-so.ss6 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ss.all2,
-                 family = poisson)
-AIC(so.ss6) #1889.5
-
-lrtest(so.ss5, so.ss6) # p = .4
-
-# test PIRI seedling
-so.ss7 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ss.all2,
-                 family = poisson)
-AIC(so.ss7) #1892.6
-
-lrtest(so.ss6, so.ss7) # p = 0.02, so l.PIRI is important
-
-# add PIRI back in, test veg cover
-so.ss8 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ss.all2,
-                 family = poisson)
-AIC(so.ss8) #1888.9
-
-lrtest(so.ss6, so.ss8) # p = 0.2
-
-# test treat type
-so.ss9 <- glmmTMB(Shrub_Oak ~ l.PIRI + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ss.all2,
-                 family = poisson)
-AIC(so.ss9) #1911.5
-
-lrtest(so.ss9, so.ss8) # p > 0.001, so TT is important
-```
-
-
-Best model, then test
-```{r}
-so.ss8 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ss.all2,
-                 family = poisson)
-summary(so.ss8)
-
-so.ss8_sr <- simulateResiduals(so.ss8, n = 1000, plot = TRUE) #passes KS, quantile deviations signficant
-
-testResiduals(so.ss8_sr)
-testDispersion(so.ss8_sr, alternative = "less") #fails, so it is underdispersed
-
-#try again with gen pois / com pois ditros
-
-
-so.ss10 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ss.all2,
-                 family = compois)
-summary(so.ss10)
-
-so.ss10_sr <- simulateResiduals(so.ss10, n = 1000, plot = TRUE)
-testResiduals(so.ss10_sr)
-testDispersion(so.ss10_sr, alternative = "less") # still under dispersed
-
-
-
-so.ss11 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ss.all2,
-                 family = genpois)
-summary(so.ss11) #AIC = 1854.2
-
-so.ss11_sr <- simulateResiduals(so.ss11, n = 1000, plot = TRUE)
-testResiduals(so.ss11_sr)
-testDispersion(so.ss11_sr, alternative = "less") # at 0.05, so could possibly work
-testQuantiles(so.ss11_sr) #quantiles are not good
-
-emmeans(so.ss11, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
-```
-
-FallRx, MowRx, and SpringRx significantly different than control; none of the treatments significantly different from each other
-
-
-
-Graph SO model
-```{r}
-# SS SO plot 1 ------------------- PIRI vs. TT
-plot_model(so.ss11, 
-                       type = 'pred', 
-                       terms = c('l.PIRI', 'Treat_Type'),
-                       axis.title = c("Pitch pine small seedling counts (log transformed)", "Total Count of Shrub Oak"),
-                       title = "Predicted Counts of Shrub Oak \n Seedlings <50cm",
-           legend.title = "Treatment Type",
-           line.size = 1,
-           value.offset = 'Treat_Type',
-           ci.lvl = NA,
-           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")) 
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## Doing some data exploration via scatterplots
-This analysis can be seen in the pair plots at the top of script
-```{r, include=FALSE, eval=FALSE}
-# create a log transformed total seedling count variable in order to compare with other log transformed variables -------------------
-
-ss_LR2$l.Total <- log(ss_LR2$Total + 1)
-
-# PIRI seedlings vs. Veg cover
-ggplot(ss_LR2, aes(x=Total, y=Veg_Total, color = Treat_Type))+
-  geom_point()
-# log transformed
-ggplot(ss_LR2, aes(x=l.Total, y=l.Veg_Total))+
-  geom_point()
-# smooth, with linear model
-ggplot(ss_LR2, aes(x=l.Total, y=l.Veg_Total))+
-  geom_smooth(method = lm)
-#some increase in seedling counts with decrease in total understory cover, but pretty wide margins
-
-# None of these lm graphs account for pseudo-replication, but it gives some indication of relationships
-
-
-# PIRI seedlings vs. avg Litter Depth
-ggplot(ss_LR2, aes(x=Total, y=avgLD))+
-  geom_point()
-ggplot(ss_LR2, aes(x=l.Total, y=avgLD_l))+
-  geom_point()
-ggplot(ss_LR2, aes(x=l.Total, y=avgLD_l))+
-  geom_smooth(method = lm)
-#general trend of increasing seedlings with decreasing litter depth
-
-
-
-#PIRI seedlings vs. basal area per hectare
-ggplot(ss_LR2, aes(x=Total, y=BA_HA))+
-  geom_point()
-ggplot(ss_LR2, aes(x=l.Total, y=l.BA_HA))+
-  geom_point()
-ggplot(ss_LR2, aes(x=l.Total, y=l.BA_HA))+
-  geom_smooth(method = lm)
-# some increase of seedlings with increased basal area per hectare, but very wide margins as total climbs
-
-
-
-#PIRI seedlings vs. PIRI basal area per hectare
-ggplot(ss_LR2, aes(x=Total, y=PIRI.BA_HA))+
-  geom_point()
-ggplot(ss_LR2, aes(x=l.Total, y=l.BA_piri))+
-  geom_point()
-ggplot(ss_LR2, aes(x=l.Total, y=l.BA_piri))+
-  geom_smooth(method = lm)
-#very small trend of increase in total seedlings with increase is piri BA, again with very wide margins
-
-
-
-#PIRI seedlings vs. mineral soil exposure
-ggplot(ss_LR2, aes(x=Total, y=Mineral_Soil))+
-  geom_point()
-ggplot(ss_LR2, aes(x=l.Total, y=l.Mineral))+
-  geom_point()
-ggplot(ss_LR2, aes(x=l.Total, y=l.Mineral))+
-  geom_smooth(method = lm)
-#increase in total seedlings with increase in mineral soil exposure, wide margins but trend seems pretty clear
-
-
-
-#PIRI seedlings vs. litter/duff
-ggplot(ss_LR2, aes(x=Total, y=Litter_Duff))+
-  geom_point()
-ss_LR2$l.litter_duff <- log(ss_LR2$Litter_Duff + 1)
-ggplot(ss_LR2, aes(x=l.Total, y=l.litter_duff))+
-  geom_point()
-ggplot(ss_LR2, aes(x=l.Total, y=l.litter_duff))+
-  geom_smooth(method = lm)
-#some small increase, but very large margins and small effect - only 9 plots are not in the 4 region, so not a lot of spread - but hey, I looked at it
-
-
-# PIRI seedlings vs. time from treatment
-ggplot(ss_LR2, aes(x=Total, y=Time_from_Treat))+
-  geom_point()
-ggplot(ss_LR2, aes(x=l.Total, y=l.TFT))+
-  geom_point()
-ggplot(ss_LR2, aes(x=l.Total, y=l.TFT))+
-  geom_smooth(method = lm)
-#clear trend, total increases as time from treatment decreases
-
-#quick look at categorical
-ggplot(ss_LR2, aes(x=Region, y=l.Total))+
-  geom_violin()
-ggplot(ss_LR2, aes(x=Treat_Type, y=l.Total))+
-  geom_violin()
-ggplot(ss_LR2, aes(x=Region, y=l.Total, color = Treat_Type))+
-  geom_violin()
-#i'm surprised that mowing averages out and isn't significant in a pairwise, i guess NH really brings it down. 
-```
-
-Veg cover, average litter depth, and time from treatment all have a clear negative relationship (as they decrease, total increases), some more significant than others
-
-Basal area per hectare and mineral soil exposure have positive relationship (as they increase, total increase), these relationships appear weaker than the above negative relationships
-
-More scatterplots hidden below; see pairwise at beginning of script
-```{r, include=FALSE, eval=FALSE}
-#all dataset names would need to be changed/checked
-
-ggplot(all.ssf, aes(x=PIRI, y=Shrub_Oak))+
-  geom_point()
-ggplot(all.ssf, aes(x=l.PIRI, y=l.SO))+
-  geom_point()
-ggplot(all.ssf, aes(x=l.PIRI, y=l.SO))+
-  geom_smooth(method = lm)
-# appears to have a negative relationship. As SO presence decreases, so does PIRI presence increase
-
-ggplot(all.ssf, aes(x=PIRI, y=Other))+
-  geom_point()
-ggplot(all.ssf, aes(x=l.PIRI, y=l.other))+
-  geom_point()
-ggplot(all.ssf, aes(x=l.PIRI, y=l.other))+
-  geom_smooth(method = lm)
-#similar, but not as clear or as strong
-
-
-ggplot(all.ssf, aes(x=avgLD, y=Veg_Total))+
-  geom_point()
-ggplot(all.ssf, aes(x=avgLD_l, y=l.Veg_Total))+
-  geom_point()
-ggplot(all.ssf, aes(x=avgLD_l, y=l.Veg_Total))+
-  geom_smooth(method = lm)
-#negative relationship, as ld increases, veg cover decreases
-
-
-#these two are kind of duh
-ggplot(all.ssf, aes(x=l.Mineral, y=l.Veg_Total))+
-  geom_smooth(method = lm)
-# also negative, makes sense - exposed mineral soil doesn't have plants in it ...
-#kind of the same thing if i looked at avgLD and exposed mineral soil 
-ggplot(all.ssf, aes(x=l.Mineral, y=avgLD_l))+
-  geom_smooth(method = lm)
-
-#start with LD and TFT
-ggplot(all.ssf, aes(x=Time_from_Treat, y=avgLD))+
-  geom_point() +
-  geom_smooth(method = lm)
-ggplot(all.ssf, aes(x=l.TFT, y=avgLD_l))+
-  geom_point() +
-  geom_smooth(method = lm)
-ggplot(all.ssf, aes(x=l.TFT, y=avgLD_l))+
-  geom_smooth(method = lm)
-# very clear positive relationship - leaf litter depth increases as time from treatment grows
-
-#mineral soil and TFT
-ggplot(all.ssf, aes(x=Time_from_Treat, y=Mineral_Soil))+
-  geom_point()
-ggplot(all.ssf, aes(x=l.TFT, y=l.Mineral))+
-  geom_point()
-ggplot(all.ssf, aes(x=l.TFT, y=l.Mineral))+
-  geom_smooth(method = lm)
-# very clear negative relationship - mineral soil exposures decreases as time from treatment grows
-
-#veg cover and TFT
-ggplot(all.ssf, aes(x=Time_from_Treat, y=Veg_Total))+
-  geom_point()
-ggplot(all.ssf, aes(x=l.TFT, y=l.Veg_Total))+
-  geom_point()+
-  geom_smooth(method = lm)
-ggplot(all.ssf, aes(x=l.TFT, y=l.Veg_Total))+
-  geom_smooth(method = lm)
-# very clear negative relationship - veg cover decreases as time from treatment grows
-
-justnum <- all.ssf %>% 
-  select(l.PIRI, l.SO, l.other, l.TFT, l.BA_HA, l.BA_piri, l.Mineral, avgLD_l, l.Veg_Total)
-pairs(justnum)
-
-cor(justnum)
-
-justnum2 <- all.ssf %>% 
-  select(PIRI, Shrub_Oak, Other, Time_from_Treat, BA_HA, PIRI.BA_HA, Mineral_Soil, avgLD, Veg_Total)
-pairs(justnum2)
-
-cor(justnum2)
-```
-
-
-## Hidden below are previous, discarded PIRI models :
-
-```{r, eval=FALSE, include=FALSE}
-# PIRI : This is the model with tft interaction, which has lower AIC but isn't clearly a better idea
-
-#all dataset names would need to be changed/checked
-ss.mlr3 <- glmmTMB(Total~ l.Veg_Total + avgLD_l + (avgLD_l * l.TFT) + (l.Veg_Total * l.TFT) + (1|Site/Plot_No),
-                   data = ss_LR2,
-                   family = nbinom1)
-AIC(ss.mlr3) #704.4
-
-mod5 <- glmmTMB(Total~l.Veg_Total + (avgLD_l * l.TFT) + l.BA_HA + offset(l.TFT) + (1|Site/Plot_No),
-                   data = ss_LR2,
-                   family = poisson)
-AIC(mod5) #704.3
-
-#I think this is our best model
-
-mod7 <- glmmTMB(Total~ Treat_Type + l.Veg_Total + (avgLD_l * l.TFT) + l.BA_HA + offset(l.TFT) + (1|Site/Plot_No),
-                   data = ss_LR2,
-                   family = poisson)
-summary(mod7) #AIC is 692.8, which is better than my current model - the interaction with time and litter depth, i think, is especially important
-
-sr_mod7 <- simulateResiduals(mod7, n = 1000, plot = TRUE) # looks good
-testResiduals(sr_mod7) #passes
-
-emmeans(mod7, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response') # this just shows fall rx vs 
-
-mod11 <- glmmTMB(PIRI~Treat_Type + l.Veg_Total + (avgLD_l * l.TFT) + l.SO + l.BA_HA + offset(l.TFT) + (1|Site/Plot_No),
-                   data = all.ssf,
-                   family = poisson)
-AIC(mod11) #688.9
-
-lrtest(mod10, mod11) # p is less than 0.001, treatment type is important
-
-sr_mod11 <- simulateResiduals(mod11, n = 1000, plot = TRUE)
-testResiduals(sr_mod11)
-
-#am i sorting control to the top?
-
-all.ssf1 <- all.ssf %>% 
-  arrange(Treat_Type)
-
-mod12 <- glmmTMB(PIRI~l.Veg_Total + (avgLD_l * l.TFT) + l.SO + l.BA_HA + offset(l.TFT) + (1|Site/Plot_No),
-                   data = all.ssf1,
-                   family = poisson)
-AIC(mod12)
-
-mod13 <- glmmTMB(PIRI~l.Veg_Total + avgLD_l + l.SO + l.BA_HA + offset(l.TFT) + (1|Site/Plot_No),
-                   data = all.ssf1,
-                   family = poisson)
-AIC(mod13)
-
-
-mod14 <- glmmTMB(PIRI~Treat_Type + l.Veg_Total + avgLD_l + l.TFT + (avgLD_l * l.TFT) + l.SO + l.BA_HA + offset(l.TFT) + (1|Site/Plot_No),
-                   data = all.ssf1,
-                   family = poisson)
-AIC(mod14)
-
-
-#also do models with treat type variable (lowest aic is 689)
-
-
-
-emmeans(mod12, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
-#same now, this shows fall rx vs mowrx and fall vs spring rx as the only significantly different - control was the baseline earlier, without me needing to arrange the DF
 ```
 
 

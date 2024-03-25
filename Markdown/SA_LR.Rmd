@@ -17,6 +17,8 @@ library(TMB)
 library(emmeans)
 library(DHARMa)
 library(lmtest)
+library(ggeffects)
+library(performance)
 ```
 
 Set working directory
@@ -25,7 +27,7 @@ knitr::opts_knit$set(root.dir = '/Users/user/Desktop/Data/Regen_RProj/')
 ```
 
 Source sapling data:
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE}
 source("Scripts/SA_Import.R")
 ```
 
@@ -50,7 +52,7 @@ setdiff(sa_merge2[,1:7], sa_merge3[,1:7])
 ```
 
 Run the 'Add_BA' script and merge with dataset:
-```{r, warning=FALSE, message=FALSE}
+```{r, message=FALSE}
 source("Scripts/Add_BA.R")
 
 # merge with sapling dataset -------------------
@@ -77,17 +79,16 @@ rm(sa_merge3,
    sa_merge5)
 ```
 
-Sapling count data is taken in 25m^2^ plots; basal area is measured in hectares; veg and soil data is taken a 1m^2^ plots.
+#### Sapling count data is taken in 25m^2^ plots; basal area is measured in hectares; veg and soil data is taken a 1m^2^ plots.
 
 Sapling data will be convered into 1m^2^ plots in order to compare across and reduce the amount of scales of data collection, reducing it to two: 1m^2^ plots and per hectare observations
+
+Create log transformed categories for newly added variables, then select for just the desired variables:
 ```{r}
 sa.all$PIRI.1m <- sa.all$PIRI/25
 sa.all$SO.1m <- sa.all$Shrub_Oak/25
 sa.all$Other.1m <- sa.all$Other/25
-```
 
-Create log transformed categories for newly added variables, then select for just the desired variables:
-```{r}
 sa.all$l.PIRI1 <- log(sa.all$PIRI.1m + 1)
 sa.all$l.SO1 <- log(sa.all$SO.1m + 1)
 sa.all$l.other1 <- log(sa.all$Other.1m + 1)
@@ -109,7 +110,6 @@ sa.all3 <- sa.all3 %>%
   select(Treat_Type, Region, Site, Plot_No, PIRI, l.PIRI, Shrub_Oak, l.SO, Other, l.other, Time_from_Treat, l.TFT, BA_HA, l.BA_HA, PIRI.BA_HA, l.BA_piri, Mineral_Soil, l.Mineral, Litter_Duff, avgLD, avgLD_l, Veg_Total, l.Veg_Total) %>% 
   arrange(Treat_Type)
 ```
-
 
 
 Select just for numerical vs log and then look at paired plots for sapling transformed to 1m^2^ observation level:
@@ -137,7 +137,6 @@ Can see the correlation coefficients for linear (Pearsons) relationships. None o
 No significant correlations obvious from plots
 
 # Above code and naming conventions are the same as SA_GLMM.Rmd script
-
 
 Looking at pairwise again but with sa.all3 dataset (sapling counts at 25m^2^ observation level)
 ```{r}
@@ -191,344 +190,330 @@ ggplot(sa.all3, aes(x=l.PIRI, y = l.Veg_Total, fill = Treat_Type))+
 
 
 
+major personal breakthrough for dummies. For zero inflation, lets see if any TT or region is lacking alltogether in PIRI or SO saplings
+```{r}
+sa.all4 <- sa.all3 %>% 
+  group_by(Region)
 
-Start with data transformed to 1m plot and no treatment type
-```{r, eval=FALSE}
-sa.m1 <- glmmTMB(PIRI ~ l.SO1 + l.other1 + l.BA_HA + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = sa.all2,
-                 family = poisson)
-AIC(sa.m1) #213.7
-
-sa.m1_sr <- simulateResiduals(sa.m1, n = 1000, plot = T)
-testZeroInflation(sa.m1_sr) #zero inflated
-
-sa.m1a <- glmmTMB(PIRI ~ l.SO1 + l.other1 + l.BA_HA + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = sa.all2,
-                 ziformula = ~1,
-                 family = poisson)
-AIC(sa.m1a) #215.7
-
-sa.m1a_sr <- simulateResiduals(sa.m1a, n = 1000, plot = T) #passes
-testZeroInflation(sa.m1a_sr) #still zero inflated, lets test on data set without 1m transformations - sa.all3
-
-
-# Untransformed sapling counts
-sa.m1b <- glmmTMB(PIRI ~ l.SO + l.other + l.BA_HA + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = sa.all3,
-                 ziformula = ~1,
-                 family = poisson)
-AIC(sa.m1b) #215.9
-
-sa.m1b_sr <- simulateResiduals(sa.m1b, n = 1000, plot = T) #fails ks
-testZeroInflation(sa.m1b_sr) #still very zero inflated
+tapply(sa.all4$PIRI, sa.all4$Region, summary)
+# no PIRI in LI,
+tapply(sa.all4$PIRI, sa.all4$Treat_Type, summary) 
 ```
 
 
 
-Test models with untransformed counts and see if zero inflation issues resolve as variables decrease?
-```{r, eval=FALSE}
-# test piri ba
-sa.m2 <- glmmTMB(PIRI ~ l.SO + l.other + l.BA_HA + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = sa.all3,
-                 ziformula = ~1,
-                 family = poisson)
-AIC(sa.m2) #217.1
+#### Now that I know that there are no PIRI in LI, I want to start model elimination again using ziformula = ~ Region
 
-lrtest(sa.m1b, sa.m2) # p = 0.07
-
-# test ba
-sa.m3 <- glmmTMB(PIRI ~ l.SO + l.other + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = sa.all3,
-                 ziformula = ~1,
-                 family = poisson)
-AIC(sa.m3) #215.1
-
-#test mineral soil
-sa.m4 <- glmmTMB(PIRI ~ l.SO + l.other + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = sa.all3,
-                 ziformula = ~1,
-                 family = poisson)
-AIC(sa.m4) #213.2
-
-lrtest(sa.m3, sa.m4) # p = 0.7
-
-#test litter depth
-sa.m5 <- glmmTMB(PIRI ~ l.SO + l.other + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = sa.all3,
-                 ziformula = ~1,
-                 family = poisson)
-AIC(sa.m5) #211.2
-
-#test veg cover
-sa.m6 <- glmmTMB(PIRI ~ l.SO + l.other + offset(l.TFT) + (1|Site/Plot_No),
-                 data = sa.all3,
-                 ziformula = ~1,
-                 family = poisson)
-AIC(sa.m6) #209.4
-
-lrtest(sa.m5, sa.m6) #p = 0.7
-
-#test other
-sa.m7 <- glmmTMB(PIRI ~ l.SO + offset(l.TFT) + (1|Site/Plot_No),
-                 data = sa.all3,
-                 ziformula = ~1,
-                 family = poisson)
-AIC(sa.m7) #253.7
-
-lrtest(sa.m6, sa.m7) #p less than 0.001
-
-#test shrub oak
-sa.m8 <- glmmTMB(PIRI ~ l.other + offset(l.TFT) + (1|Site/Plot_No),
-                 data = sa.all3,
-                 ziformula = ~1,
-                 family = poisson)
-AIC(sa.m8) #249.3
-
-lrtest(sa.m6, sa.m8) #p less than 0.001
-
-#sa.m6 looks best, lets test model
-sa.m6_sr <- simulateResiduals(sa.m6, n = 1000, plot = TRUE) #doesn't pass
-testZeroInflation(sa.m6_sr) #still fails
-
-#try model with treat type and see if it passes?
-sa.m9 <- glmmTMB(PIRI ~ Treat_Type + l.SO + l.other + offset(l.TFT) + (1|Site/Plot_No),
-                 data = sa.all3,
-                 ziformula = ~1,
-                 family = poisson)
-AIC(sa.m9) #256.3
-lrtest(sa.m6, sa.m9) #p less than 0.001
-
-
-sa.m9_sr <- simulateResiduals(sa.m9, n = 1000, plot = TRUE) #passes
-testZeroInflation(sa.m9_sr) #passes
-testResiduals(sa.m9_sr)
-
-#this model looks great. based on modeling below that starts with TT, I'm going to add veg back into this model and run again
-sa.m10 <- glmmTMB(PIRI ~ Treat_Type + l.SO + l.other + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = sa.all3,
-                 ziformula = ~1,
-                 family = poisson)
-AIC(sa.m10) #218.5
-lrtest(sa.m10, sa.m9) #weird, is now important
-
-sa.m10_sr <- simulateResiduals(sa.m10, n = 1000, plot = TRUE) #now fails
-testResiduals(sa.m10_sr)
-```
+I have previously done model elimination with zero inflated poisson distro & with model w.o TT. Neither are better than zi nbinom2 models. zi ~1 has distribution issues, ~Region does not
 
 
 
 
 
-
-
-Model has much better fit and zero inflation issues are resolved when treatment type variable is included. Time to do elimination again but with TT
+Model has much better fit and zero inflation issues are resolved when treatment type variable is included. Time to do elimination again but with TT; all models fail with nbinom1 distro, but works with nbinom2 (these notes are from when I was using a zi poisson distro, using nbinom TT no longer seems to be important to model fit, but we will keep for the overarching story)
 ```{r, eval=FALSE}
 sa.m1b <- glmmTMB(PIRI ~ Treat_Type + l.SO + l.other + l.BA_HA + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
                  data = sa.all3,
-                 ziformula = ~1,
-                 family = poisson)
-AIC(sa.m1b) #223.4
+                 ziformula = ~Region,
+                 family = nbinom2)
+ #won't converge
 
 # test piri ba
 sa.m2 <- glmmTMB(PIRI ~ Treat_Type + l.SO + l.other + l.BA_HA + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
                  data = sa.all3,
-                 ziformula = ~1,
-                 family = poisson)
-AIC(sa.m2) #223.9
+                 ziformula = ~Region,
+                 family = nbinom2)
+AIC(sa.m2) #248
 
-lrtest(sa.m1b, sa.m2) # p = 0.1
+check_collinearity(sa.m2) #not rank deficient
 
-# test ba
+#test overall BA
+sa.m2b <- glmmTMB(PIRI ~ Treat_Type + l.SO + l.other + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = sa.all3,
+                 ziformula = ~Region,
+                 family = nbinom2)
+AIC(sa.m2b) #239.3 (AIC smaller when PIRI BA included instead of overall BA)
+
+check_collinearity(sa.m2b) # this model is not rank deficient
+
+# no ba to compare with ba/piri ba models
 sa.m3 <- glmmTMB(PIRI ~ Treat_Type + l.SO + l.other + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
                  data = sa.all3,
-                 ziformula = ~1,
-                 family = poisson)
-AIC(sa.m3) #222.3
+                 ziformula = ~Region,
+                 family = nbinom2)
+AIC(sa.m3) #252.2
 
-#test mineral soil
-sa.m4 <- glmmTMB(PIRI ~ Treat_Type + l.SO + l.other + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+check_collinearity(sa.m3) #not rank deficent
+
+lrtest(sa.m2b, sa.m3)  #p=0.0001, keep piri ba
+lrtest(sa.m2, sa.m3) # p = 0.01
+
+#I think these two variables will have issues of collinearity, but I would like to confirm that, but models with both won't converge or are rank deficient
+
+#test SO
+sa.m4 <- glmmTMB(PIRI ~ Treat_Type + l.other + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
                  data = sa.all3,
-                 ziformula = ~1,
-                 family = poisson)
-AIC(sa.m4) #220.5
+                 ziformula = ~Region,
+                 family = nbinom2)
+AIC(sa.m4) #240
 
-lrtest(sa.m3, sa.m4) # p = 0.7
+check_collinearity(sa.m4) #rank deficient
+emmeans(sa.m4, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
+# ok, so rank deficiency shows up in pairwise as NaN
 
-#test litter depth
-sa.m5 <- glmmTMB(PIRI ~ Treat_Type + l.SO + l.other + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = sa.all3,
-                 ziformula = ~1,
-                 family = poisson)
-AIC(sa.m5) #218.5
-
-#test veg cover
-sa.m6 <- glmmTMB(PIRI ~ Treat_Type + l.SO + l.other + offset(l.TFT) + (1|Site/Plot_No),
-                 data = sa.all3,
-                 ziformula = ~1,
-                 family = poisson)
-AIC(sa.m6) #256.4
-
-lrtest(sa.m5, sa.m6) #p less than 0.001
+lrtest(sa.m2b, sa.m4) # p = 0.08 # drop
 
 #test other
-sa.m7 <- glmmTMB(PIRI ~ Treat_Type + l.SO + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+sa.m5 <- glmmTMB(PIRI ~ Treat_Type + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
                  data = sa.all3,
-                 ziformula = ~1,
-                 family = poisson)
-AIC(sa.m7) #217.6
+                 ziformula = ~Region,
+                 family = nbinom2)
+AIC(sa.m5) #240.6
 
-lrtest(sa.m5, sa.m7) #p = 0.3
+check_collinearity(sa.m5) #not rank deficient 
 
-#test shrub oak
-sa.m8 <- glmmTMB(PIRI ~ Treat_Type + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+#test mineral 
+sa.m6 <- glmmTMB(PIRI ~ Treat_Type + l.BA_piri + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
                  data = sa.all3,
-                 ziformula = ~1,
-                 family = poisson)
-AIC(sa.m8) #215.6
+                 ziformula = ~Region,
+                 family = nbinom2)
+AIC(sa.m6) #238.8
 
-lrtest(sa.m7, sa.m8) #p = .8
+check_collinearity(sa.m6) #not rank deficient 
 
-#so with treatment type included, veg cover is important, but other species of saplings are not
+lrtest(sa.m5, sa.m6) # both other and mineral non-significant
 
-#check model
-sa.m8_sr <- simulateResiduals(sa.m8, n = 1000, plot = TRUE) #fails
-testZeroInflation(sa.m8_sr) #fails
+#test veg
+sa.m7 <- glmmTMB(PIRI ~ Treat_Type + l.BA_piri  + avgLD_l + offset(l.TFT) + (1|Site/Plot_No),
+                 data = sa.all3,
+                 ziformula = ~Region,
+                 family = nbinom2)
+AIC(sa.m7) #237.8
 
-#try model with so and other saplings?
-sa.m5_sr <- simulateResiduals(sa.m5, n = 1000, plot = TRUE)
-testZeroInflation(sa.m5_sr) #both still fail ...
+check_collinearity(sa.m7) #RANK DEFICIENT
+lrtest(sa.m6, sa.m7) #drop
+
+sa.m7b <- glmmTMB(PIRI ~ Treat_Type + l.BA_HA  + avgLD_l + offset(l.TFT) + (1|Site/Plot_No),
+                 data = sa.all3,
+                 ziformula = ~Region,
+                 family = nbinom2)
+AIC(sa.m7b) #247.7
+
+check_collinearity(sa.m7b) # not rank deficient
+
+#why is this happening
+#if both BA/HA and piri BA/HA are important, should I make a proportion category? no - model using proportion won't converge
+
+
+# sa.all3$BA_prop <- sa.all3$PIRI.BA_HA/sa.all3$BA_HA
+# sa.all3$l.BA_prop <- log(sa.all3$BA_prop+1)
+# 
+# hist(sa.all3$BA_prop)
+# 
+# sa.m7p <- glmmTMB(PIRI ~ Treat_Type + l.BA_prop + avgLD_l + offset(l.TFT) + (1|Site/Plot_No),
+#                  data = sa.all3,
+#                  ziformula = ~Region,
+#                  family = nbinom2)
+
+#ok this idea failed. can't get models to work with piri ba proportion or log transformed piri ba prop
+
+# i don't know how to resolve this issue or what the right steps to take
+
+
+sa.m7c <- glmmTMB(PIRI ~ Treat_Type + l.BA_piri  + avgLD_l + l.SO + offset(l.TFT) + (1|Site/Plot_No),
+                 data = sa.all3,
+                 ziformula = ~Region,
+                 family = nbinom2)
+AIC(sa.m7c) #237.3
+# won't converge with l.other; above model is rank deficient
+
+rm(sa.m7b, sa.m7c)
+
+
+
+
+
+
+
+#test avgld
+sa.m8 <- glmmTMB(PIRI ~ Treat_Type + l.BA_piri + offset(l.TFT) + (1|Site/Plot_No),
+                 data = sa.all3,
+                 ziformula = ~Region,
+                 family = nbinom2)
+AIC(sa.m8) #won't converge
+
+check_collinearity(sa.m8) #RANK DEFICIENT
+
+#test TT
+sa.m9 <- glmmTMB(PIRI ~ l.BA_piri + offset(l.TFT) + (1|Site/Plot_No),
+                 data = sa.all3,
+                 ziformula = ~Region,
+                 family = nbinom2)
+AIC(sa.m9) #238.2
+lrtest(sa.m9, sa.m2b) # p = 0.06
+
+
+#test piri ba
+sa.m10 <- glmmTMB(PIRI ~ l.BA_HA + offset(l.TFT) + (1|Site/Plot_No),
+                 data = sa.all3,
+                 ziformula = ~Region,
+                 family = nbinom2)
+AIC(sa.m10) #245.2
+
+
+
+#will avgld and piri ba converge without TT? NO
+
+
+
+# tried with zi ~1, major dispersion issues when checking model fit
+
+rm(sa.m1b, sa.m2, sa.m2b, sa.m3, sa.m4, sa.m5, sa.m10, sa.m11)
 ```
-Some issues with models failing DHARMa tests despite what model elimination/AIC says is important. 
 
 
 
-
-# Starting analysis again
+### Checking fixed effects for collinearity and looking at general summary stats to make sure they aren't 0/1 or same/function of other category
 ```{r}
-sa.m10 <- glmmTMB(PIRI ~ Treat_Type + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = sa.all3,
-                 ziformula = ~Region,
-                 family = poisson)
-AIC(sa.m10) #221.7
+summary(sa.all3)
 
-sa.m10_sr <- simulateResiduals(sa.m10, n = 1000, plot = TRUE)
-testZeroInflation(sa.m10_sr) #fails
+library(caret)
 
-sa.m11 <- glmmTMB(PIRI ~ Treat_Type + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = sa.all3,
-                 ziformula = ~Treat_Type,
-                 family = poisson)
-AIC(sa.m11) #223.6
+sa_check <- sa.all3 %>% 
+  select(l.PIRI, l.other, l.TFT, l.BA_piri, l.Mineral, l.Veg_Total, avgLD_l)
 
-sa.m11_sr <- simulateResiduals(sa.m11, n = 1000, plot=T)
-testZeroInflation(sa.m11_sr) #fails
-
-sa.m12 <- glmmTMB(PIRI ~ Treat_Type + offset(l.TFT) + (1|Site/Plot_No),
-                 data = sa.all3,
-                 ziformula = ~Region,
-                 family = poisson)
-AIC(sa.m12) #213.9 w/1, 250.5 with region
-
-sa.m12_sr <- simulateResiduals(sa.m12, n = 1000, plot = TRUE) #fails with 1 as ZI; passes with region as zi
-testZeroInflation(sa.m12_sr) #fails with 1 as ZI; passes with region as zi
+findLinearCombos(sa.all3[,4:23]) #shows no linear combos. Don't get how the rank deficiency is happening
+tapply(sa.all3$Other, sa.all3$Region, summary) #all present
+tapply(sa.all3$Shrub_Oak, sa.all3$Region, summary) #none in LI
+tapply(sa.all3$BA_HA, sa.all3$Region, summary) #all present
+tapply(sa.all3$PIRI.BA_HA, sa.all3$Region, summary) #all present
+tapply(sa.all3$Veg_Total, sa.all3$Region, summary) #all present
+tapply(sa.all3$Mineral_Soil, sa.all3$Region, summary) #all present
+tapply(sa.all3$avgLD, sa.all3$Region, summary) #all present
 ```
-
-
-
-Ok, this is the best fit model so far
-```{r}
-sa.m12 <- glmmTMB(PIRI ~ Treat_Type + offset(l.TFT) + (1|Site/Plot_No),
-                 data = sa.all3,
-                 ziformula = ~Region,
-                 family = poisson)
-AIC(sa.m12) #213.9 w/1, 250.5 with region
-
-#I'd like to try adding so, other, and veg back into this model, checking AIC and model fit
-
-sa.m13 <- glmmTMB(PIRI ~ Treat_Type + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = sa.all3,
-                 ziformula = ~Region,
-                 family = poisson)
-AIC(sa.m13) #221.7
-
-sa.m13_sr <- simulateResiduals(sa.m13, n = 1000, plot = TRUE) #fails
-testZeroInflation(sa.m13_sr) #fails
-
-sa.m14 <- glmmTMB(PIRI ~ Treat_Type + l.SO + offset(l.TFT) + (1|Site/Plot_No),
-                 data = sa.all3,
-                 ziformula = ~Region,
-                 family = poisson)
-AIC(sa.m14)
-
-lrtest(sa.m12, sa.m14) #p = 0.2
-
-sa.m15 <- glmmTMB(PIRI ~ Treat_Type + l.other + offset(l.TFT) + (1|Site/Plot_No),
-                 data = sa.all3,
-                 ziformula = ~1,
-                 family = poisson)
-#won't converge w/ region
-AIC(sa.m15)
-
-sa.m15_sr <- simulateResiduals(sa.m15, n = 1000, plot = TRUE)
-testZeroInflation(sa.m15_sr)
-```
-
-
-
-## Models that pass DHARMa tests:
 
 ```{r}
-sa.f1 <- glmmTMB(PIRI ~ Treat_Type + l.SO + l.other + offset(l.TFT) + (1|Site/Plot_No),
-                 data = sa.all3,
-                 ziformula = ~1,
-                 family = poisson)
-AIC(sa.f1) #256.4
-
-sa.f2 <- glmmTMB(PIRI ~ Treat_Type + l.other + offset(l.TFT) + (1|Site/Plot_No),
-                 data = sa.all3,
-                 ziformula = ~1,
-                 family = poisson)
-#won't converge w/ region
-AIC(sa.f2) #255.4
-
-sa.f2_sr <- simulateResiduals(sa.f2, n = 1000, plot = TRUE) #passes
-testZeroInflation(sa.f2_sr) #passes
-testResiduals(sa.f2_sr) #passes
+tapply(sa.all3$Other, sa.all3$Treat_Type, summary) #all present
+tapply(sa.all3$Shrub_Oak, sa.all3$Treat_Type, summary) #none in mowrx or springrx
+tapply(sa.all3$BA_HA, sa.all3$Treat_Type, summary) #all present
+tapply(sa.all3$PIRI.BA_HA, sa.all3$Treat_Type, summary) #all present
+tapply(sa.all3$Veg_Total, sa.all3$Treat_Type, summary) #all present
+tapply(sa.all3$Mineral_Soil, sa.all3$Treat_Type, summary) #all present
+tapply(sa.all3$avgLD, sa.all3$Treat_Type, summary) #all present
+```
 
 
-lrtest(sa.f1, sa.f2) # p = 0.3 - can drop SO
 
-sa.f3 <- glmmTMB(PIRI ~ Treat_Type + offset(l.TFT) + (1|Site/Plot_No),
-                 data = sa.all3,
-                 ziformula = ~1,
-                 family = poisson)
-AIC(sa.f3) #213.9 
-
-sa.f3_sr <- simulateResiduals(sa.f3, n = 1000, plot = TRUE) #fails
-testZeroInflation(sa.f3_sr) #fails
-
-lrtest(sa.f2, sa.f3) #p is less than 0.001, but the AIC falls so much, weird
-
-sa.f4 <- glmmTMB(PIRI ~ Treat_Type + offset(l.TFT) + (1|Site/Plot_No),
+#### Best model (lowest AIC without rank deficiency) appears to be model sa.m6 with TT, piri BA, agvLD, Veg total. Test model fit:
+```{r}
+sa.m6 <- glmmTMB(PIRI ~ Treat_Type + l.BA_piri + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
                  data = sa.all3,
                  ziformula = ~Region,
-                 family = poisson)
-AIC(sa.f4) #250.5 with region
-
-sa.f4_sr <- simulateResiduals(sa.f4, n = 1000, plot = TRUE) #passes
-testZeroInflation(sa.f4_sr) #passes
-testResiduals(sa.f4_sr) #passes
+                 family = nbinom2)
+summary(sa.m6) #238.8
 
 
-AIC(sa.f4, sa.f2)
-#aic is lower for sa.f4 & more df - therefore better model? maybe graph both to see what is going on?
-
-emmeans(sa.f4, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
+sa.m6_sr <- simulateResiduals(sa.m6, n = 1000, plot = TRUE) #looks good
+testResiduals(sa.m6_sr) #passes
+testZeroInflation(sa.m6_sr) #passes
 ```
+
+
+#### Pairwise:
+```{r}
+emmeans(sa.m6, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
+```
+
+None significantly different from eachother
+
+
+
+
+
+
+
+#### Plot model
+```{r}
+sa.piri1 <- ggpredict(sa.m6, terms = c("avgLD_l", "Treat_Type"))
+#control and fallrx are almost completely identical - if I wanted to nudge/jitter
+# sa.piri2 <- sa.piri1 %>% 
+#   filter(group == "FallRx")
+# 
+# sa.piri2$predicted <- sa.piri2$predicted+0.01
+# 
+# sa.piri3 <- sa.piri1 %>% 
+#   filter(group != "FallRx")
+# 
+# sa.piri3 <- rbind(sa.piri3, sa.piri2)
+
+ggplot(sa.piri1, aes(x, predicted, color = group))+
+  geom_line(linewidth = 1, show.legend = FALSE) +
+  scale_color_manual(values = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15"))+
+  theme_classic()+
+  theme(panel.background = element_blank()) +
+  labs(colour = "Treatment Type")+
+  theme(axis.text = element_text(size = 10), axis.title = element_text(size = 14))+
+  labs(x = "Average leaf litter depth (log transformed)",
+       y = NULL)
+
+ggsave(filename = "SA_PIRI_avgld.tiff", path = "Plots/PIRI_GLMM", width = 6, height = 4.2, device = "tiff", dpi = 700)
+
+
+
+
+
+
+sa.piri4 <- ggpredict(sa.m6, terms = c("l.BA_piri", "Treat_Type"))
+#again control and fall rx overlap - if I wanted to nudge/jitter
+
+# sa.piri5 <- sa.piri4 %>% 
+#   filter(group == "FallRx")
+# 
+# sa.piri5$predicted <- sa.piri5$predicted+0.01
+# 
+# sa.piri6 <- sa.piri4 %>% 
+#   filter(group != "FallRx")
+# 
+# sa.piri6 <- rbind(sa.piri6, sa.piri5)
+
+
+ggplot(sa.piri4, aes(x, predicted, color = group))+
+  geom_line(linewidth = 1, show.legend = FALSE) +
+  scale_color_manual(values = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15"))+
+  theme_classic()+
+  theme(panel.background = element_blank()) +
+  labs(colour = "Treatment Type")+
+  theme(axis.text = element_text(size = 10), axis.title = element_text(size = 14))+
+  labs(x = "Average pitch pine basal area per hectare (log transformed)",
+       y = "Pitch pine saplings \n (corrected for time)")
+
+
+ggsave(filename = "SA_PIRI_BA.tiff", path = "Plots/PIRI_GLMM", width = 6, height = 4.2, device = "tiff", dpi = 700)
+
+
+
+
+
+sa.piri5 <- ggpredict(sa.m6, terms = c("l.Veg_Total", "Treat_Type"))
+
+ggplot(sa.piri5, aes(x, predicted, color = group))+
+  geom_line(linewidth = 1, show.legend = FALSE) +
+  scale_color_manual(values = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15"))+
+  theme_classic()+
+  theme(panel.background = element_blank()) +
+  labs(colour = "Treatment Type")+
+  theme(axis.text = element_text(size = 10), axis.title = element_text(size = 14))+
+  labs(x = "Average understory vegetation cover (log transformed)",
+       y = NULL)
+
+ggsave(filename = "SA_PIRI_veg.tiff", path = "Plots/PIRI_GLMM", width = 6, height = 4.2, device = "tiff", dpi = 700)
+```
+
+
 
 
 Trying to plot with jtools package
-```{r}
+```{r, eval=FALSE, include=FALSE}
 library(jtools)
 effect_plot(sa.f2, pred=Treat_Type)
 effect_plot(sa.f2, pred=Treat_Type, plot.points = T)
@@ -545,186 +530,293 @@ effect_plot(sa.f2, pred=l.TFT, plot.points = T)
 ```
 
 
-Reading about graphing offsets:
-```{r, eval=FALSE, include=FALSE}
-
-
-Owls$NCalls <- Owls$SiblingNegotiation
-
-
-Formula <- formula(NCalls ∼ offset(logBroodSize) + SexParent * FoodTreatment + SexParent * ArrivalTime)
-fit1 <- glm(Formula, data = Owls, family = poisson(link="log"))
-
-library(sjPlot)
-plot_model(fit1, type="pred")
-
-Formula.2 <- formula(NCalls/logBroodSize ∼ SexParent * FoodTreatment + SexParent * ArrivalTime)
-fit2 <- glm(Formula.2, data = Owls, family = poisson(link="log"))
-
-Formula <- NCalls/BroodSize ~ SexParent * FoodTreatment + SexParent * ArrivalTime
-fit1 <- glm(Formula, data = Owls, family = quasipoisson(link="log"))
-plot_model(fit1, type="pred")
-#$SexParent
-#
-#$FoodTreatment
-#
-#$ArrivalTime
-
-png();  plot_model(fit1, type="pred")$ArrivalTime ; dev.off()
 
 
 
-png(); plot_model(sa.f2, type = "pred")$l.other ; dev.off()
-#this isn't working
+## Shrub Oak Models
+
+
+Start from the beginning knowing that both Region and Treat Type have 0 areas
+
+
+```{r}
+tapply(sa.all4$Shrub_Oak, sa.all4$Region, summary)
+# no SO in LI,
+tapply(sa.all4$Shrub_Oak, sa.all4$Treat_Type, summary) 
+# no SO in MowRX or SpringRx
+
+rm(sa.all4)
+```
+
+
+#### testing with nbinom1 distro
+```{r}
+so.sa5 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.Mineral + avgLD_l + l.BA_piri + l.BA_HA + offset(l.TFT) + (1|Site/Plot_No),
+                 data = sa.all3,
+                 ziformula = ~Region,
+                 family = nbinom1)
+#won't converge
+
+so.sa6 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + avgLD_l + l.BA_piri + l.BA_HA + offset(l.TFT) + (1|Site/Plot_No),
+                 data = sa.all3,
+                 ziformula = ~Region,
+                 family = nbinom1)
+AIC(so.sa6) #334.7 - this is the only way the model will converge, to remove Mineral
+
+lrtest(so.sa5, so.sa6)
+
+so.sa7 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + avgLD_l + l.BA_piri + l.BA_HA +  offset(l.TFT) + (1|Site/Plot_No),
+                 data = sa.all3,
+                 ziformula = ~Region,
+                 family = nbinom1)
+AIC(so.sa7) #333.3
+
+so.sa8 <- glmmTMB(Shrub_Oak ~ Treat_Type + avgLD_l + l.BA_piri + l.BA_HA + offset(l.TFT) + (1|Site/Plot_No),
+                 data = sa.all3,
+                 ziformula = ~Region,
+                 family = nbinom1)
+AIC(so.sa8) #331.3
+
+so.sa9 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.Mineral + avgLD_l + l.BA_HA + offset(l.TFT) + (1|Site/Plot_No),
+                 data = sa.all3,
+                 ziformula = ~Region,
+                 family = nbinom1)
+AIC(so.sa9) #326.3 (finally able to add l.Mineral back in)
+
+lrtest(so.sa8, so.sa9) #mineral very significant
+
+so.sa10 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.Mineral + l.BA_HA + offset(l.TFT) + (1|Site/Plot_No),
+                 data = sa.all3,
+                 ziformula = ~Region,
+                 family = nbinom1)
+AIC(so.sa10) #324.3
+
+lrtest(so.sa9, so.sa10)
+
+so.sa11 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
+                 data = sa.all3,
+                 ziformula = ~Region,
+                 family = nbinom1)
+AIC(so.sa11) #won't converge
+```
+
+#### Test Model Fit
+```{r}
+so.sa10_sr <- simulateResiduals(so.sa10, n = 1000, plot = T) #passes
+testResiduals(so.sa10_sr) #passes
+testZeroInflation(so.sa10_sr) #passes
+```
+
+#### Pairwise
+```{r}
+emmeans(so.sa10, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
+```
+
+
+### Plot model
+```{r}
+so.p1 <- ggpredict(so.sa10, terms = c("l.BA_HA", "Treat_Type"))
+
+ggplot(so.p1, aes(x, predicted, color = group))+
+  geom_line(linewidth = 1) +
+  scale_color_manual(values = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15"))+
+  theme_classic()+
+  theme(panel.background = element_blank()) +
+  labs(colour = "Treatment Type")+
+  theme(legend.position = "right", legend.text = element_text(size = 12), legend.title = element_text(size = 12), axis.text = element_text(size = 10), axis.title = element_text(size = 14), plot.title=element_text(hjust=0.5, size=20))+
+  labs(x = "Average basal area per hectare (log transformed)",
+       y = "Total Count of Shrub Oak",
+       title = "Predicted Counts of Shrub Oak Saplings \n >/= 2.5 cm & < 10 cm DBH")
+#very small effect; springrx and mowrx both have 0 SO saplings
+
+
+
+
+
+so.p2 <- ggpredict(so.sa10, terms = c("l.Mineral", "Treat_Type"))
+
+ggplot(so.p2, aes(x, predicted, color = group))+
+  geom_line(linewidth = 1) +
+  scale_color_manual(values = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15"))+
+  theme_classic()+
+  theme(panel.background = element_blank()) +
+  labs(colour = "Treatment Type")+
+  theme(legend.position = "right", legend.text = element_text(size = 12), legend.title = element_text(size = 12), axis.text = element_text(size = 10), axis.title = element_text(size = 14), plot.title=element_text(hjust=0.5, size=20))+
+  labs(x ="Average exposed mineral soil (log transformed)",
+       y = "Total Count of Shrub Oak",
+       title = "Predicted Counts of Shrub Oak Saplings \n >/= 2.5 cm & < 10 cm DBH") +
+  xlim(0, 0.5)
+```
+
+this is a weird one, because exposed mineral soil clearly doesn't go over a certain percent; the median is 0 and the mean 0.2, the IQR 0 - 0. Maybe it looks better at a smaller x scale.
+```{r}
+summary(sa.all3$l.Mineral)
+summary(sa.all3$Mineral_Soil)
 ```
 
 
 
-Plot these babies
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##### I played around a little with using Treat Type (instead of and with Region) for zi, but it didn't work
 ```{r}
-library(sjPlot)
-library(sjlabelled)
-library(sjmisc)
-
-set_theme(base = theme_classic(),
-          theme.font = 'serif',
-          axis.title.size = 1.5,
-          axis.textsize.x = 1.5,
-          axis.textsize.y = 1.5,
-          title.size = 2.5,
-          title.align = "center",
-          legend.pos = "right",
-          legend.size = 1.5,
-          legend.title.size = 1.5,
-          #legend.bordercol = "black",
-          legend.item.size = .75)
-
-plot_model(sa.f4, 
-           type = "pred",
-           terms = "Treat_Type")
-
-plot_model(sa.f4, 
-           type = "pred",
-           terms = c("l.TFT", "Treat_Type"),
-           axis.title = c("Time from Last Treatment (log transformed)", "Total Count of Pitch Pine"),
-           title = "Predicted Counts of Pitch Pine Saplings \n >/= 2.5 cm & < 10 cm DBH",
-           legend.title = "Treatment Type",
-           line.size = 1,
-           show.zeroinf = T,
-           ci.lvl = NA,
-           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15"))
-
-
-# plot model two
-plot_model(sa.f2, 
-           type = "pred",
-           terms = c("l.TFT", "Treat_Type"),
-           axis.title = c("Time from Last Treatment (log transformed)", "Total Count of Pitch Pine"),
-           title = "Predicted Counts of Pitch Pine Saplings \n >/= 2.5 cm & < 10 cm DBH",
-           legend.title = "Treatment Type",
-           line.size = 1,
-           show.zeroinf = T,
-           ci.lvl = NA,
-           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15"))
-
-plot_model(sa.f2, 
-           type = "pred",
-           terms = c("l.other", "Treat_Type"),
-           axis.title = c("Other Saplings (log transformed)", "Total Count of Pitch Pine"),
-           title = "Predicted Counts of Pitch Pine Saplings \n >/= 2.5 cm & < 10 cm DBH",
-           legend.title = "Treatment Type",
-           line.size = 1,
-           show.zeroinf = T,
-           ci.lvl = NA,
-           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15"))
-
-```
-
-
-
-
-
-## Trying again with shrub oak
-
-```{r}
-#test full models for zero inflation?
-so.sa1 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+so.sa1 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.Mineral + avgLD_l + l.BA_piri + l.BA_HA + offset(l.TFT) + (1|Site/Plot_No),
                  data = sa.all3,
-                 family = poisson)
+                 ziformula = ~Region,
+                 family = nbinom2)
+AIC(so.sa1) #333.8
 
-# won't converge - remove mineral
-so.sa2 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.BA_piri + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+# check_collinearity(so.sa1) #rank deficient
+
+# test avgld
+so.sa2 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.BA_piri + l.BA_HA + l.PIRI + l.other + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
                  data = sa.all3,
-                 family = poisson)
-AIC(so.sa2) # 363.4
+                 ziformula = ~Region,
+                 family = nbinom2)
+AIC(so.sa2) #331.9
 
-so.sa2_sr <- simulateResiduals(so.sa2, n = 1000, plot = TRUE)
-testResiduals(so.sa2_sr) #passes
-testZeroInflation(so.sa2_sr) #passes
-plot(so.sa2_sr)
+check_collinearity(so.sa2) #not rank deficient
 
-# model works, now to check variables
-```
-
-
-
-```{r}
-#test piri ba
-so.sa3 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+# test piri ba
+so.sa3 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.BA_HA + l.PIRI + l.other + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
                  data = sa.all3,
-                 family = poisson)
-AIC(so.sa3) #361.4
+                 ziformula = ~Region,
+                 family = nbinom2)
+AIC(so.sa3) #329.9
 
-#test ba
-so.sa4 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = sa.all3,
-                 family = poisson)
-AIC(so.sa4) #360.9
-
-lrtest(so.sa3, so.sa4) # p = 0.2
-
-# test litter depth
-so.sa5 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = sa.all3,
-                 family = poisson)
-AIC(so.sa5) #359
-
-# test other
-so.sa6 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = sa.all3,
-                 family = poisson)
-AIC(so.sa6) #357.3
-
-lrtest(so.sa5, so.sa6) # p = 0.6
-
-# test veg total
-so.sa7 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + offset(l.TFT) + (1|Site/Plot_No),
-                 data = sa.all3,
-                 family = poisson)
-AIC(so.sa7) #355.7
+lrtest(so.sa2, so.sa3) #drop
 
 # test piri
-so.sa8 <- glmmTMB(Shrub_Oak ~ Treat_Type + offset(l.TFT) + (1|Site/Plot_No),
+so.sa4 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.BA_HA + l.other + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
                  data = sa.all3,
-                 family = poisson)
-AIC(so.sa8) #353.9
+                 ziformula = ~Region,
+                 family = nbinom2)
+AIC(so.sa4) #328
+
+lrtest(so.sa3, so.sa4)
+
+# anything dropped from model won't converge, higher aic with ~1, won't converge with ~TT
+check_collinearity(so.sa4) #not rank deficient
 ```
 
+
+#### Check model fit
 ```{r}
-so.sa8_sr <- simulateResiduals(so.sa8, n = 1000, plot = TRUE)
-testResiduals(so.sa8_sr) #passes, quantile issues
-testZeroInflation(so.sa8_sr) #passes
+so.sa4_sr <- simulateResiduals(so.sa4, n = 1000, plot = TRUE) #looks good
+testResiduals(so.sa4_sr) #passes
+testZeroInflation(so.sa4_sr) #passes
+```
 
-so.sa7_sr <- simulateResiduals(so.sa7, n = 1000, plot = TRUE)
-# quantiles worse than large model, better than smallest model; wonder if pairwise is any different
+#### Pairwise
+```{r}
+emmeans(so.sa4, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
+```
+None significantly different. No SO saplings in SpringRx or MowRx - not sure if I should deal with that differently?
 
-emmeans(so.sa8, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response') # no difference
+#### now to plot
+```{r}
+sa.so1 <- ggpredict(so.sa4, terms = c("l.BA_HA", "Treat_Type"))
 
-emmeans(so.sa2, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response') # no difference
+# if I wanted to jitter/nudge lines
+# sa.so2 <- sa.so1
+# sa.so2 <- sa.so2 %>% 
+#   filter(group == "SpringRx")
+# 
+# sa.so2$predicted <- sa.so2$predicted+0.05
+# 
+# sa.so3 <- sa.so1 %>% 
+#   filter(group != "SpringRx")
+# 
+# sa.so3 <- rbind(sa.so3, sa.so2)
+
+
+ggplot(sa.so1, aes(predicted,x, color = group))+
+  geom_line(linewidth = 1) +
+  scale_color_manual(values = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15"))+
+  coord_flip()+
+  theme_classic()+
+  theme(panel.background = element_blank()) +
+  labs(colour = "Treatment Type")+
+  theme(legend.position = "right", legend.text = element_text(size = 12), legend.title = element_text(size = 12), axis.text = element_text(size = 10), axis.title = element_text(size = 14), plot.title=element_text(hjust=0.5, size=20))+
+  labs(y = "Average basal area per hectare (log transformed)",
+       x = "Total Count of Shrub Oak",
+       title = "Predicted Counts of Shrub Oak Saplings \n >/= 2.5 cm & < 10 cm DBH")
+# such a small effect
+
+
+
+
+
+
+
+
+sa.so2 <- ggpredict(so.sa4, terms = c("l.Mineral", "Treat_Type"))
+
+ggplot(sa.so2, aes(predicted,x, color = group))+
+  geom_line(linewidth = 1) +
+  scale_color_manual(values = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15"))+
+  coord_flip()+
+  theme_classic()+
+  theme(panel.background = element_blank()) +
+  labs(colour = "Treatment Type")+
+  theme(legend.position = "right", legend.text = element_text(size = 12), legend.title = element_text(size = 12), axis.text = element_text(size = 10), axis.title = element_text(size = 14), plot.title=element_text(hjust=0.5, size=20))+
+  labs(y = "Average exposed mineral soil per 1m^2^ (log transformed)",
+       x = "Total Count of Shrub Oak",
+       title = "Predicted Counts of Shrub Oak Saplings \n >/= 2.5 cm & < 10 cm DBH")
+#VERY WEIRD, likely because mineral soil is so limited
+
+
+
+sa.so3 <- ggpredict(so.sa4, terms = c("l.other", "Treat_Type"))
+
+ggplot(sa.so3, aes(predicted,x, color = group))+
+  geom_line(linewidth = 1) +
+  scale_color_manual(values = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15"))+
+  coord_flip()+
+  theme_classic()+
+  theme(panel.background = element_blank()) +
+  labs(colour = "Treatment Type")+
+  theme(legend.position = "right", legend.text = element_text(size = 12), legend.title = element_text(size = 12), axis.text = element_text(size = 10), axis.title = element_text(size = 14), plot.title=element_text(hjust=0.5, size=20))+
+  labs(y = "Total counts of other sapling species (log transformed)",
+       x = "Total Count of Shrub Oak",
+       title = "Predicted Counts of Shrub Oak Saplings \n >/= 2.5 cm & < 10 cm DBH")
+# so small
 ```
 
 
-Quantiles better in the larger model; neither have a pairwise treatment type difference
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

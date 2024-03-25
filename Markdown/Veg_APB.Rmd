@@ -54,7 +54,7 @@ apb_site <- veg2 %>%
 mer.apb <- merge(apb_site, apb_wider, by = "Plot_No") %>% 
   select(-Plot_No)
 
-# Find what is 5% os this region-group (~6 plots)
+# Find what is 5% for this region-group (~6 plots)
 apb_log_wider <- as.data.frame(lapply(apb_wider, as.logical))
 
 apb <- as.data.frame(colSums(apb_log_wider)) %>% 
@@ -262,10 +262,14 @@ apb.sig_envr.scrs <- subset(tst.enrv.scrs, pval<=0.05)
 apb.sig_envr.scrs <-  apb.sig_envr.scrs %>% 
   filter(env.variables == "BA_HA")
 
+library(ggordiplots)
+
 # get ellipse plot info sans control -------------------
-tst.plot.e <- gg_ordiplot(ctrtst_2D, groups = ctrtst.meta$Treat_Type)
+tst.plot.e <- gg_ordiplot(ctrtst_2D, groups = ctrtst.meta$Treat_Type, ellipse = TRUE)
 
 ellipse.apb <- fortify(tst.plot.e$df_ellipse)
+
+gg_ordiplot(ctrtst_2D, groups = ctrtst.meta$Treat_Type, extra_width == FALSE)
 ```
 
 
@@ -315,6 +319,26 @@ apb.sig_envr.scrs <-  apb.sig_envr.scrs %>%
 
 #### Significant species are: QUIL, PAQU, GABA, RHGL, VIDE, CICA, MICA, COSP, FRAL, & ARNU
 
+
+#### Add common names
+```{r}
+sig.apb_spp.scrs$common <- NA
+sig.apb_spp.scrs$common <- ifelse(sig.apb_spp.scrs$Species == "QUIL",  "Scrub oak", sig.apb_spp.scrs$common)
+sig.apb_spp.scrs[3,5] <- "Virginia creeper"
+sig.apb_spp.scrs[1,5] <- "Raspberry spp."
+#sig.apb_spp.scrs[4,5] <- "Huckleberry"
+sig.apb_spp.scrs[4,5] <- "Smooth sumac"
+sig.apb_spp.scrs[5,5] <- "Arrowwood viburnum"
+sig.apb_spp.scrs[6,5] <- "Enchanter's-nightshade"
+sig.apb_spp.scrs[7,5] <- "Canada mayflower"
+sig.apb_spp.scrs[9,5] <- "Glossy buckthorn"
+sig.apb_spp.scrs[10,5] <- "Sarsaparilla"
+sig.apb_spp.scrs[8,5] <- "Dogwood spp."
+
+apb.sig_envr.scrs$common <- "Basal area per hectare"
+```
+
+
 #### Significant environmental factors are: BASAL AREA PER HECTARE (and time from treatment)
 
 
@@ -332,7 +356,7 @@ apb.nmds.plot <-  ggplot(apb.site.scrs, aes(x=NMDS1, y=NMDS2))+
   theme_classic()+
   theme(panel.background = element_blank()) +
   labs(colour = "Treatment Type", shape = "Region")+
-  theme(legend.position = "right", legend.text = element_text(size = 12), legend.title = element_text(size = 12), axis.text = element_text(size = 10))
+  theme(legend.position = "right", legend.text = element_text(size = 14), legend.title = element_text(size = 14), axis.text = element_text(size = 14), axis.title = element_text(size = 16))
 
 # plot with ellipse -------------------
 apb.nmds.plot + 
@@ -374,13 +398,11 @@ apb.nmds.plot +
 ### Plot with significant species & envr factors
 ```{r, fig.align='center', echo=FALSE}
 apb.nmds.plot +
-  geom_path(data = ellipse.apb, aes(x=x, y=y, color=Group),  linejoin = "round", show.legend = FALSE)+
-  geom_segment(data = sig.apb_spp.scrs, aes(x=0, xend=NMDS1, y=0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")), colour = "purple", lwd = 0.3)+
-  ggrepel::geom_text_repel(data = sig.apb_spp.scrs, aes(x=NMDS1, y=NMDS2, label = Species), cex = 3, direction = "both", segment.size = 0.25)+
-  geom_segment(data = apb.sig_envr.scrs, aes(x = 0, xend = NMDS1, y = 0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")))+
-  ggrepel::geom_text_repel(data = apb.sig_envr.scrs, aes(x=NMDS1, y=NMDS2, label = env.variables), cex = 4, direction = "both", segment.size = 0.25) +
-  labs(title = "Inland Barrens Ordination with significant \n species & environmental factors") +
-  theme(plot.title=element_text(hjust=0.5, size=20))
+  geom_segment(data = sig.apb_spp.scrs, aes(x=0, xend=NMDS1, y=0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")), colour = "grey10", lwd = 0.4)+
+  ggrepel::geom_text_repel(data = sig.apb_spp.scrs, aes(x=NMDS1, y=NMDS2, label = common, size = wt), cex = 3, direction = "both", segment.size = 0.25)+
+  geom_segment(data = apb.sig_envr.scrs, aes(x = 0, xend = NMDS1, y = 0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")), lwd = 1)+
+  ggrepel::geom_text_repel(data = apb.sig_envr.scrs, aes(x=NMDS1, y=NMDS2, label = common), cex = 4, direction = "both", segment.size = 0.25, force = 10) +
+  geom_path(data = ellipse.apb, aes(x=x, y=y, color=Group),  linejoin = "round", lwd = 1.25, show.legend = FALSE)
 ```
 
 ### Plot with indcator species & envr factors
