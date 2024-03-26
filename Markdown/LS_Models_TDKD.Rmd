@@ -37,6 +37,7 @@ library(TMB)
 library(emmeans)
 library(DHARMa)
 library(lmtest)
+library(ggeffects)
 ```
 
 ```{r, setup, include=FALSE}
@@ -89,22 +90,29 @@ ls.all3 <- ls.all3 %>%
   arrange(Treat_Type)
 ```
 
+### testing zero inflation
+```{r}
+tapply(ls.all3$PIRI, ls.all3$Region, summary)
+# no PIRI in ME
+tapply(ls.all3$PIRI, ls.all3$Treat_Type, summary)
+```
+
+
 ### Best large seedling pitch pine model
 ```{r}
 ls.m19 <- glmmTMB(PIRI ~ Treat_Type + avgLD_l + offset(l.TFT) + (1|Site/Plot_No),
                  data = ls.all3,
-                 family = poisson)
+                 family = nbinom1)
 summary(ls.m19)
 ```
 
 ### Check model fit
 ```{r}
-ls.m19_sr <- simulateResiduals(ls.m19, n = 1000, plot = TRUE) #passes KS, quantile deviations fails, but it still could be an accepted model
+ls.m19_sr <- simulateResiduals(ls.m19, n = 1000, plot = TRUE) #passes
 testResiduals(ls.m19_sr) #passes
 testZeroInflation(ls.m19_sr) #passes
-testQuantiles(ls.m19_sr) #fails
 ```
-Issues with quantiles, but still can be a good/useful model despite these issues
+Had quantile issues, resolved by using nbinom instead of poisson; zero inflation by region doesn't improve the model - still works/passes tests but higher AIC
 
 
 ### Pairwise with treatment type
@@ -116,53 +124,23 @@ emmeans(ls.m19, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'respons
 
 
 ### Graph pitch pine models
-```{r, warning=FALSE, message=FALSE, fig.align='center'}
-library(sjPlot)
-library(sjlabelled)
-library(sjmisc)
-
-set_theme(base = theme_classic(),
-          theme.font = 'serif',
-          axis.title.size = 1.5,
-          axis.textsize.x = 1.5,
-          axis.textsize.y = 1.5,
-          title.size = 2.5,
-          title.align = "center",
-          legend.pos = "right",
-          legend.size = 1.5,
-          legend.title.size = 1.5,
-          #legend.bordercol = "black",
-          legend.item.size = .75)
+```{r, fig.align='center', echo=FALSE}
+# PIRI LS -------------------
+ls.p1 <- ggpredict(ls.m19, terms = c("avgLD_l", "Treat_Type"))
 
 
-# LS PIRI plot 1 ------------------- LD vs. TT
-plot_model(ls.m19, 
-                       type = 'pred', 
-                       terms = c('avgLD_l', 'Treat_Type'),
-                       axis.title = c("Average Leaf Litter Depth (log transformed)", "Total Count of Pitch Pine"),
-                       title = "Predicted Counts of Pitch Pine \n Seedlings >/=50cm & <2.5cm DBH",
-           legend.title = "Treatment Type",
-           line.size = 1,
-           value.offset = 'Treat_Type',
-           ci.lvl = NA,
-           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")) 
+ggplot(ls.p1, aes(x, predicted, color = group))+
+  geom_line(linewidth = 1.25, show.legend = FALSE) +
+  scale_color_manual(values = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15"))+
+  theme_classic()+
+  theme(panel.background = element_blank()) +
+  theme(axis.text = element_text(size = 16), axis.title = element_text(size = 20))+
+  labs(x = "Average leaf litter depth \n (log transformed)",
+       y = "Pitch pine stems \n (adjusted for time)")
 
-
-
-
-# LS PIRI plot 2 ------------------- Time from Treatment vs TT
-plot_model(ls.m19, 
-                       type = 'pred', 
-                       terms = c('l.TFT', 'Treat_Type'),
-                       axis.title = c("Time from Treatment (log transformed)", "Total Count of Pitch Pine"),
-                       title = "Predicted Counts of Pitch Pine \n Seedlings >/=50cm & <2.5cm DBH",
-           legend.title = "Treatment Type",
-           line.size = 1,
-           value.offset = 'Treat_Type',
-           ci.lvl = NA,
-           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")) 
-
+ggsave(filename = "LS_PIRI_avgld.tiff", path = "Plots/PIRI_GLMM", width = 7, height = 5, device = "tiff", dpi = 700)
 ```
+
 
 
 ## Shrub Oak Regeneration
@@ -170,75 +148,121 @@ This includes QUIL (scrub oak) & QUPR (dwarf chinkapin oak)
 
 ### Large seedling shrub oak model
   - Poisson, nbinom, genpois, & compois models all fail due to underdispersion. Some have issues with zero inflation as well. Gaussian dispersion also fails due to issues with uniformity. 
-  - Model versions suggest that total veg cover is important. However, shrub oak can often make up a significant portion of understory veg cover. So, of course shrub oak abundance increases as total veg cover increases. Therefore, it is dropped from the model for issues of collineraity. 
+
 ```{r}
-ls.all3$BA_10m <- (ls.all3$BA_HA/1000)
-ls.all3$l.BA_10m <- log(ls.all3$BA_10m + 1)
+tapply(ls.all3$Shrub_Oak, ls.all3$Region, summary)
+tapply(ls.all3$Shrub_Oak, ls.all3$Treat_Type, summary)
 ```
 
-### T distro model
-```{r, eval=FALSE}
-so.ls6 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.BA_10m + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
+
+
+### These are my best models, all are underdispersed
+
+```{r}
+m6 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
                  data = ls.all3,
-                 family = t_family)
-summary(so.ls6)
+              ziformula = ~Region,
+                 family = nbinom1)
+AIC(m6) #3310
+
+m6_sr <- simulateResiduals(m6, n=1000, plot = TRUE)
+testResiduals(m6_sr) #fails dispersion
 ```
 
 
+```{r}
+m7 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+              ziformula = ~1,
+                 family = nbinom1)
+AIC(m7) #3251.4
 
-### Check model fit
-```{r, eval=FALSE}
-so.ls6_sr <- simulateResiduals(so.ls6, n = 1000, plot = TRUE)
-testResiduals(so.ls6_sr)
-```
-A little concerned about the DHARMa nonparametric dispersion test graph
-
-### Pairwise with treatment type
-```{r, eval=FALSE}
-emmeans(so.ls6, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
-```
-#### Seems like MowRx is signficantly different from all other categories
-
-
-### Graph shrub oak model
-```{r, eval=FALSE}
-# LS SO plot 1 ------------------- other vs. TT
-plot_model(so.ls6, 
-                       type = 'pred', 
-                       terms = c('l.other', 'Treat_Type'),
-                       axis.title = c("Other small seedling counts (log transformed)", "Total Count of Shrub Oak"),
-                       title = "Predicted Counts of Shrub Oak \n Seedlings >/=50cm & <2.5cm DBH",
-           legend.title = "Treatment Type",
-           line.size = 1,
-           value.offset = 'Treat_Type',
-           ci.lvl = NA,
-           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")) 
-
-# LS SO plot 2 ------------------- BA_10m vs. TT
-plot_model(so.ls6, 
-                       type = 'pred', 
-                       terms = c('l.other', 'Treat_Type'),
-                       axis.title = c("Total Basal Area per 10 square meters (log transformed)", "Total Count of Shrub Oak"),
-                       title = "Predicted Counts of Shrub Oak \n Seedlings >/=50cm & <2.5cm DBH",
-           legend.title = "Treatment Type",
-           line.size = 1,
-           value.offset = 'Treat_Type',
-           ci.lvl = NA,
-           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")) 
-
-# LS SO plot 3 ------------------- l.mineral vs. TT
-plot_model(so.ls6, 
-                       type = 'pred', 
-                       terms = c('l.other', 'Treat_Type'),
-                       axis.title = c("Amount of exposed mineral soil (log transformed)", "Total Count of Shrub Oak"),
-                       title = "Predicted Counts of Shrub Oak \n Seedlings >/=50cm & <2.5cm DBH",
-           legend.title = "Treatment Type",
-           line.size = 1,
-           value.offset = 'Treat_Type',
-           ci.lvl = NA,
-           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")) 
+m7_sr <- simulateResiduals(m7, n = 1000, plot = T)
+testResiduals(m7_sr)
 ```
 
+
+# this is the least dispersion issue I've gotten.
+I literally can't help myself from continuing to figure out this model.
+```{r, include=F, eval=FALSE}
+so.ls1 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 ziformula = ~Treat_Type,
+                 family = nbinom1)
+AIC(so.ls1) #3254
+
+so1_sr <- simulateResiduals(so.ls1, n = 1000, plot = T)
+testResiduals(so1_sr)
+
+
+som2 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.BA_HA + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 ziformula = ~1 + Treat_Type,
+                 family = nbinom1)
+AIC(som2) #3256
+
+lrtest(so.ls1, som2) #0.07
+
+som2_sr <- simulateResiduals(som2, n = 1000, plot = T)
+testResiduals(som2_sr)
+
+som3 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.BA_HA + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 ziformula = ~Treat_Type,
+                 family = nbinom1)
+AIC(som3) #3260
+
+lrtest(som2, som3)
+
+som4 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other  + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 ziformula = ~Treat_Type,
+                 family = nbinom1)
+AIC(som4) #3257
+
+lrtest(som4, som2) #0.08
+
+
+som5 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other  + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 ziformula = ~Treat_Type,
+                 family = nbinom1)
+AIC(som5) #3259
+
+lrtest(som4, som5)
+
+som6 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other  + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 ziformula = ~Treat_Type,
+                 family = nbinom1)
+AIC(som6) #3254.9
+
+lrtest(som6, som4)
+
+
+som7 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.Mineral  + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 ziformula = ~Treat_Type,
+                 family = nbinom1)
+AIC(som7) #3259.5
+
+lrtest(som6, som7)
+
+som6_sr <- simulateResiduals(som6, n = 1000, plot = T)
+testResiduals(som6_sr) #more underdispersed than full model
+```
+
+
+```{r}
+so.ls1 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 ziformula = ~Treat_Type,
+                 family = nbinom1)
+AIC(so.ls1) #3254
+
+so1_sr <- simulateResiduals(so.ls1, n = 1000, plot = T)
+testResiduals(so1_sr)
+```
 
 
 

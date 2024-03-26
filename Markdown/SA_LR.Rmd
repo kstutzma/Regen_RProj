@@ -211,7 +211,9 @@ I have previously done model elimination with zero inflated poisson distro & wit
 
 
 Model has much better fit and zero inflation issues are resolved when treatment type variable is included. Time to do elimination again but with TT; all models fail with nbinom1 distro, but works with nbinom2 (these notes are from when I was using a zi poisson distro, using nbinom TT no longer seems to be important to model fit, but we will keep for the overarching story)
-```{r, eval=FALSE}
+
+### Due to issues in scale of observations, I have scaled the fixed effects and am no longer using log transformed variables
+```{r, eval=FALSE, include=FALSE}
 sa.m1b <- glmmTMB(PIRI ~ Treat_Type + l.SO + l.other + l.BA_HA + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
                  data = sa.all3,
                  ziformula = ~Region,
@@ -289,6 +291,7 @@ sa.m7 <- glmmTMB(PIRI ~ Treat_Type + l.BA_piri  + avgLD_l + offset(l.TFT) + (1|S
                  ziformula = ~Region,
                  family = nbinom2)
 AIC(sa.m7) #237.8
+summary(sa.m7)
 
 check_collinearity(sa.m7) #RANK DEFICIENT
 lrtest(sa.m6, sa.m7) #drop
@@ -404,24 +407,116 @@ tapply(sa.all3$avgLD, sa.all3$Treat_Type, summary) #all present
 
 
 
-#### Best model (lowest AIC without rank deficiency) appears to be model sa.m6 with TT, piri BA, agvLD, Veg total. Test model fit:
+### taking a look at standardizing the fixed effects and running model elmination again
 ```{r}
-sa.m6 <- glmmTMB(PIRI ~ Treat_Type + l.BA_piri + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+sa.all3$piri.ba_s <- scale(sa.all3$PIRI.BA_HA)
+sa.all3$avgld_s <- scale(sa.all3$avgLD)
+sa.all3$vegt_s <- scale(sa.all3$Veg_Total)
+sa.all3$min_s <- scale(sa.all3$Mineral_Soil)
+sa.all3$so_s <- scale(sa.all3$Shrub_Oak)
+sa.all3$other_s <- scale(sa.all3$Other)
+sa.all3$ba.ha_s <- scale(sa.all3$BA_HA)
+
+
+sa.m1s <- glmmTMB(PIRI ~ Treat_Type + piri.ba_s + avgld_s + vegt_s + min_s + so_s + other_s + ba.ha_s + offset(l.TFT) + (1|Site/Plot_No),
                  data = sa.all3,
                  ziformula = ~Region,
                  family = nbinom2)
-summary(sa.m6) #238.8
+#won't converge
+
+#test piri ba
+sa.m2s <- glmmTMB(PIRI ~ Treat_Type  + avgld_s + vegt_s + min_s + so_s + other_s + ba.ha_s + offset(l.TFT) + (1|Site/Plot_No),
+                 data = sa.all3,
+                 ziformula = ~Region,
+                 family = nbinom2)
+AIC(sa.m2s) #248
+
+# test ba/ha
+sa.m3s <- glmmTMB(PIRI ~ Treat_Type  + avgld_s + vegt_s + min_s + so_s + other_s  + offset(l.TFT) + (1|Site/Plot_No),
+                 data = sa.all3,
+                 ziformula = ~Region,
+                 family = nbinom2)
+AIC(sa.m3s) #251.7
+
+lrtest(sa.m2s, sa.m3s) #keep ba
+
+# test SO
+sa.m4s <- glmmTMB(PIRI ~ Treat_Type + ba.ha_s + avgld_s + vegt_s + min_s + other_s  + offset(l.TFT) + (1|Site/Plot_No),
+                 data = sa.all3,
+                 ziformula = ~Region,
+                 family = nbinom2)
+AIC(sa.m4s) #248
+
+lrtest(sa.m4s, sa.m2s) #drop
+
+# test other
+sa.m5s <- glmmTMB(PIRI ~ Treat_Type + ba.ha_s + avgld_s + vegt_s + min_s + offset(l.TFT) + (1|Site/Plot_No),
+                 data = sa.all3,
+                 ziformula = ~Region,
+                 family = nbinom2)
+AIC(sa.m5s) #251.1
+
+lrtest(sa.m4s, sa.m5s) #keep other
+
+# test mineral
+sa.m6s <- glmmTMB(PIRI ~ Treat_Type + ba.ha_s + avgld_s + vegt_s + other_s  + offset(l.TFT) + (1|Site/Plot_No),
+                 data = sa.all3,
+                 ziformula = ~Region,
+                 family = nbinom2)
+AIC(sa.m6s) #247
+
+lrtest(sa.m4s, sa.m6s) #drop
+
+# test veg
+sa.m7s <- glmmTMB(PIRI ~ Treat_Type + ba.ha_s + avgld_s  + other_s  + offset(l.TFT) + (1|Site/Plot_No),
+                 data = sa.all3,
+                 ziformula = ~Region,
+                 family = nbinom2)
+AIC(sa.m7s) #245.8
+
+# test ld
+sa.m8s <- glmmTMB(PIRI ~ Treat_Type + ba.ha_s + other_s  + offset(l.TFT) + (1|Site/Plot_No),
+                 data = sa.all3,
+                 ziformula = ~Region,
+                 family = nbinom2)
+AIC(sa.m8s) #244.8
+
+sa.m8s_sr <- simulateResiduals(sa.m8s, n = 1000, plot = TRUE) #passes
+testResiduals(sa.m8s_sr)
+# passes
 
 
-sa.m6_sr <- simulateResiduals(sa.m6, n = 1000, plot = TRUE) #looks good
-testResiduals(sa.m6_sr) #passes
-testZeroInflation(sa.m6_sr) #passes
+emmeans(sa.m8s, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response') # the model is rank deficient
+
+sa.m9s <- glmmTMB(PIRI ~ Treat_Type + ba.ha_s + other_s + avgld_s + offset(l.TFT) + (1|Site/Plot_No),
+                 data = sa.all3,
+                 ziformula = ~Region,
+                 family = nbinom2)
+AIC(sa.m9s) #245.9 with veg; 245.8 with ld
+summary(sa.m9s)
+```
+
+
+
+#### Best model (lowest AIC without rank deficiency) appears to be model sa.m6 with TT, piri BA, agvLD, Veg total. Test model fit:
+```{r}
+sa.m9s <- glmmTMB(PIRI ~ Treat_Type + ba.ha_s + other_s + avgld_s + offset(l.TFT) + (1|Site/Plot_No),
+                 data = sa.all3,
+                 ziformula = ~Region,
+                 family = nbinom2)
+summary(sa.m9s)
+
+
+
+sa.m9s_sr <- simulateResiduals(sa.m9s, n = 1000, plot = T) #passes
+testResiduals(sa.m9s_sr) #passes
+testZeroInflation(sa.m9s_sr)
 ```
 
 
 #### Pairwise:
 ```{r}
-emmeans(sa.m6, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
+emmeans(sa.m9s, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response') # not rank deficient; not significantly different
 ```
 
 None significantly different from eachother
@@ -429,12 +524,15 @@ None significantly different from eachother
 
 
 
+```{r}
+hist(sa.all3$other_s)
+```
 
 
 
 #### Plot model
 ```{r}
-sa.piri1 <- ggpredict(sa.m6, terms = c("avgLD_l", "Treat_Type"))
+sa.piri1 <- ggpredict(sa.m9s, terms = c("avgld_s", "Treat_Type"))
 #control and fallrx are almost completely identical - if I wanted to nudge/jitter
 # sa.piri2 <- sa.piri1 %>% 
 #   filter(group == "FallRx")
@@ -452,8 +550,8 @@ ggplot(sa.piri1, aes(x, predicted, color = group))+
   theme_classic()+
   theme(panel.background = element_blank()) +
   labs(colour = "Treatment Type")+
-  theme(axis.text = element_text(size = 10), axis.title = element_text(size = 14))+
-  labs(x = "Average leaf litter depth (log transformed)",
+  theme(axis.text = element_text(size = 18), axis.title = element_text(size = 24))+
+  labs(x = "Average leaf litter depth \n (standardized)",
        y = NULL)
 
 ggsave(filename = "SA_PIRI_avgld.tiff", path = "Plots/PIRI_GLMM", width = 6, height = 4.2, device = "tiff", dpi = 700)
@@ -463,7 +561,7 @@ ggsave(filename = "SA_PIRI_avgld.tiff", path = "Plots/PIRI_GLMM", width = 6, hei
 
 
 
-sa.piri4 <- ggpredict(sa.m6, terms = c("l.BA_piri", "Treat_Type"))
+sa.piri4 <- ggpredict(sa.m9s, terms = c("ba.ha_s", "Treat_Type"))
 #again control and fall rx overlap - if I wanted to nudge/jitter
 
 # sa.piri5 <- sa.piri4 %>% 
@@ -483,9 +581,9 @@ ggplot(sa.piri4, aes(x, predicted, color = group))+
   theme_classic()+
   theme(panel.background = element_blank()) +
   labs(colour = "Treatment Type")+
-  theme(axis.text = element_text(size = 10), axis.title = element_text(size = 14))+
-  labs(x = "Average pitch pine basal area per hectare (log transformed)",
-       y = "Pitch pine saplings \n (corrected for time)")
+  theme(axis.text = element_text(size = 18), axis.title = element_text(size = 24))+
+  labs(x = "Average basal area per hectare \n (standardized)",
+       y = "Pitch pine stems \n (adjusted for time)")
 
 
 ggsave(filename = "SA_PIRI_BA.tiff", path = "Plots/PIRI_GLMM", width = 6, height = 4.2, device = "tiff", dpi = 700)
@@ -494,7 +592,7 @@ ggsave(filename = "SA_PIRI_BA.tiff", path = "Plots/PIRI_GLMM", width = 6, height
 
 
 
-sa.piri5 <- ggpredict(sa.m6, terms = c("l.Veg_Total", "Treat_Type"))
+sa.piri5 <- ggpredict(sa.m9s, terms = c("other_s", "Treat_Type"))
 
 ggplot(sa.piri5, aes(x, predicted, color = group))+
   geom_line(linewidth = 1, show.legend = FALSE) +
@@ -502,11 +600,11 @@ ggplot(sa.piri5, aes(x, predicted, color = group))+
   theme_classic()+
   theme(panel.background = element_blank()) +
   labs(colour = "Treatment Type")+
-  theme(axis.text = element_text(size = 10), axis.title = element_text(size = 14))+
-  labs(x = "Average understory vegetation cover (log transformed)",
+  theme(axis.text = element_text(size = 18), axis.title = element_text(size = 24))+
+  labs(x = "Counts of other saplings \n (standardized)",
        y = NULL)
 
-ggsave(filename = "SA_PIRI_veg.tiff", path = "Plots/PIRI_GLMM", width = 6, height = 4.2, device = "tiff", dpi = 700)
+ggsave(filename = "SA_PIRI_other.tiff", path = "Plots/PIRI_GLMM", width = 6, height = 4.2, device = "tiff", dpi = 700)
 ```
 
 
@@ -590,6 +688,7 @@ so.sa10 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.Mineral + l.BA_HA + offset(l.TFT) 
                  ziformula = ~Region,
                  family = nbinom1)
 AIC(so.sa10) #324.3
+summary(so.sa10)
 
 lrtest(so.sa9, so.sa10)
 

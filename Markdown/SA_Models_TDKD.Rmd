@@ -37,6 +37,7 @@ library(TMB)
 library(emmeans)
 library(DHARMa)
 library(lmtest)
+library(ggeffects)
 ```
 
 ```{r, setup, include=FALSE}
@@ -86,145 +87,194 @@ sa.all3 <- sa.all3 %>%
   arrange(Treat_Type)
 ```
 
+### Standardizing models to due to fixed effects at multiple scales
+```{r}
+sa.all3$piri.ba_s <- scale(sa.all3$PIRI.BA_HA)
+sa.all3$avgld_s <- scale(sa.all3$avgLD)
+sa.all3$vegt_s <- scale(sa.all3$Veg_Total)
+sa.all3$min_s <- scale(sa.all3$Mineral_Soil)
+sa.all3$so_s <- scale(sa.all3$Shrub_Oak)
+sa.all3$other_s <- scale(sa.all3$Other)
+sa.all3$ba.ha_s <- scale(sa.all3$BA_HA)
+sa.all3$piri_s <- scale(sa.all3$PIRI)
+```
+
+
+
 ### Best pitch pine sapling model
 ```{r}
-sa.f4 <- glmmTMB(PIRI ~ Treat_Type + offset(l.TFT) + (1|Site/Plot_No),
+sa.m9s <- glmmTMB(PIRI ~ Treat_Type + ba.ha_s + other_s + avgld_s + offset(l.TFT) + (1|Site/Plot_No),
                  data = sa.all3,
                  ziformula = ~Region,
-                 family = poisson)
-summary(sa.f4)
-
-# below model also works, but has higer AIC and less DF
-sa.f2 <- glmmTMB(PIRI ~ Treat_Type + l.other + offset(l.TFT) + (1|Site/Plot_No),
-                 data = sa.all3,
-                 ziformula = ~1,
-                 family = poisson)
-summary(sa.f2)
+                 family = nbinom2)
+summary(sa.m9s)
 ```
 
 
 ### Check model fit
 ```{r}
-sa.f4_sr <- simulateResiduals(sa.f4, n = 1000, plot = TRUE) #passes
-testZeroInflation(sa.f4_sr) #passes
-testResiduals(sa.f4_sr)
+sa.m9s_sr <- simulateResiduals(sa.m9s, n = 1000, plot = T) #passes
+testResiduals(sa.m9s_sr) #passes
+testZeroInflation(sa.m9s_sr)
 ```
 
 ### Pairwise comparison for treatment types
 ```{r}
-emmeans(sa.f4, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
+emmeans(sa.m9s, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
 ```
 ##### None signficantly different from the other; generally not a lot of pitch pine saplings measured
 
-### Plot model one
-```{r, warning=FALSE, message=FALSE, fig.align='center'}
-library(sjPlot)
-library(sjlabelled)
-library(sjmisc)
 
-set_theme(base = theme_classic(),
-          theme.font = 'serif',
-          axis.title.size = 1.5,
-          axis.textsize.x = 1.5,
-          axis.textsize.y = 1.5,
-          title.size = 2.5,
-          title.align = "center",
-          legend.pos = "right",
-          legend.size = 1.5,
-          legend.title.size = 1.5,
-          #legend.bordercol = "black",
-          legend.item.size = .75)
+### Plot models
+```{r, fig.align='center', echo=FALSE}
+sa.piri1 <- ggpredict(sa.m9s, terms = c("avgld_s", "Treat_Type"))
+#control and fallrx are almost completely identical - if I wanted to nudge/jitter
+# sa.piri2 <- sa.piri1 %>% 
+#   filter(group == "FallRx")
+# 
+# sa.piri2$predicted <- sa.piri2$predicted+0.01
+# 
+# sa.piri3 <- sa.piri1 %>% 
+#   filter(group != "FallRx")
+# 
+# sa.piri3 <- rbind(sa.piri3, sa.piri2)
 
-plot_model(sa.f4, 
-           type = "pred",
-           terms = "Treat_Type")
+ggplot(sa.piri1, aes(x, predicted, color = group))+
+  geom_line(linewidth = 1, show.legend = FALSE) +
+  scale_color_manual(values = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15"))+
+  theme_classic()+
+  theme(panel.background = element_blank()) +
+  labs(colour = "Treatment Type")+
+  theme(axis.text = element_text(size = 18), axis.title = element_text(size = 24))+
+  labs(x = "Average leaf litter depth \n (standardized)",
+       y = NULL)
 
-plot_model(sa.f4, 
-           type = "pred",
-           terms = c("l.TFT", "Treat_Type"),
-           axis.title = c("Time from Last Treatment (log transformed)", "Total Count of Pitch Pine"),
-           title = "Predicted Counts of Pitch Pine \n Saplings >/= 2.5 cm & < 10 cm DBH",
-           legend.title = "Treatment Type",
-           line.size = 1,
-           show.zeroinf = T,
-           ci.lvl = NA,
-           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15"))
+ggsave(filename = "SA_PIRI_avgld.tiff", path = "Plots/PIRI_GLMM", width = 6, height = 4.2, device = "tiff", dpi = 700)
+
+
+
+
+
+
+sa.piri4 <- ggpredict(sa.m9s, terms = c("ba.ha_s", "Treat_Type"))
+#again control and fall rx overlap - if I wanted to nudge/jitter
+
+# sa.piri5 <- sa.piri4 %>% 
+#   filter(group == "FallRx")
+# 
+# sa.piri5$predicted <- sa.piri5$predicted+0.01
+# 
+# sa.piri6 <- sa.piri4 %>% 
+#   filter(group != "FallRx")
+# 
+# sa.piri6 <- rbind(sa.piri6, sa.piri5)
+
+
+ggplot(sa.piri4, aes(x, predicted, color = group))+
+  geom_line(linewidth = 1, show.legend = FALSE) +
+  scale_color_manual(values = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15"))+
+  theme_classic()+
+  theme(panel.background = element_blank()) +
+  labs(colour = "Treatment Type")+
+  theme(axis.text = element_text(size = 18), axis.title = element_text(size = 24))+
+  labs(x = "Average basal area per hectare \n (standardized)",
+       y = "Pitch pine stems \n (adjusted for time)")
+
+
+ggsave(filename = "SA_PIRI_BA.tiff", path = "Plots/PIRI_GLMM", width = 6, height = 4.2, device = "tiff", dpi = 700)
+
+
+
+
+
+sa.piri5 <- ggpredict(sa.m9s, terms = c("other_s", "Treat_Type"))
+
+ggplot(sa.piri5, aes(x, predicted, color = group))+
+  geom_line(linewidth = 1, show.legend = FALSE) +
+  scale_color_manual(values = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15"))+
+  theme_classic()+
+  theme(panel.background = element_blank()) +
+  labs(colour = "Treatment Type")+
+  theme(axis.text = element_text(size = 18), axis.title = element_text(size = 24))+
+  labs(x = "Counts of other saplings \n (standardized)",
+       y = NULL)
+
+ggsave(filename = "SA_PIRI_other.tiff", path = "Plots/PIRI_GLMM", width = 6, height = 4.2, device = "tiff", dpi = 700)
 ```
 
-#### Plot second model
-```{r, fig.align='center'}
-plot_model(sa.f2, 
-           type = "pred",
-           terms = c("l.TFT", "Treat_Type"),
-           axis.title = c("Time from Last Treatment (log transformed)", "Total Count of Pitch Pine"),
-           title = "Predicted Counts of Pitch Pine \n Saplings >/= 2.5 cm & < 10 cm DBH",
-           legend.title = "Treatment Type",
-           line.size = 1,
-           show.zeroinf = T,
-           ci.lvl = NA,
-           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15"))
-
-plot_model(sa.f2, 
-           type = "pred",
-           terms = c("l.other", "Treat_Type"),
-           axis.title = c("Other Saplings (log transformed)", "Total Count of Pitch Pine"),
-           title = "Predicted Counts of Pitch Pine \n Saplings >/= 2.5 cm & < 10 cm DBH",
-           legend.title = "Treatment Type",
-           line.size = 1,
-           show.zeroinf = T,
-           ci.lvl = NA,
-           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15"))
-```
 
 ## Shrub Oak Regeneration
 This includes QUIL (scrub oak) & QUPR (dwarf chinkapin oak)
 
 ### Best shrub oak sapling model
 
-#### The "full" model has the least issues with quantile deviations
+#### looking at SO w/o spring rx or mowrx and standardized variables
 ```{r}
-so.sa2 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.BA_piri + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = sa.all3,
-                 family = poisson)
-summary(so.sa2) # 363.4
-
-so.sa2_sr <- simulateResiduals(so.sa2, n = 1000, plot = TRUE)
-testZeroInflation(so.sa2_sr) #passes
-testResiduals(so.sa2_sr) #passes
-testZeroInflation(so.sa2_sr) #passes
+sa.all_noSMRX <- sa.all3 %>% 
+  filter(Treat_Type != "SpringRx") %>% 
+  filter(Treat_Type != "MowRx")
 ```
 
-#### The reduced model has the lowest AIC, but more issues with quantile deviations
+
+### Seemingly best model
 ```{r}
-so.sa8 <- glmmTMB(Shrub_Oak ~ Treat_Type + offset(l.TFT) + (1|Site/Plot_No),
-                 data = sa.all3,
-                 family = poisson)
-summary(so.sa8)
-
-so.sa8_sr <- simulateResiduals(so.sa8, n = 1000, plot = TRUE)
-testResiduals(so.sa8_sr) #passes, quantile issues
-testZeroInflation(so.sa8_sr) #passes
+so.sa6b <- glmmTMB(Shrub_Oak ~ Treat_Type + piri_s + offset(l.TFT) + (1|Site/Plot_No),
+                 data = sa.all_noSMRX,
+                 ziformula = ~Region,
+                 family = nbinom2)
+summary (so.sa6b)
 ```
 
-### The pairwise comparisons are similar and no significant differences are shown in either
+
+### DHARMa test
 ```{r}
-emmeans(so.sa8, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response') # no difference
-
-emmeans(so.sa2, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response') # no difference
+so.sa6b_sr <- simulateResiduals(so.sa6b, n = 1000, plot = T)
+testResiduals(so.sa6b_sr)
+testZeroInflation(so.sa6b_sr)
 ```
 
-### Plot models
-```{r, fig.align='center'}
-plot_model(so.sa8, 
-           type = "pred",
-           terms = c("l.TFT", "Treat_Type"),
-           axis.title = c("Time from Last Treatment (log transformed)", "Total Count of Shrub Oak"),
-           title = "Predicted Counts of Shrub Oak \n Saplings >/= 2.5 cm & < 10 cm DBH",
-           legend.title = "Treatment Type",
-           line.size = 1,
-           ci.lvl = NA,
-           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15"))
 
+### Pairwise
+```{r}
+emmeans(so.sa6b, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
 ```
+
+
+### Plot model
+```{r, fig.align='center', echo=FALSE}
+sa.so1 <- ggpredict(so.sa6b, terms = c("piri_s", "Treat_Type"))
+
+ggplot(sa.so1, aes(x, predicted, color = group))+
+  geom_line(linewidth = 1, show.legend = FALSE) +
+  scale_color_manual(values = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15"))+
+  theme_classic()+
+  theme(panel.background = element_blank()) +
+  labs(colour = "Treatment Type")+
+  theme(axis.text = element_text(size = 18), axis.title = element_text(size = 24))+
+  labs(x = "Counts of pitch pine saplings \n (standardized)",
+       y = NULL)
+
+ggsave(filename = "SO_PIRI_other.tiff", path = "Plots/SO_GLMM", width = 6, height = 4.2, device = "tiff", dpi = 700)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

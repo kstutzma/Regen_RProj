@@ -369,9 +369,9 @@ ggplot(ls.p1, aes(x, predicted, color = group))+
   scale_color_manual(values = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15"))+
   theme_classic()+
   theme(panel.background = element_blank()) +
-  theme(axis.text = element_text(size = 14), axis.title = element_text(size = 20))+
+  theme(axis.text = element_text(size = 18), axis.title = element_text(size = 27))+
   labs(x = "Average leaf litter depth (log transformed)",
-       y = "Pitch pine stems \n (corrected for time from treatment)")
+       y = "Pitch pine stems \n (adjusted for time)")
 
 ggsave(filename = "LS_PIRI_avgld.tiff", path = "Plots/PIRI_GLMM", width = 7, height = 5, device = "tiff", dpi = 700)
 ```

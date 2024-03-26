@@ -271,9 +271,12 @@ ggplot(ss.p1, aes(x, predicted, color = group))+
   scale_color_manual(values = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15"))+
   theme_classic()+
   theme(panel.background = element_blank()) +
-  theme(axis.text = element_text(size = 14), axis.title = element_text(size = 20))+
-  labs(x = "Average leaf litter depth (log transformed)",
-       y = "Pitch pine stems \n (corrected for time from treatment)")
+  theme(axis.text = element_text(size = 18), axis.title = element_text(size = 24))+
+  labs(x = "Average leaf litter depth \n (log transformed)",
+       y = NULL)
+       #y = "Pitch pine stems \n (adjusted for time from treatment)")
+
+ggsave(filename = "SS_PIRI_avgld.tiff", path = "Plots/PIRI_GLMM", width = 6, height = 4.2, device = "tiff", dpi = 700)
 
 # PIRI SS plot 2 -------------------
 ss.p2 <- ggpredict(ss.m4, terms = c("l.Veg_Total", "Treat_Type"))
@@ -284,25 +287,30 @@ ggplot(ss.p2, aes(x, predicted, color = group))+
   scale_color_manual(values = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15"))+
   theme_classic()+
   theme(panel.background = element_blank()) +
-  theme(axis.text = element_text(size = 14), axis.title = element_text(size = 20))+
-  labs(x = "Average understory vegetation cover \n (log transformed)",
-       y = "Pitch pine stems \n (corrected for time from treatment)")
+  theme(axis.text = element_text(size = 18), axis.title = element_text(size = 24))+
+  labs(x = "Average understory vegetation \n cover (log transformed)",
+       y = "Pitch pine stems \n (adjusted for time)")
 
+
+ggsave(filename = "SS_PIRI_veg.tiff", path = "Plots/PIRI_GLMM", width = 6, height = 4.2, device = "tiff", dpi = 700)
 
 # PIRI SS plot 3 -------------------
 ss.p3 <- ggpredict(ss.m4, terms = c("l.SO", "Treat_Type"))
 
 
 ggplot(ss.p3, aes(x, predicted, color = group))+
-  geom_line(linewidth = 1.25) +
+  geom_line(linewidth = 1.25, show.legend = F) +
   scale_color_manual(values = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15"))+
   theme_classic()+
   theme(panel.background = element_blank()) +
-  theme(axis.text = element_text(size = 14), axis.title = element_text(size = 20),
-        legend.position = "right", legend.text = element_text(size = 18), legend.title = element_text(size = 22))+
-  labs(x = "Shrub oak seedling counts (log transformed)",
-       y = "Pitch pine stems \n (corrected for time from treatment)",
+  theme(axis.text = element_text(size = 18), axis.title = element_text(size = 24)) +
+        #legend.position = "right", legend.text = element_text(size = 18), legend.title = element_text(size = 22))+
+  labs(x = "Shrub oak seedling counts \n (log transformed)",
+       y = NULL, #"Pitch pine stems \n (adjusted for time)",
        color = "Treatment Type")
+
+
+ggsave(filename = "SS_PIRI_SO.tiff", path = "Plots/PIRI_GLMM", width = 6, height = 4.2, device = "tiff", dpi = 700)
 ```
 
 
@@ -529,6 +537,7 @@ so.ss8a <- glmmTMB(Shrub_Oak ~ Treat_Type + offset(l.TFT) + (1|Site/Plot_No),
                  ziformula = ~Region,
                  family = nbinom1)
 AIC(so.ss8a) #1845.2
+summary(so.ss8a)
 
 
 so.ss8a_sr <- simulateResiduals(so.ss8a, n = 1000, plot = TRUE)
@@ -562,7 +571,7 @@ emmeans(so.ss8nb2, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'resp
 ```
 
 
-
+##### Use information from emmeans (mean + SD) to create boxplots etc
 
 #### Now graph
 ```{r, fig.align='center'}
