@@ -26,7 +26,7 @@ Functions:
 ```
 
 Import veg script:
-```{r}
+```{r, message=FALSE}
 source("Scripts/Veg_Data.R")
 rm(veg3)
 ```
@@ -57,7 +57,7 @@ merveg <- merge(veg_site, veg_wider, by = "Plot_No") %>%
 At this point, there are 165 species. This is subject to revision, as unknown species are identified
 
 Reduce to species that occur in at least 5% of plots (That is ~25 plots)
-```{r}
+```{r, warning=FALSE}
 #THIS IS 20 plots or more, the last 5 are under 25 plots but above 20
 veg_5PERC <- veg_wider %>% 
   select(Plot_No,
@@ -92,6 +92,8 @@ veg_5PERC <- veg_wider %>%
 # FRSP,
 # ARNU,
 # SMGL)
+
+names(veg_5PERC)[names(veg_5PERC) == "POUN11"] <- "DIAC"
 
 # check amount of 0s
 z6 <- lapply(veg_5PERC, function(x){ length(which(x==0))})
@@ -129,7 +131,7 @@ I have imported the data; pared the data down to species that occur in at least 
 
 
 Source & transform other files
-```{r}
+```{r, message=FALSE}
 time_since <- read_csv("CleanData/Treat_Year_Data.csv") # this is a dataframe with one row for each site
 
 # make sure ggpubs not on, or this won't load
@@ -334,7 +336,23 @@ geom_path(data = df_ell.region, aes(x = NMDS1, y = NMDS2, color = Region)) #this
 
 
 
+Want to make a graph of the regional influnces
+```{r}
+nmds.plot.vegall2 <- ggplot(site.scores, aes(x=NMDS1, y=NMDS2))+ #sets up the plot
+  geom_point(aes(NMDS1, NMDS2, colour = factor(Region)), size = 2)+ #adds site points to plot, shape determined by Landuse, colour determined by Management
+  coord_fixed()+
+  theme_classic()+ 
+  theme(panel.background = element_rect(fill = NA, colour = "black", size = 1, linetype = "solid"))+
+  labs(colour = "Region")+ # add legend labels for Management and Landuse
+  theme(legend.position = "right", legend.text = element_text(size = 16), legend.title = element_text(size = 20), axis.text = element_text(size = 16)) # add legend at right of plot
 
+print(nmds.plot.vegall2)
+
+nmds.plot.vegall2+ 
+geom_path(data = df_ell.region, aes(x = NMDS1, y = NMDS2, color = Region), show.legend=FALSE)
+
+ggsave(filename = "NMDS_region.tiff", path = "Plots/NMDS", width = 7, height = 5, device = "tiff", dpi = 700)
+```
 
 
 

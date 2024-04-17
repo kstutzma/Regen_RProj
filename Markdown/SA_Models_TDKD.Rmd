@@ -22,9 +22,7 @@ I did create and test models without treatment type, but they always have higher
 - **TFT** - time between treatment and sampling (used as an offset)
 - **Site/Plot_No** - random effect of plots within sites
 
-*Variables are log transformed (l. or _l)*
-
-## Pitch Pine Regeneration
+*Variables are standardized (_s)*
 
 ```{r Libraries, message=FALSE, warning=FALSE, include=FALSE}
 # libraries -------------------
@@ -78,17 +76,6 @@ rm(sa_merge3,
 
 sa.all3 <- sa.all
 
-sa.all3$l.PIRI <- log(sa.all3$PIRI + 1)
-sa.all3$l.SO <- log(sa.all3$Shrub_Oak + 1)
-sa.all3$l.other <- log(sa.all3$Other + 1)
-
-sa.all3 <- sa.all3 %>% 
-  select(Treat_Type, Region, Site, Plot_No, PIRI, l.PIRI, Shrub_Oak, l.SO, Other, l.other, Time_from_Treat, l.TFT, BA_HA, l.BA_HA, PIRI.BA_HA, l.BA_piri, Mineral_Soil, l.Mineral, Litter_Duff, avgLD, avgLD_l, Veg_Total, l.Veg_Total) %>% 
-  arrange(Treat_Type)
-```
-
-### Standardizing models to due to fixed effects at multiple scales
-```{r}
 sa.all3$piri.ba_s <- scale(sa.all3$PIRI.BA_HA)
 sa.all3$avgld_s <- scale(sa.all3$avgLD)
 sa.all3$vegt_s <- scale(sa.all3$Veg_Total)
@@ -97,8 +84,14 @@ sa.all3$so_s <- scale(sa.all3$Shrub_Oak)
 sa.all3$other_s <- scale(sa.all3$Other)
 sa.all3$ba.ha_s <- scale(sa.all3$BA_HA)
 sa.all3$piri_s <- scale(sa.all3$PIRI)
+
+sa.all3 <- sa.all3 %>% 
+  select(Treat_Type, Region, Site, Plot_No, PIRI, piri_s, Shrub_Oak, so_s, Other, other_s, Time_from_Treat, l.TFT, BA_HA, ba.ha_s, PIRI.BA_HA, piri.ba_s, Mineral_Soil, min_s, Litter_Duff, avgLD, avgld_s, Veg_Total, vegt_s) %>% 
+  arrange(Treat_Type)
 ```
 
+
+# Pitch Pine Regeneration
 
 
 ### Best pitch pine sapling model
@@ -112,7 +105,7 @@ summary(sa.m9s)
 
 
 ### Check model fit
-```{r}
+```{r, fig.align='center'}
 sa.m9s_sr <- simulateResiduals(sa.m9s, n = 1000, plot = T) #passes
 testResiduals(sa.m9s_sr) #passes
 testZeroInflation(sa.m9s_sr)
@@ -203,12 +196,11 @@ ggsave(filename = "SA_PIRI_other.tiff", path = "Plots/PIRI_GLMM", width = 6, hei
 ```
 
 
-## Shrub Oak Regeneration
+# Shrub Oak Regeneration
 This includes QUIL (scrub oak) & QUPR (dwarf chinkapin oak)
 
-### Best shrub oak sapling model
-
-#### looking at SO w/o spring rx or mowrx and standardized variables
+#### looking at SO w/o spring rx or mowrx and w/  standardized variables
+There is was no shrub oak sapling recorded in SpringRx or MowRx treatments
 ```{r}
 sa.all_noSMRX <- sa.all3 %>% 
   filter(Treat_Type != "SpringRx") %>% 
@@ -216,48 +208,47 @@ sa.all_noSMRX <- sa.all3 %>%
 ```
 
 
-### Seemingly best model
+### Best model
 ```{r}
-so.sa6b <- glmmTMB(Shrub_Oak ~ Treat_Type + piri_s + offset(l.TFT) + (1|Site/Plot_No),
+so.sa7s <- glmmTMB(Shrub_Oak ~ Treat_Type + offset(l.TFT) + (1|Site/Plot_No),
                  data = sa.all_noSMRX,
                  ziformula = ~Region,
-                 family = nbinom2)
-summary (so.sa6b)
+                 family = nbinom1)
+summary(so.sa7s) #323.8
 ```
 
 
 ### DHARMa test
-```{r}
-so.sa6b_sr <- simulateResiduals(so.sa6b, n = 1000, plot = T)
-testResiduals(so.sa6b_sr)
-testZeroInflation(so.sa6b_sr)
+```{r, fig.align='center'}
+so.sa7s_sr <- simulateResiduals(so.sa7s, n = 1000, plot = T) #passes
+testResiduals(so.sa7s_sr)  #passes
+testZeroInflation(so.sa7s_sr)
 ```
 
 
 ### Pairwise
 ```{r}
-emmeans(so.sa6b, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
+emmeans(so.sa7s, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
 ```
-
+#### none significantly different
+Control vs FallRx close at 0.07
 
 ### Plot model
 ```{r, fig.align='center', echo=FALSE}
-sa.so1 <- ggpredict(so.sa6b, terms = c("piri_s", "Treat_Type"))
+so.sa1.plot <- emmeans(so.sa7s, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
 
-ggplot(sa.so1, aes(x, predicted, color = group))+
-  geom_line(linewidth = 1, show.legend = FALSE) +
-  scale_color_manual(values = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15"))+
+plot <- plot(so.sa1.plot, horizontal=FALSE, comparisons=TRUE, color = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15")) + theme_bw()
+
+plot+
   theme_classic()+
   theme(panel.background = element_blank()) +
-  labs(colour = "Treatment Type")+
-  theme(axis.text = element_text(size = 18), axis.title = element_text(size = 24))+
-  labs(x = "Counts of pitch pine saplings \n (standardized)",
-       y = NULL)
-
-ggsave(filename = "SO_PIRI_other.tiff", path = "Plots/SO_GLMM", width = 6, height = 4.2, device = "tiff", dpi = 700)
+  theme(axis.text = element_text(size = 14), axis.title = element_text(size = 20), legend.position = "right", legend.text = element_text(size = 14), legend.title = element_text(size = 18)) +
+  labs(x = "Shrub Oak Stems \n (corrected for time from treatment)",
+       z = "Treatment Type",
+       color = "Treatment Type")
 ```
 
-
+More in harvest - does fire kill large shrub oak saplings? They are entirely missing from springrx and mowrx treatments
 
 
 

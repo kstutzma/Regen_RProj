@@ -100,7 +100,7 @@ summary(ss.m4)
 ```
 
 ### Check model fit
-```{r}
+```{r, fig.align='center'}
 ss.m4_sr <- simulateResiduals(ss.m4, n = 1000, plot = TRUE) #looks pretty good
 
 testResiduals(ss.m4_sr) #passes uniformity, dispersion, and outliers
@@ -175,7 +175,7 @@ summary(so.ss8a)
 ```
 
 ### Check model fit
-```{r}
+```{r, fig.align='center'}
 so.ss8a_sr <- simulateResiduals(so.ss8a, n = 1000, plot = TRUE)
 testResiduals(so.ss8a_sr) #passes
 testQuantiles(so.ss8a_sr) # p = 0.000006; this is the best so far
@@ -191,31 +191,17 @@ emmeans(so.ss8a, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'respon
 
 ### Graph shrub oak seedling model
 ```{r, fig.align='center', echo=FALSE}
-so.p1 <- ggpredict(so.ss8a, terms = c("l.TFT", "Treat_Type"))
+so.ss1.plot <- emmeans(so.ss8a, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
 
-ggplot(so.p1, aes(x, predicted, color = group))+
-  geom_boxplot() +
-  scale_color_manual(values = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15"))+
+plot <- plot(so.ss1.plot, horizontal=FALSE, comparisons=TRUE, color = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15")) + theme_bw()
+
+plot+
   theme_classic()+
   theme(panel.background = element_blank()) +
   theme(axis.text = element_text(size = 14), axis.title = element_text(size = 20), legend.position = "right", legend.text = element_text(size = 14), legend.title = element_text(size = 18)) +
-  labs(x=NULL,
-       y = "Shrub Oak Small Seedlings \n (corrected for time from treatment)",
+  labs(x = "Shrub Oak Stems \n (corrected for time from treatment)",
+       z = "Treatment Type",
        color = "Treatment Type")
-
-
-ggplot(so.p1, aes(x, predicted, color = group))+
-  geom_line(linewidth = 1.25) +
-  scale_color_manual(values = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15"))+
-  theme_classic()+
-  theme(panel.background = element_blank()) +
-  theme(axis.text = element_text(size = 14), axis.title = element_text(size = 20), legend.position = "right", legend.text = element_text(size = 14), legend.title = element_text(size = 18)) +
-  labs(x = "Time from Treatment (log transformed)",
-       y = "Shrub Oak Stems \n (corrected for time from treatment)",
-       color = "Treatment Type")
-
-# this should really be a boxplot?, not sure how this should be visulaized, as TFT isn't really a variable but a factor in the model
-
 ```
 
 

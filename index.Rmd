@@ -11,6 +11,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## R Markdown code for understory vegetative community (quick look)
 
+### [Descriptive Statistics by Region-Group](Markdown/VegDS_Region.Group.html)
+
 ### [NH & ME NMDS](Markdown/Veg_NH.ME.html)
 
 ### [MA & LI NMDS](Markdown/Veg_MA.LI.html)
@@ -19,13 +21,10 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### [Veg NMDS overall](Markdown/vegNMDS_TDKD.html)
 
-
-### Below are the full scripts for generating models above
-
 #### [Veg NMDS code](veg_NMDS.html)
 
 #### [Vegetation descriptive statistics](Markdown/Veg_DS_bySite.html) 
-Species richness, species diversity, species number, evenness, and beta diversity
+Species richness, species diversity, species number, evenness, and beta diversity by Site & Treatment type
 
 
 ## R Markdown code for Pitch Pine Regeneration project

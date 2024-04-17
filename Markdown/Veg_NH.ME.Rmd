@@ -210,6 +210,24 @@ nh.sig_envr.scrs <- subset(nh.envr.scrs, pval<=0.05)
 print(nh.sig_envr.scrs)
 ```
 
+Add common species names
+```{r}
+sig.apb_spp.scrs$common <- NA
+sig.apb_spp.scrs$common <- ifelse(sig.apb_spp.scrs$Species == "QUIL",  "Scrub oak", sig.apb_spp.scrs$common)
+sig.apb_spp.scrs[3,5] <- "Virginia creeper"
+sig.apb_spp.scrs[1,5] <- "Raspberry spp."
+#sig.apb_spp.scrs[4,5] <- "Huckleberry"
+sig.apb_spp.scrs[4,5] <- "Smooth sumac"
+sig.apb_spp.scrs[5,5] <- "Arrowwood viburnum"
+sig.apb_spp.scrs[6,5] <- "Enchanter's-nightshade"
+sig.apb_spp.scrs[7,5] <- "Canada mayflower"
+sig.apb_spp.scrs[9,5] <- "Glossy buckthorn"
+sig.apb_spp.scrs[10,5] <- "Sarsaparilla"
+sig.apb_spp.scrs[8,5] <- "Dogwood spp."
+
+apb.sig_envr.scrs$common <- "Basal area per hectare"
+```
+
 #### Significant species are: VAAN, QUIL, ACRU, KAAN, COPE, MELI, & LYBO
 
 #### Significant environmental factors are: average leaf litter depth
@@ -237,13 +255,13 @@ colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")
 
 
 nh.nmds.plot <-  ggplot(nh.site.scrs, aes(x=NMDS1, y=NMDS2))+
-  geom_point(aes(NMDS1, NMDS2, colour = factor(nh.site.scrs$Treat_Type), shape = factor(nh.site.scrs$Region)), size = 2)+
+  geom_point(aes(NMDS1, NMDS2, colour = factor(Treat_Type), shape = factor(Region)), size = 2)+
   scale_color_manual(values = c("#D8B70A", "#02401B", "#81A88D"))+
   coord_fixed()+
   theme_classic()+
   theme(panel.background = element_blank()) +
   labs(colour = "Treatment Type", shape = "Region")+
-  theme(legend.position = "right", legend.text = element_text(size = 12), legend.title = element_text(size = 12), axis.text = element_text(size = 10))
+  theme(legend.position = "right", legend.text = element_text(size = 16), legend.title = element_text(size = 18), axis.text = element_text(size = 16))
 
 
 nh.nmds.plot + 
@@ -285,14 +303,17 @@ nh.nmds.plot +
 
 ### Plot with significant species & envr factors
 ```{r, fig.align='center', echo=FALSE}
+nh.sig_envr.scrs[1,3] <- "Average litter depth"
+
 nh.nmds.plot+
   geom_path(data = elipse, aes(x=x, y=y, color=Group),  linejoin = "round", show.legend = FALSE)+
-  geom_segment(data = sign.nh_spp.scrs, aes(x=0, xend=NMDS1, y=0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")), colour = "purple", lwd = 0.3)+
+  geom_segment(data = sign.nh_spp.scrs, aes(x=0, xend=NMDS1, y=0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")), colour = "gray20", lwd = 0.3)+
   ggrepel::geom_text_repel(data = sign.nh_spp.scrs, aes(x=NMDS1, y=NMDS2, label = Species), cex = 3, direction = "both", segment.size = 0.25)+
   geom_segment(data = nh.sig_envr.scrs, aes(x = 0, xend = NMDS1, y = 0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")))+
   ggrepel::geom_text_repel(data = nh.sig_envr.scrs, aes(x=NMDS1, y=NMDS2, label = env.variables), cex = 4, direction = "both", segment.size = 0.25) +
-  labs(title = "Northern Barrens Ordination with significant \n species & environmental factors") +
   theme(plot.title=element_text(hjust=0.5, size=20))
+
+ggsave(filename = "NB_NMDS_sigspp.tiff", path = "Plots/NMDS", width = 7, height = 5, device = "tiff", dpi = 700)
 
 ```
 

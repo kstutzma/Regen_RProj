@@ -213,6 +213,8 @@ print(ma.sig_envr.scrs)
 
 ma.sig_envr.scrs <- ma.sig_envr.scrs %>% 
   filter(env.variables != "BA_HA")
+
+
 ```
 
 #### Significant species are: GAPR, VAAN, QUCO, PIRI, KAAN, MELI, RUSP, SMGL, QUPR
@@ -255,13 +257,13 @@ ellipse.mali <- fortify(mali.plot.e$df_ellipse) %>%
 
 # base plot -------------------
 ma.nmds.plot <-  ggplot(ma.site.scrs, aes(x=NMDS1, y=NMDS2))+
-  geom_point(aes(NMDS1, NMDS2, colour = factor(ma.site.scrs$Treat_Type), shape = factor(ma.site.scrs$Region)), size = 2)+
+  geom_point(aes(NMDS1, NMDS2, colour = factor(Treat_Type), shape = factor(Region)), size = 2)+
   scale_color_manual(values =  c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15"))+
   coord_fixed()+
   theme_classic()+
   theme(panel.background = element_blank()) +
   labs(colour = "Treatment Type", shape = "Region")+
-  theme(legend.position = "right", legend.text = element_text(size = 12), legend.title = element_text(size = 12), axis.text = element_text(size = 10))
+  theme(legend.position = "right", legend.text = element_text(size = 16), legend.title = element_text(size = 18), axis.text = element_text(size = 16))
 
 # plot with ellipse -------------------
 ma.nmds.plot + 
@@ -299,14 +301,15 @@ ma.nmds.plot +
 
 ### Plot with significant species & envr factors Axes 1 & 2
 ```{r, fig.align='center', echo=FALSE}
+ma.sig_envr.scrs[1,3] <- "Moss cover"
+ma.sig_envr.scrs[2,3] <- "Pitch pine basal area"
+
 ma.nmds.plot +
   geom_path(data = ellipse.mali, aes(x=x, y=y, color=Group),  linejoin = "round", show.legend = FALSE)+
   geom_segment(data = sig.ma_spp.scrs, aes(x=0, xend=NMDS1, y=0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")), colour = "grey10", lwd = 0.3)+
   ggrepel::geom_text_repel(data = sig.ma_spp.scrs, aes(x=NMDS1, y=NMDS2, label = Species), cex = 3, direction = "both", segment.size = 0.25)+
   geom_segment(data = ma.sig_envr.scrs, aes(x = 0, xend = NMDS1, y = 0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")))+
-  ggrepel::geom_text_repel(data = ma.sig_envr.scrs, aes(x=NMDS1, y=NMDS2, label = env.variables), cex = 4, direction = "both", segment.size = 0.25) +
-  labs(title = "Coastal barrens ordination with significant \n species & environmental factors (Axes 1 & 2)")+
-  theme(plot.title=element_text(hjust=0.5, size=20))
+  ggrepel::geom_text_repel(data = ma.sig_envr.scrs, aes(x=NMDS1, y=NMDS2, label = env.variables), cex = 4, direction = "both", segment.size = 0.25)
 ```
 
 ### Plot with indcator species & envr factors: Axes 1 & 2

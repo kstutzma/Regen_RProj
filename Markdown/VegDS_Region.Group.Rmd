@@ -1,0 +1,239 @@
+---
+title: "Diversity metrics for understory plant communities"
+author: "Kathleen Stutzman"
+date: "2024-04-16"
+output: html_document
+---
+
+Based on the work of Staudhammer et. al. 2018, I am re-starting my analysis of common diversity metrics in understory plant communities. My sampling is not equal across regions and treatment types, as it was opportunistic. I want to look at these metrics at two scales; across all regions and within the region-groups that showed up in the NMDS analysis.
+
+Libraries:
+```{r Libraries, message=FALSE, warning=FALSE}
+# libraries -------------------
+library(vegan)
+library(tidyverse)
+library(plyr)
+library(dplyr)
+library(adespatial)
+```
+
+Set working directory
+```{r, setup}
+knitr::opts_knit$set(root.dir = '/Users/user/Desktop/Data/Regen_RProj/')
+```
+
+
+Source veg data:
+```{r}
+#start by sourcing the veg script
+source("Scripts/Veg_Data.R")
+
+rm(veg3)#this is used for total cover in GLMMs; not used in this script and doesn't import correctly due to use of dplyr package
+```
+
+Split overall data from veg cover; pivot wider to fill in missing 0s; create df of site and plot to reattach later
+```{r}
+#split overall data from veg cover
+veg_meta <- veg2 %>% 
+  select(Region, Treat_Type, Site, Plot_No) %>% 
+  distinct(Plot_No, .keep_all = TRUE)
+
+#pivot veg data wider and fill in zeros
+veg_wider <- veg2 %>% 
+  select(Plot_No, Species_Code, SP_Cover_midpoint) %>% 
+  group_by(Plot_No) %>% 
+  pivot_wider(names_from = Species_Code, values_from = SP_Cover_midpoint, values_fill = 0) 
+
+#create dataframe of site and plot
+veg_rg.tt <- veg2 %>% 
+  select(Region, Treat_Type, Plot_No) %>% 
+  distinct(Plot_No, .keep_all = TRUE)
+
+#reattach site info and reorder
+veg_rt1 <- merge(veg_rg.tt, veg_wider, by = "Plot_No") %>% 
+  select(Region, Treat_Type, Plot_No, everything()) %>% 
+  select(-Plot_No)
+
+rm(veg_wider)
+```
+
+
+## First create df by TT (all regions)
+```{r}
+#split df by treatment type
+x1 <- veg_rt1 %>% 
+  select(-Region)
+
+split_tt <- split(x1[-1], veg_rt1$Treat_Type)
+```
+
+## Second split into region-groups and then split by TT
+```{r}
+# Northern barrens
+veg_north <- veg_rt1 %>% 
+  filter(Region %in% c("NH", "ME")) %>% 
+  select(-Region)
+
+vnorth_tt <- split(veg_north[-1], veg_north$Treat_Type)
+
+# Coastal barrens
+veg_coast <- veg_rt1 %>% 
+  filter(Region %in% c("LI", "MA"))%>% 
+  select(-Region)
+
+vcoast_tt <- split(veg_coast[-1], veg_coast$Treat_Type)
+
+# Inland barrens
+veg_in <- veg_rt1 %>% 
+  filter(Region == "ALB")%>% 
+  select(-Region)
+
+vin_tt <- split(veg_in[-1], veg_in$Treat_Type)
+```
+
+
+### Species accumulation curves
+##### I can't put these all on one graph (by TT). Is it possible?
+
+1. Control
+```{r, fig.align='center'}
+sp.c <- specaccum(split_tt$Control, method = "exact", permutations = 1000)
+
+sp.c_n <- specaccum(vnorth_tt$Control, method = "exact", permutations = 1000)
+
+sp.c_c <- specaccum(vcoast_tt$Control, method = "exact", permutations = 1000, gamma = "jack1")
+
+sp.c_i <- specaccum(vin_tt$Control, method = "exact", permutations = 1000, gamma = "jack1")
+
+
+par(mfrow = c(2, 2))
+plot(sp.c, main = "Control All Regions")
+plot(sp.c_n, col = 2, main = "Control Northern")
+plot(sp.c_c, col = 3, main = "Control Coastal")
+plot(sp.c_i, col = 4, main = "Control Inland")
+# They all seem to level out; maybe inland is a little questionable
+
+rm(sp.c, sp.c_c, sp.c_i, sp.c_n)
+```
+
+2. Harvest
+```{r, fig.align='center'}
+sp.h <- specaccum(split_tt$Harvest, method = "exact", permutations = 1000)
+
+sp.h_c <- specaccum(vcoast_tt$Harvest, method = "exact", permutations = 1000, gamma = "jack1")
+
+par(mfrow = c(2, 2))
+plot(sp.h, main = "Harvest All Regions")
+plot(sp.h_c, col = 3, main = "Harvest Coastal")
+
+# They all seem to level out; maybe inland is a little questionable
+
+rm(sp.h, sp.h_c)
+```
+
+3. SpringRx
+```{r, fig.align='center'}
+sp.s <- specaccum(split_tt$SpringRx, method = "exact", permutations = 1000)
+
+sp.s_c <- specaccum(vcoast_tt$SpringRx, method = "exact", permutations = 1000, gamma = "jack1")
+
+sp.s_i <- specaccum(vin_tt$SpringRx, method = "exact", permutations = 1000, gamma = "jack1")
+
+
+par(mfrow = c(2, 2))
+plot(sp.s, main = "SpringRx All Regions")
+plot(sp.s_c, col = 3, main = "SpringRx Coastal")
+plot(sp.s_i, col = 4, main = "SpringRx Inland")
+# They all seem a little questionable
+
+rm(sp.s, sp.s_c, sp.s_i)
+```
+
+4. FallRx
+```{r, fig.align='center'}
+sp.f <- specaccum(split_tt$FallRx, method = "exact", permutations = 1000)
+
+sp.f_n <- specaccum(vnorth_tt$FallRx, method = "exact", permutations = 1000)
+
+sp.f_c <- specaccum(vcoast_tt$FallRx, method = "exact", permutations = 1000, gamma = "jack1")
+
+par(mfrow = c(2, 2))
+plot(sp.f, main = "FallRx All Regions")
+plot(sp.f_n, col = 2, main = "FallRx Northern")
+plot(sp.f_c, col = 3, main = "FallRx Coastal")
+# I don't feel super confident about reading these
+
+rm(sp.f, sp.f_c, sp.f_i)
+```
+
+5. MowRx
+```{r, fig.align='center'}
+sp.m <- specaccum(split_tt$MowRx, method = "exact", permutations = 1000, tidy = T)
+
+sp.m_n <- specaccum(vnorth_tt$MowRx, method = "exact", permutations = 1000)
+
+sp.m_c <- specaccum(vcoast_tt$MowRx, method = "exact", permutations = 1000, gamma = "jack1")
+
+sp.m_i <- specaccum(vin_tt$MowRx, method = "exact", permutations = 1000, gamma = "jack1")
+
+
+par(mfrow = c(2, 2))
+plot(sp.m, main = "MowRxAll Regions")
+plot(sp.m_n, col = 2, main = "MowRx Northern")
+plot(sp.m_c, col = 3, main = "MowRx Coastal")
+plot(sp.m_i, col = 4, main = "MowRx Inland")
+# Again, not super confident
+
+rm(sp.m, sp.m_c, sp.m_i, sp.m_n)
+```
+
+
+Testing rarefaction
+The minimum number is 1, so they all come out as 1. This doesn't work 
+```{r}
+x2 <- veg_rt1 %>% 
+  select(-Region) %>% 
+  mutate_if(is.numeric, ~1 * (. > 0))
+
+split_tt2 <- split(x2[-1], veg_rt1$Treat_Type)
+
+
+s <- specnumber(split_tt2$Control)
+raremax <- min(rowSums(split_tt2$Control))
+srare <- rarefy(split_tt2$Control, raremax)
+plot(s, srare)
+
+tibble(srare)
+#the problem is that my min is 1
+```
+
+
+I feel like I'm going down a real rabbit hole with this. I'm not sure how useful it will be. So I'm going to take a pause on this to face the music. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r, eval=FALSE}
+#Here are the species accumulation curves by each treatment type, layered into one graph. Mowing has the most point and species
+plot(sac.t) #total
+lines(sac.mrx, lty=1, lwd=1, col="yellow") #mowrx
+lines(sac.srx,lty=1,lwd=1,col="green") #springrx
+lines(sac.c,lty=1,lwd=1,col="blue") #control
+lines(sac.frx,lty=1,lwd=1,col="red") #fallrx
+lines(sac.h,lty=1,lwd=1,col="purple") #harvest
+```
+
+
+

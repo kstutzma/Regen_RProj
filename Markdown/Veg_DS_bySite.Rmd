@@ -182,7 +182,7 @@ print(BetaD.df)
 
 #### Distance matrix for all sites
 ```{r}
-print(BetaD.distances)
+#print(BetaD.distances)
 ```
 
 
@@ -254,7 +254,7 @@ print(veg_sd)
 ```
 
 
-#### Averages by treatment type:
+# Averages by treatment type:
 Using information calculated by site to create an average value for each treatment type
 ```{r}
 #species richness data is numbers but not numeric, so convert to numeric so I can find the mean
@@ -291,7 +291,252 @@ DS_byTT2 <- as.data.frame(asnum_keepname(DS_byTT))
 #### Print Treatment Type DS
 ```{r}
 print(DS_byTT2)
+
+
+library(writexl)
+
+write_xlsx(DS_byTT2, "DataObjects/dsbyTT.xlsx")
+
 ```
+
+
+Would it be different to do by tt to begin with?
+```{r}
+#pivot veg data wider and fill in zeros
+veg_wider <- veg2 %>% 
+  select(Plot_No, Species_Code, SP_Cover_midpoint) %>% 
+  group_by(Plot_No) %>% 
+  pivot_wider(names_from = Species_Code, values_from = SP_Cover_midpoint, values_fill = 0) 
+
+#create dataframe of site and plot
+veg_site2 <- veg2 %>% 
+  select(Treat_Type, Plot_No) %>% 
+  group_by(Treat_Type) %>% 
+  distinct(Plot_No, .keep_all = TRUE)
+
+#reattach site info and reorder
+veg_merge2 <- merge(veg_site2, veg_wider, by = "Plot_No") %>% 
+  select(-Plot_No) %>% 
+  select(Treat_Type, everything())
+
+#split df by TT
+split_TT <- split(veg_merge2[-1], veg_merge2$Treat_Type)
+
+
+```
+
+
+```{r}
+control_ds <- veg_merge2 %>% 
+  filter(Treat_Type == "Control") %>% 
+  select(-1)
+
+fall_ds <- veg_merge2 %>% 
+  filter(Treat_Type == "FallRx") %>% 
+  select(-1)
+
+spr_ds <- veg_merge2 %>% 
+  filter(Treat_Type == "SpringRx") %>% 
+  select(-1)
+
+mow_ds <- veg_merge2 %>% 
+  filter(Treat_Type == "MowRx") %>% 
+  select(-1)
+
+har_ds <- veg_merge2 %>% 
+  filter(Treat_Type == "Harvest") %>% 
+  select(-1)
+```
+
+Information for comparison of species richness means across plots/treatment types
+```{r}
+rm(sprc_df)
+
+sprc_df <- veg_merge2 %>% 
+  mutate_if(is.numeric, ~1 * (. > 0))
+
+sprc_df$Total<- rowSums(sprc_df[2:166])
+
+sprc_df <- sprc_df %>% 
+  select(Total, everything())
+
+hist(sprc_df$Total) # bit of a tail to the right
+
+ggplot(data = sprc_df, aes(x = Total, color = Treat_Type))+
+  geom_boxplot()
+
+# Looking at ANOVA & assumptions
+shapiro.test(sprc_df$Total[sprc_df$Treat_Type == "Control"]) 
+shapiro.test(sprc_df$Total[sprc_df$Treat_Type == "FallRx"])
+shapiro.test(sprc_df$Total[sprc_df$Treat_Type == "SpringRx"])
+shapiro.test(sprc_df$Total[sprc_df$Treat_Type == "Harvest"])
+shapiro.test(sprc_df$Total[sprc_df$Treat_Type == "MowRx"])
+# none pass - will have to check residuals?
+
+car::leveneTest(Total~Treat_Type, data = sprc_df)
+#also doesn't pass
+
+x <- aov(Total ~ Treat_Type, data = sprc_df)
+
+summary(x)
+
+TukeyHSD(x)
+```
+
+### Using non-parametric methods
+```{r}
+library(dunn.test)
+kruskal.test(Total~Treat_Type, data = sprc_df)
+
+dunn.test(x = sprc_df$Total, g = sprc_df$Treat_Type, method = "bonferroni")
+```
+
+MowRx & Control signifcantly different
+MowRx & FallRx signifcantly different
+MowRx & Harvest signifcantly different
+SpringRx & Harvest signifcantly different
+
+##### Species Richness
+```{r}
+# Species Richness (jackknife and chao etc estimates) -------------------
+sp1 <- as.data.frame(sapply(split_TT, species_richness))
+
+#transpose
+spcrich_byTT <- as.data.frame(t(sp1))
+
+rm(sp1)
+```
+
+
+
+
+
+
+##### Diversity (Shannon-Wiener Index)
+```{r}
+# Shannon index -------------------
+si1 <- as.data.frame(sapply(split_TT, shannon_index))
+
+#transpose
+si_byTT <- as.data.frame(t(si1))
+
+#name columns
+colnames(si_byTT) <- c("S.I._Mean", "S.I._SD")
+
+rm(si1)
+```
+
+##### Species Number
+```{r}
+# Number of species -------------------
+spc_n1 <- as.data.frame(sapply(split_TT, spec_num))
+
+#transpose
+spcnum_byTT <- as.data.frame(t(spc_n1))
+
+#name columns
+colnames(spcnum_byTT) <- c("Spc.Num_Mean", "Spc.Num_SD")
+
+rm(spc_n1)
+
+
+# #at a later date fix and take a look at aov for this
+# spTT2 <- tibble::rownames_to_column(spcnum_byTT, "rn") 
+# 
+# spnum_avo <- aov(Spc.Num_Mean ~ rn, data = spTT2)
+# print(spnum_avo)
+# 
+# mat1 <- matrix(nrow = 5, ncol = 136)
+# 
+# mat1[1,] <- specnumber(split_TT$Control)
+# z1 <- specnumber(split_TT$Harvest)
+# z2 <- specnumber(split_TT$SpringRx)
+# z3 <- specnumber(split_TT$FallRx)
+# z4 <- specnumber(split_TT$MowRx)
+# 
+# x <- bind_rows(z, z1)
+# x1 <- bind_rows(x, z2)
+# x2 <- bind_rows(x1, z3)
+# speTT <- bind_rows(x2, z4)
+```
+
+##### Evenness (Pielou's J)
+This is the SW Index / log (species number). For three sites (one each in APB_Hippo, RPD2_B2, & RPD2_B7), they have a species number of 1. The log of 1 is 0 and anything divided by 0 is NaN. Therefore, these three subplots are dropped from the calculations
+
+```{r}
+even1a <- as.data.frame(sapply(split_TT, Pielous_J))
+
+even2a <- as.data.frame(t(even1a))
+
+colnames(even2a) <- c("Pielous_J_mean", "Pielous_J_SD")
+
+rm(even1a)
+```
+
+Hidden below is code to look at the three subplots, if desired
+```{r, include=FALSE, eval=FALSE}
+RPD2_B7
+HIPPO <-  veg_merge3 %>% 
+  filter(Site == "RPD2_B7") %>% 
+  select(-Site)
+
+H <- diversity(HIPPO)
+S <- specnumber(HIPPO)
+J <- H/(log(S))
+
+print(J)
+
+rm(H, S, J, HIPPO)
+#just switch out site name
+```
+
+### Sorensen dissimilarity index
+```{r}
+# creating a dataframe where observations from every subplot within a site are added together to use for P/A calculations in sorensen
+veg4soren2 <- veg_merge2 %>% 
+  group_by(Treat_Type) %>% 
+  summarise_at(vars(QUCO:HECA), sum) %>% 
+  column_to_rownames(var = "Treat_Type")
+
+# creating df of row id and site id to reattach to beta diversity metrics later
+site_rowid2 <- veg_merge2 %>% 
+  group_by(Treat_Type) %>% 
+  summarise_at(vars(QUCO:HECA), sum) %>% 
+  rowid_to_column(var="rowid") %>% 
+  select(Treat_Type, rowid)
+```
+
+
+### Merge DS together
+```{r}
+# merging data sets of DS
+m1a <- merge(spcrich_byTT, si_byTT, by="row.names") %>% 
+  column_to_rownames(var = "Row.names")
+
+
+m2a <- merge(m1a, spcnum_byTT, by="row.names") %>% 
+  column_to_rownames(var = "Row.names")
+
+m3a <- merge(m2a, even2a, by = "row.names") %>% 
+  column_to_rownames(var = "Row.names")
+
+try2 <- m3a
+
+# m4a <- merge(m3a, rich.df2, by = "row.names") %>% 
+#   column_to_rownames(var = "Row.names")
+# 
+# veg_sd <- merge(m4, rep.df2, by = "row.names") %>% 
+#   column_to_rownames(var = "Row.names")
+
+
+rm(m1a, 
+   m2a) 
+   # m3, 
+   # m4)
+
+write_csv(try2, "DataObjects/DSbyTreatType.csv")
+```
+
 
 
 

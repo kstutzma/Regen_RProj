@@ -101,6 +101,10 @@ apb_5PER <- apb_wider %>%
          VAAN,
          SOUN2)
 
+names(apb_5PER)[names(apb_5PER) == "POUN11"] <- "DIAC"
+names(apb_5PER)[names(apb_5PER) == "SOUN1"] <- "SOAL"
+names(apb_5PER)[names(apb_5PER) == "SOUN2"] <- "SOJU"
+
 rm(apb_log_wider, apb)
 
 # add site and lose plot number -------------------
@@ -110,7 +114,7 @@ apb5 <- merge(apb_5PER, apb_site) %>%
 
 apb5_avg <- apb5 %>% 
   group_by(Site) %>% 
-  summarise_at(vars(RUSP:SOUN2), mean) %>% 
+  summarise_at(vars(RUSP:SOJU), mean) %>% 
   column_to_rownames(var = "Site")
 
 rm(apb5, apb_5PER, mer.apb)
@@ -120,11 +124,11 @@ rel_apb5 <- decostand(apb5_avg, method = 'total', MARGIN = 2)
 ```
 
 Species found in at least 5% (6 plots) of plots in Inland Barrens are:
-RUSP, CAPE, LYQU, CEOR, QUIL, PTAQ, VAPA, PAQU, CEAM, ACRU, GABA, PRSE, RHGL, POUN11, QUPR, FRSP, COPE, LOSP, PIRI, SORU, VIDE, COAM, CICA, SOUN1, MELI, MICA, COSP, ARME, FRAL, ARNU, QUCO, LUPE, AMSP, RHHI, VAAN, SOUN2
+RUSP, CAPE, LYQU, CEOR, QUIL, PTAQ, VAPA, PAQU, CEAM, ACRU, GABA, PRSE, RHGL, DIAC, QUPR, FRSP, COPE, LOSP, PIRI, SORU, VIDE, COAM, CICA, SOAL, MELI, MICA, COSP, ARME, FRAL, ARNU, QUCO, LUPE, AMSP, RHHI, VAAN, SOJU
 
 
 #### Source and transform envr & categorical data; merge for predictor df to compare nmds against (hidden)
-```{r, include=FALSE}
+```{r, include=FALSE, message=FALSE}
 time_since <- read_csv("CleanData/Treat_Year_Data.csv") # this is a dataframe with one row for each site
 
 # make sure ggpubs not on, or this won't load
@@ -323,17 +327,19 @@ apb.sig_envr.scrs <-  apb.sig_envr.scrs %>%
 #### Add common names
 ```{r}
 sig.apb_spp.scrs$common <- NA
-sig.apb_spp.scrs$common <- ifelse(sig.apb_spp.scrs$Species == "QUIL",  "Scrub oak", sig.apb_spp.scrs$common)
-sig.apb_spp.scrs[3,5] <- "Virginia creeper"
-sig.apb_spp.scrs[1,5] <- "Raspberry spp."
-#sig.apb_spp.scrs[4,5] <- "Huckleberry"
-sig.apb_spp.scrs[4,5] <- "Smooth sumac"
-sig.apb_spp.scrs[5,5] <- "Arrowwood viburnum"
-sig.apb_spp.scrs[6,5] <- "Enchanter's-nightshade"
-sig.apb_spp.scrs[7,5] <- "Canada mayflower"
-sig.apb_spp.scrs[9,5] <- "Glossy buckthorn"
-sig.apb_spp.scrs[10,5] <- "Sarsaparilla"
-sig.apb_spp.scrs[8,5] <- "Dogwood spp."
+sig.apb_spp.scrs$common <- ifelse(sig.apb_spp.scrs$Species == "RUSP",  "raspberry spp.", sig.apb_spp.scrs$common)
+sig.apb_spp.scrs$common <- ifelse(sig.apb_spp.scrs$Species == "QUIL",  "scrub oak", sig.apb_spp.scrs$common)
+sig.apb_spp.scrs$common <- ifelse(sig.apb_spp.scrs$Species == "PAQU",  "Virginia creeper", sig.apb_spp.scrs$common)
+sig.apb_spp.scrs$common <- ifelse(sig.apb_spp.scrs$Species == "GABA",  "huckleberry", sig.apb_spp.scrs$common)
+sig.apb_spp.scrs$common <- ifelse(sig.apb_spp.scrs$Species == "RHGL",  "smooth sumac", sig.apb_spp.scrs$common)
+sig.apb_spp.scrs$common <- ifelse(sig.apb_spp.scrs$Species == "VIDE",  "arrowwood viburnum", sig.apb_spp.scrs$common)
+sig.apb_spp.scrs$common <- ifelse(sig.apb_spp.scrs$Species == "CICA",  "enchanter's-nightshade", sig.apb_spp.scrs$common)
+sig.apb_spp.scrs$common <- ifelse(sig.apb_spp.scrs$Species == "MICA",  "Canada mayflower", sig.apb_spp.scrs$common)
+sig.apb_spp.scrs$common <- ifelse(sig.apb_spp.scrs$Species == "FRAL",  "glossy buckthorn", sig.apb_spp.scrs$common)
+sig.apb_spp.scrs$common <- ifelse(sig.apb_spp.scrs$Species == "ARNU",  "sarsaparilla", sig.apb_spp.scrs$common)
+
+
+
 
 apb.sig_envr.scrs$common <- "Basal area per hectare"
 ```
@@ -350,13 +356,13 @@ colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")
 
 # base plot -------------------
 apb.nmds.plot <-  ggplot(apb.site.scrs, aes(x=NMDS1, y=NMDS2))+
-  geom_point(aes(NMDS1, NMDS2, colour = factor(apb.site.scrs$Treat_Type)), size = 2)+
+  geom_point(aes(NMDS1, NMDS2, colour = factor(Treat_Type)), size = 2)+
   scale_color_manual(values = c("#D8B70A", "#81A88D", "#972D15"))+
   coord_fixed()+
   theme_classic()+
   theme(panel.background = element_blank()) +
   labs(colour = "Treatment Type", shape = "Region")+
-  theme(legend.position = "right", legend.text = element_text(size = 14), legend.title = element_text(size = 14), axis.text = element_text(size = 14), axis.title = element_text(size = 16))
+  theme(legend.position = "right", legend.text = element_text(size = 14), legend.title = element_text(size = 16), axis.text = element_text(size = 14))
 
 # plot with ellipse -------------------
 apb.nmds.plot + 
@@ -398,11 +404,14 @@ apb.nmds.plot +
 ### Plot with significant species & envr factors
 ```{r, fig.align='center', echo=FALSE}
 apb.nmds.plot +
+  geom_path(data = ellipse.apb, aes(x=x, y=y, color=Group),  linejoin = "round", lwd = 1.25, show.legend = FALSE)+
   geom_segment(data = sig.apb_spp.scrs, aes(x=0, xend=NMDS1, y=0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")), colour = "grey10", lwd = 0.4)+
-  ggrepel::geom_text_repel(data = sig.apb_spp.scrs, aes(x=NMDS1, y=NMDS2, label = common, size = wt), cex = 3, direction = "both", segment.size = 0.25)+
+  ggrepel::geom_text_repel(data = sig.apb_spp.scrs, aes(x=NMDS1, y=NMDS2, label = common, size = wt), cex = 3.25, direction = "both", segment.size = 0.25)+
   geom_segment(data = apb.sig_envr.scrs, aes(x = 0, xend = NMDS1, y = 0, yend=NMDS2), arrow = arrow(length = unit(0.25, "cm")), lwd = 1)+
-  ggrepel::geom_text_repel(data = apb.sig_envr.scrs, aes(x=NMDS1, y=NMDS2, label = common), cex = 4, direction = "both", segment.size = 0.25, force = 10) +
-  geom_path(data = ellipse.apb, aes(x=x, y=y, color=Group),  linejoin = "round", lwd = 1.25, show.legend = FALSE)
+  ggrepel::geom_text_repel(data = apb.sig_envr.scrs, aes(x=NMDS1, y=NMDS2, label = common), cex = 4, direction = "both", segment.size = 0.25, force = 10)
+
+ggsave(filename = "APB_NMDS_sigspp.tiff", path = "Plots/NMDS", width = 8.5, height = 6, device = "tiff", dpi = 700)
+  
 ```
 
 ### Plot with indcator species & envr factors

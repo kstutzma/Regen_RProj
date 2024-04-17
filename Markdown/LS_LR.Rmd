@@ -123,6 +123,8 @@ ggpairs(ls.numl, aes(color = Treat_Type))
 
 rm(ls.num,
    ls.numl)
+
+rm(ls.all2)
 ```
 Can see the correlation coefficients for linear (Pearsons) relationships. None of them appear very strong, except for ones that are analogs (avg LD vs mineral soil exposure; ba/ha vs piri ba/ha)
 
@@ -131,44 +133,14 @@ Log transformed average litter depth and basal area per hectare have a weak rela
 # The above script a data naming conventions are the same as in the LS_GLMM script
 
 
-Full dataset is called ls.all2
 
 
-Starting first with model analysis without treatment type:
-```{r, include=FALSE, eval=FALSE}
-ls.m1 <- glmmTMB(PIRI.1m ~ l.SO1 + l.other1 + l.BA_HA + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all2,
-                 family = poisson)
-AIC(ls.m1) #98.5
-# gives warning about non-integer values (as i've reduced the counts (/10) to get them to the 1m2 ) - if BA isn't important, I could try again with no BA in dataset and keep 10m2 observations ....
-summary(ls.m1)
+## PIRI Modeling
+Best Model AIC: 282.4
 
-ls.m2 <- glmmTMB(PIRI.1m ~ l.SO1 + l.other1 + l.BA_HA + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all2,
-                 family = poisson)
-AIC(ls.m2) #96.8
+I tried with variables at 1m scale - didn't work well.
+I also did model elimination not using treatment type - that also did not work well
 
-lrtest(ls.m1, ls.m2) #p = 0.5
-
-ls.m3 <- glmmTMB(PIRI.1m ~ l.SO1 + l.other1 + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all2,
-                 family = poisson)
-AIC(ls.m3) #96.0
-
-lrtest(ls.m2, ls.m3) # p = 0.3
-
-rm(ls.m1, ls.m2, ls.m3)
-
-ls.m11a <- glmmTMB(PIRI.1m ~ avgLD_l + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all2,
-                 family = poisson)
-AIC(ls.m11a) #AIC = 89.3, was just interested to see the AIC of this model vs. ls at 10m2 observations
-
-#i'm just interested to see model fit on this 1m model
-ls.m11a_sr <-  simulateResiduals(ls.m11a, n = 1000, plot = T) #fails very much so
-```
-
-Basal area doesn't seem important, so I'm going to go back to the 10m^2^ and 1m^2^ scales and lose per hectare observations. I'll need to rework the dataset
 
 Revised data set with LS observations at 10m^2^ scale; this means no non-interger values for the poisson distro
 ```{r}
@@ -183,6 +155,10 @@ ls.all3 <- ls.all3 %>%
   arrange(Treat_Type)
 ```
 
+
+
+
+
 ### testing zero inflation
 ```{r}
 tapply(ls.all3$PIRI, ls.all3$Region, summary)
@@ -191,9 +167,8 @@ tapply(ls.all3$PIRI, ls.all3$Treat_Type, summary)
 ```
 
 
+
 I started modeling with poisson distro and excluding treatment type. Models without treatment type failed in model fit. Going to run variable elimination again, starting with models with treatment type
-
-
 ```{r}
 ls.m13 <- glmmTMB(PIRI ~ Treat_Type + l.SO + l.other + l.BA_HA + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
                  data = ls.all3,
@@ -252,6 +227,12 @@ rm(ls.m13, ls.m14, ls.m15, ls.m16, ls.m17, ls.m18)
 
 Ok, test model fit with treat type (same as model 11)
 ```{r}
+#Best model
+ls.m19 <- glmmTMB(PIRI ~ Treat_Type + avgLD_l + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 family = nbinom1)
+summary(ls.m19) #282.4
+
 ls.m19_sr <- simulateResiduals(ls.m19, n = 1000, plot = TRUE) #passes
 testResiduals(ls.m19_sr) #pases
 testZeroInflation(ls.m19_sr) #passes
@@ -369,8 +350,8 @@ ggplot(ls.p1, aes(x, predicted, color = group))+
   scale_color_manual(values = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15"))+
   theme_classic()+
   theme(panel.background = element_blank()) +
-  theme(axis.text = element_text(size = 18), axis.title = element_text(size = 27))+
-  labs(x = "Average leaf litter depth (log transformed)",
+  theme(axis.text = element_text(size = 16), axis.title = element_text(size = 20))+
+  labs(x = "Average leaf litter depth \n (log transformed)",
        y = "Pitch pine stems \n (adjusted for time)")
 
 ggsave(filename = "LS_PIRI_avgld.tiff", path = "Plots/PIRI_GLMM", width = 7, height = 5, device = "tiff", dpi = 700)
@@ -385,144 +366,127 @@ ggsave(filename = "LS_PIRI_avgld.tiff", path = "Plots/PIRI_GLMM", width = 7, hei
 
 
 # Shrub oak models
-#### A losing proposition. No models pass fit tests. 
-Abandon all hope. 
+Best Model AIC: 3267
+Issue with underdispersion
 
 #### Are SO LS present in all regions and treatment types?
+Yes   
 ```{r}
 tapply(ls.all3$Shrub_Oak, ls.all3$Region, summary)
 tapply(ls.all3$Shrub_Oak, ls.all3$Treat_Type, summary)
 ```
 
-
+Tried a lot of distributions. Models are generally underdispersed. Have used poisson, nbinom, genpois, & compois distros. Using zi ~1 helps. 
 ```{r, eval=FALSE}
-so.ls1 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 family = nbinom1)
-AIC(so.ls1) # 3250.6
+# so.ls1 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+#                  data = ls.all3,
+#                  ziformula = ~1,
+#                  family = genpois)
+#AIC(so.ls1) # fails with genpois
 
 # test piri ba
 so.ls2 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
                  data = ls.all3,
-                 family = nbinom1)
-AIC(so.ls2) #3251
+                 ziformula = ~1,
+                 family = genpois)
+AIC(so.ls2) #3266.7
 
-lrtest(so.ls1, so.ls2) #p = 0.12
+#lrtest(so.ls1, so.ls2) #p = 0.3
 
 # test total BA
 so.ls3 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
                  data = ls.all3,
-                 family = nbinom1)
-AIC(so.ls3) #3251.6
+                 ziformula = ~1,
+                 family = genpois)
+AIC(so.ls3) #3268
 
-lrtest(so.ls2, so.ls3) # p = 0.1
+lrtest(so.ls2, so.ls3) # p = 0.06
 
 # test mineral
 so.ls4 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
                  data = ls.all3,
-                 family = nbinom1)
-AIC(so.ls4) #3253.8
+                 ziformula = ~1,
+                 family = genpois)
+AIC(so.ls4) #3268.6
 
-lrtest(so.ls3, so.ls4) # p = 0.041
+
+lrtest(so.ls3, so.ls4) # p = 0.1
 
 # test avg ld
-so.ls5 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 family = nbinom1)
-AIC(so.ls5) #3249.6
-
-lrtest(so.ls5, so.ls3) # p = 0.9
-
-# test piri
-so.ls6 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 family = nbinom1)
-AIC(so.ls6) #3250.6
-
-lrtest(so.ls6, so.ls5) # p = 0.08
-
-# test other
-so.ls7 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 family = nbinom1)
-AIC(so.ls7) #3256.5
-
-lrtest(so.ls6, so.ls7) # p = 0.005
-
-# test veg
-so.ls8 <- glmmTMB(Shrub_Oak ~ Treat_Type +l.other  + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 family = nbinom1)
-AIC(so.ls8) # 3257.3
-
-
-
-
-lrtest(so.ls8, so.ls6) # p > 0.003
-```
-
-```{r}
-#seems to be best model
-so.ls6 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+so.ls5 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
                  data = ls.all3,
                  ziformula = ~1,
-                 family = nbinom1)
+                 family = genpois)
+AIC(so.ls5) #3267.3
 
-so.ls6_sr <- simulateResiduals(so.ls6, n=1000, plot = TRUE)
-testResiduals(so.ls6_sr)
+lrtest(so.ls5, so.ls4) # p = 0.4
 
-#testing for ziformula: 1, Region + Treat_Type, Treat_Type, Region, l.TFT, combinations therein and with nbinom2 - all are underdispersed. 
+# test piri*
+so.ls6 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 ziformula = ~1,
+                 family = genpois)
+AIC(so.ls6) #fails
+
+lrtest(so.ls6, so.ls5) # p = 0.008**
+
+# test other*
+so.ls7 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.Veg_Total + l.PIRI + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 ziformula = ~1,
+                 family = genpois)
+AIC(so.ls7) #fails
+
+lrtest(so.ls5, so.ls7) # p = 0.003
+
+# test veg*
+so.ls8 <- glmmTMB(Shrub_Oak ~ Treat_Type +l.other + l.PIRI + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 ziformula = ~1,
+                 family = genpois)
+AIC(so.ls8) # 3271.1
+
+# test piri ba, model failed at start
+so.ls9 <- glmmTMB(Shrub_Oak ~ Treat_Type +l.other + l.PIRI + l.Veg_Total + l.BA_piri + offset(l.TFT) + (1|Site/Plot_No),
+                 data = ls.all3,
+                 ziformula = ~1,
+                 family = genpois)
+AIC(so.ls9) #3268.4
+
+lrtest(so.ls9, so.ls5) # p = 0.4
 ```
 
 
-
-
-Seemingly best models
-```{r, eval=FALSE}
-so.ls5 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+Best Model
+```{r}
+so.ls5 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
                  data = ls.all3,
-                 family = poisson)
-AIC(so.ls5) #3378.3 ---- keep mineral, lower AIC
+                 ziformula = ~1,
+                 family = genpois)
+summary(so.ls5)
+AIC(so.ls5)
 
-so.ls5_sr <- simulateResiduals(so.ls5, n = 1000, plot = TRUE) #quantile test not looking good
+so.ls5_sr <- simulateResiduals(so.ls5, n = 1000, plot = T)
 testResiduals(so.ls5_sr)
-testDispersion(so.ls5_sr, alternative = "less") #again, under dispersed
+testDispersion(so.ls5_sr, alternative = "less")
 
-so.ls5a <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 family = compois)
-AIC(so.ls5a) #3290
+check_collinearity(so.ls5) #low
 
-so.ls5a_sr <- simulateResiduals(so.ls5a, n = 1000, plot = TRUE) 
-testResiduals(so.ls5a_sr) #still underdispersed
-
-so.ls5b <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 family = genpois)
-AIC(so.ls5b) #3274.5
-
-so.ls5b_sr <- simulateResiduals(so.ls5b, n = 1000, plot = TRUE)
-testResiduals(so.ls5b_sr) #still underdispersed
 ```
 
-Test second model
+
+
+### Pairwise with treatment type
 ```{r, eval=FALSE}
-so.ls6 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.BA_HA + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 family = poisson)
-AIC(so.ls6) #3380
-
-so.ls6_sr <- simulateResiduals(so.ls6, n = 1000, plot = TRUE)
-testResiduals(so.ls6_sr) # fails dispersion
-
-so.ls6a <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.BA_HA + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 family = genpois)
-AIC(so.ls6a) #3275.5
-#compois distro fails and won't produce DHARMa results
-so.ls6a_sr <- simulateResiduals(so.ls6a, n = 1000, plot = T)
-testResiduals(so.ls6a_sr) # fails dispersion
+emmeans(so.ls5, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
 ```
+# FallRx, Harvest, MowRx, & SpringRx all significantly different from Control. Only Harvest & MowRx significantly different from each outher
+
+
+
+
+
+
 
 ### testing other distros
 ```{r, eval=FALSE}
@@ -568,11 +532,6 @@ testResiduals(so.ls6d_sr)
 ```
 
 
-### Pairwise with treatment type
-```{r, eval=FALSE}
-emmeans(so.ls6, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
-```
-
 ```{r}
 hist(ls.all3$Shrub_Oak)
 
@@ -583,584 +542,63 @@ ggplot(ls.all3, aes(x=Shrub_Oak))+
 
 
 
+### Graph model
 
-### Graph shrub oak models
-```{r, eval=FALSE}
-# LS SO plot 1 ------------------- other vs. TT
-plot_model(so.ls6, 
-                       type = 'pred', 
-                       terms = c('l.other', 'Treat_Type'),
-                       axis.title = c("Other small seedling counts (log transformed)", "Total Count of Shrub Oak"),
-                       title = "Predicted Counts of Shrub Oak \n Seedlings >/=50cm & <2.5cm DBH",
-           legend.title = "Treatment Type",
-           line.size = 1,
-           value.offset = 'Treat_Type',
-           ci.lvl = NA,
-           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")) 
-
-# LS SO plot 2 ------------------- BA_10m vs. TT
-plot_model(so.ls6, 
-                       type = 'pred', 
-                       terms = c('l.other', 'Treat_Type'),
-                       axis.title = c("Total Basal Area per 10 square meters (log transformed)", "Total Count of Shrub Oak"),
-                       title = "Predicted Counts of Shrub Oak \n Seedlings >/=50cm & <2.5cm DBH",
-           legend.title = "Treatment Type",
-           line.size = 1,
-           value.offset = 'Treat_Type',
-           ci.lvl = NA,
-           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")) 
-
-# LS SO plot 3 ------------------- l.mineral vs. TT
-plot_model(so.ls6, 
-                       type = 'pred', 
-                       terms = c('l.other', 'Treat_Type'),
-                       axis.title = c("Amount of exposed mineral soil (log transformed)", "Total Count of Shrub Oak"),
-                       title = "Predicted Counts of Shrub Oak \n Seedlings >/=50cm & <2.5cm DBH",
-           legend.title = "Treatment Type",
-           line.size = 1,
-           value.offset = 'Treat_Type',
-           ci.lvl = NA,
-           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")) 
-```
-
-#Start model fit with genpois distro and then do elimination?
-```{r, eval=FALSE}
-so.ls1 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 family = genpois)
-AIC(so.ls1) #3275.5
+```{r, fig.align='center'}
+# SO LS -------------------
+ls.s1 <- ggpredict(so.ls5, terms = c("l.PIRI", "Treat_Type"))
 
 
-so.ls1b <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 family = compois)
-AIC(so.ls1b) #this is taking a very long time - so i quit, moving forward with genpois
+ggplot(ls.s1, aes(x, predicted, color = group))+
+  geom_line(linewidth = 1.25) +
+  scale_color_manual(values = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15"))+
+  theme_classic()+
+  theme(panel.background = element_blank()) +
+  theme(axis.text = element_text(size = 16), axis.title = element_text(size = 20))+
+  labs(x = "Count of pitch pine seedlings (log)",
+       y = "Shrub oak stems \n(adjusted for time)")
 
-#test piri ba
-so.ls2 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 family = genpois)
-AIC(so.ls2) #3276.4
-
-lrtest(so.ls1, so.ls2) #drop
-
-#test ba
-so.ls3 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 family = genpois)
-AIC(so.ls3) #3276.8
-
-#test mineral
-so.ls4 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 family = genpois)
-AIC(so.ls4) #3279.2
-
-lrtest(so.ls3, so.ls4) #keep mineral
-
-# test ld
-so.ls5 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 family = genpois)
-AIC(so.ls5) #3274.8
-
-# test other
-so.ls6 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI  + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 family = genpois)
-AIC(so.ls6) #3280
-
-lrtest(so.ls6, so.ls5) #keep other
-
-# test piri
-so.ls7 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.Mineral + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 family = genpois)
-AIC(so.ls7) #3275.9
-
-lrtest(so.ls7, so.ls5) #drop piri
-
-#going to drop veg due to collinearity issues
-# test ld
-so.ls8 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 family = genpois)
-AIC(so.ls8) #3284
-
-so.ls8_sr <- simulateResiduals(so.ls8, n = 1000, plot = TRUE)
-testResiduals(so.ls8_sr)
-testDispersion(so.ls8_sr, alternative = "less")
-#underdispersed
-testZeroInflation(so.ls8_sr)
-
-so.ls9 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 family = compois)
-AIC(so.ls9) #3301.9
-
-so.ls9_sr <- simulateResiduals(so.ls9, n = 1000, plot = TRUE)
-testResiduals(so.ls9_sr) #worse on dispersion
-
-so.ls10 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 family = nbinom1)
-AIC(so.ls10) #3257.3
-
-so.ls10_sr <- simulateResiduals(so.ls10, n = 1000, plot = TRUE)
-testResiduals(so.ls10_sr) #fails dispersion
+#ggsave(filename = "LS_PIRI_avgld.tiff", path = "Plots/PIRI_GLMM", width = 7, height = 5, device = "tiff", dpi = 700)
 
 
-so.ls11 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 family = nbinom2)
-AIC(so.ls11) #3352
+ls.s2 <- ggpredict(so.ls5, terms = c("l.other", "Treat_Type"))
 
-so.ls11_sr <- simulateResiduals(so.ls11, n = 1000, plot = TRUE)
-testResiduals(so.ls11_sr) # fails dispersion
-testZeroInflation(so.ls11_sr)
 
-# run poisson model with zero inflation?
-so.ls12 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 ziformula = ~1,
-                 family = genpois)
-AIC(so.ls12) #3271.5
+ggplot(ls.s2, aes(x, predicted, color = group))+
+  geom_line(linewidth = 1.25, show.legend = FALSE) +
+  scale_color_manual(values = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15"))+
+  theme_classic()+
+  theme(panel.background = element_blank()) +
+  theme(axis.text = element_text(size = 16), axis.title = element_text(size = 20))+
+  labs(x = "Count of other seedlings (log)",
+       y = "Shrub oak stems \n(adjusted for time)")
 
-so.ls12_sr <- simulateResiduals(so.ls12, n = 1000, plot = TRUE)
-testResiduals(so.ls12_sr) #still fails dispersion
-testZeroInflation(so.ls12_sr)
+# -------------------
+ls.s3 <- ggpredict(so.ls5, terms = c("l.Veg_Total", "Treat_Type"))
 
-so.ls13 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 family = poisson)
-AIC(so.ls13)
 
-so.ls13_sr <- simulateResiduals(so.ls13, n = 1000, plot = TRUE)
-testResiduals(so.ls13_sr) #still fails dispersion
-testZeroInflation(so.ls13_sr) #does fail
+ggplot(ls.s3, aes(x, predicted, color = group))+
+  geom_line(linewidth = 1.25, show.legend = FALSE) +
+  scale_color_manual(values = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15"))+
+  theme_classic()+
+  theme(panel.background = element_blank()) +
+  theme(axis.text = element_text(size = 16), axis.title = element_text(size = 20))+
+  labs(x = "Total understory vegetative cover (log)",
+       y = "Shrub oak stems \n(adjusted for time)")
+
+# low collinearity but still gives me a little pause..
 
 ```
-
-#### ok, zero inflation issues
-```{r, eval=FALSE}
-#starting with veg dropped due to collinearity issues
-so.ls1 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.BA_piri + l.Mineral + avgLD_l + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 ziformula = ~1,
-                 family = nbinom1)
-AIC(so.ls1) #3253.5
-
-#test piri ba
-so.ls2 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.Mineral + avgLD_l + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 ziformula = ~1,
-                 family = nbinom1)
-AIC(so.ls2) #3252
-
-#test ba
-so.ls3 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.Mineral + avgLD_l + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 ziformula = ~1,
-                 family = nbinom1)
-AIC(so.ls3) #3254
-
-lrtest(so.ls2, so.ls3) # p = 0.6, drop
-
-#test ld
-so.ls4 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 ziformula = ~1,
-                 family = nbinom1)
-AIC(so.ls4) #3252
-
-#test piri
-so.ls5 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 ziformula = ~1,
-                 family = nbinom1)
-AIC(so.ls5) #3254
-
-lrtest(so.ls4, so.ls5) # keep piri
-
-#test other
-so.ls6 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI  + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 ziformula = ~1,
-                 family = nbinom1)
-AIC(so.ls6) # 3256
-
-lrtest(so.ls4, so.ls6) #keep other
-
-#test mineral
-so.ls7 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 ziformula = ~1,
-                 family = nbinom1)
-AIC(so.ls7) #3255.4
-
-lrtest(so.ls7, so.ls4) #keep mineral
-
-#test treat type
-so.ls8 <- glmmTMB(Shrub_Oak ~ l.PIRI + l.other + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 ziformula = ~1,
-                 family = nbinom1)
-AIC(so.ls8) #3341.4
-
-lrtest(so.ls4, so.ls8) # keep tt
-```
-
-seemingly best model
-```{r, eval = FALSE}
-so.ls4 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 ziformula = ~1,
-                 family = nbinom1)
-
-so.ls4_sr <- simulateResiduals(so.ls4, n = 1000, plot = TRUE)
-testZeroInflation(so.ls4_sr) #passes
-testResiduals(so.ls4_sr) #fails dispersion
-
-so.ls4b <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 ziformula = ~Treat_Type,
-                 family = nbinom1)
-
-so.ls4b_sr <- simulateResiduals(so.ls4b, n = 1000, plot = TRUE)
-testZeroInflation(so.ls4b_sr) #passes
-testResiduals(so.ls4b_sr)
-
-#try with second nbinom distro
-
-so.ls4c <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 ziformula = ~1,
-                 family = nbinom2)
-
-so.ls4c_sr <- simulateResiduals(so.ls4c, n = 1000, plot = TRUE)
-testZeroInflation(so.ls4c_sr) #passes
-testResiduals(so.ls4c_sr) #worse
-
-so.ls4d <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 ziformula = ~Treat_Type,
-                 family = nbinom2)
-
-so.ls4d_sr <- simulateResiduals(so.ls4d, n = 1000, plot = TRUE)
-testZeroInflation(so.ls4d_sr) #passes
-testResiduals(so.ls4d_sr) #worse
-
-# maybe 
-so.ls4e <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 ziformula = ~Treat_Type,
-                 family = genpois)
-
-so.ls4e_sr <- simulateResiduals(so.ls4e, n = 1000, plot = TRUE)
-testZeroInflation(so.ls4e_sr) #passes
-testResiduals(so.ls4e_sr) #fails again
-
-```
-
-### starting modeling again. going to model with poisson and check out zero inflation issues. then reduce model or try other distros
-```{r, eval = FALSE}
-m1 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 family = poisson)
-AIC(m1) #3391.3
-
-m1_sr <- simulateResiduals(m1, n = 1000, plot = T)
-testZeroInflation(m1_sr)#fails
-
-m2 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-              ziformula = ~1,
-                 family = poisson)
-#1, region, and tt all fail with poisson distro
-
-m2 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
-              data = ls.all3,
-              family = nbinom1)
-AIC(m2) #3254.1
-
-m2_sr <- simulateResiduals(m2, n = 1000, plot = T)
-testZeroInflation(m2_sr) #passes
-testResiduals(m2_sr) # fails, is underdispersed
-testDispersion(m2_sr, alternative = "less") # = 0.006
-
-#try nbimom2
-m3 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
-              data = ls.all3,
-              family = nbinom2)
-AIC(m3) #3313.1
-
-m3_sr <- simulateResiduals(m3, n = 1000, plot = T)
-testZeroInflation(m3_sr) #fails
-testResiduals(m3_sr) # fails, is underdispersed
-testDispersion(m3_sr, alternative = "less") # <0.001
-
-#try genpois (it fails)
-#try compois - taking a very long time to run
-m4 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
-              data = ls.all3,
-              ziformula = ~1,
-              family = compois)
-AIC(m4) #3270
-
-m4_sr <- simulateResiduals(m4, n = 1000, plot = T)
-testZeroInflation(m4_sr) #passes
-testResiduals(m4_sr) # fails, is underdispersed
-testDispersion(m4_sr, alternative = "less") # <0.001
-
-#compois is worse
-
-m5 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
-              data = ls.all3,
-              family = nbinom1)
-
-m5_sr <- simulateResiduals(m5, n = 1000, plot = T)
-testZeroInflation(m5_sr) #passes
-testResiduals(m5_sr) #0.006
-
-#region is slightly worse (0.002) for ziformula; treat_type is 0.006; site fails, l.TFT is 0.006;BAHA fails 
-
-# maybe having less variables will change the sr model
-
-m6 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
-              data = ls.all3,
-              family = nbinom1)
-
-m6_sr <- simulateResiduals(m6, n = 1000, plot = T)
-testZeroInflation(m6_sr) #passes
-testResiduals(m6_sr) #worse 0.002
-
-m7 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
-              data = ls.all3,
-              ziformula = ~1,
-              family = nbinom1)
-
-m7_sr <- simulateResiduals(m7, n = 1000, plot = T)
-testZeroInflation(m7_sr) #passes
-testResiduals(m7_sr) #0.008
-
-
-m8 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
-              data = ls.all3,
-              ziformula = ~1,
-              family = nbinom1)
-
-m8_sr <- simulateResiduals(m8, n = 1000, plot = T)
-testZeroInflation(m8_sr) #passes
-testResiduals(m8_sr) #0.002
-
-m10 <- glmmTMB(Shrub_Oak ~ Treat_Type + offset(l.TFT) + (1|Site/Plot_No),
-              data = ls.all3,
-              ziformula = ~1,
-              family = nbinom1)
-
-m10_sr <- simulateResiduals(m10, n = 1000, plot = T)
-testZeroInflation(m10_sr) #passes
-testResiduals(m10_sr) #0.004
-
-m11 <- glmmTMB(Shrub_Oak ~ Treat_Type + offset(l.TFT) + (1|Site/Plot_No),
-              data = ls.all3,
-              family = nbinom1)
-
-m11_sr <- simulateResiduals(m11, n = 1000, plot = T)
-testZeroInflation(m11_sr) #passes
-testResiduals(m11_sr) #0.004
-
-
-m11 <- glmmTMB(Shrub_Oak ~ Treat_Type + offset(l.TFT) + (1|Site/Plot_No),
-              data = ls.all3,
-              ziformula = ~1,
-              family = gaussian)
-
-m11_sr <- simulateResiduals(m11, n = 1000, plot = T)
-testZeroInflation(m11_sr) #passes
-testResiduals(m11_sr) #0.004
-
-
-m2 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-              ziformula = ~1,
-                 family = gaussian)
-AIC(m2)
-m2_sr <- simulateResiduals(m2, n = 1000, plot = T)
-testZeroInflation(m2)
-testResiduals(m2) #fails uniformity, passes dispersion
-
-m2 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
-              data = ls.all3,
-              ziformula = ~1,
-              family = tweedie)
-AIC(m2)
-m2_sr <- simulateResiduals(m2, n = 1000, plot = T)
-testZeroInflation(m2)
-testResiduals(m2) #fails dispersion passes uniformity
-
-m2 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
-              data = ls.all3,
-              family = tweedie)
-AIC(m2)
-m2_sr <- simulateResiduals(m2, n = 1000, plot = T)
-testZeroInflation(m2)
-testResiduals(m2) #fails dispersion passes uniformity
-```
+## Interesting - it is always Mowing -> SpringRx -> Fall Rx -> Harvest -> Control
 
 
 
-
-
-# nbinom distro 1 solves 0 inflation issues, but models are still underdispersed
 
 I've tried poisson, nbinom1, nbinom1 with ZI, nbinom2, genpois, compois, tweedie, gaussian and none of these distros work. They are all underdispersed
 
-## These are very full models with many different distributions. All are underdispersed.
-```{r}
-m1 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 family = nbinom1)
-AIC(m1) 
 
-m1_sr <- simulateResiduals(m1, n = 1000, plot = T)
-testZeroInflation(m1_sr) #passes
-testResiduals(m1_sr) #under dispersed, 0.002
-
-m2 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 family = genpois)
-AIC(m2) 
-
-m2_sr <- simulateResiduals(m2, n = 1000, plot = T)
-testZeroInflation(m2_sr) #passes
-testResiduals(m2_sr) #under dispersed, 0.004
-
-m3 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 family = compois)
-AIC(m3) #this is taking a very long time to run
-
-m3_sr <- simulateResiduals(m3, n = 1000, plot = T)
-testZeroInflation(m3_sr) #fails
-testResiduals(m3_sr) #fails dispersion
-
-m4 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.Mineral +  offset(l.TFT) + (1|Site/Plot_No),
-              data = ls.all3,
-              ziformula = ~1,
-              family = compois)
-AIC(m4)
-
-m4_sr <- simulateResiduals(m4, n = 1000, plot = T)
-testZeroInflation(m4_sr) #passes
-testResiduals(m4_sr) #fails dispersion
-```
-
-### I cannot find a model that works. 
-
-
-
-```{r, include=FALSE, eval=FALSE}
-so.ls1 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-                 ziformula = ~1,
-                 family = poisson-lognormal)
-AIC(so.ls1)
-
-overdisp_fun <- function(model) {
-    rdf <- df.residual(model)
-    rp <- residuals(model,type="pearson")
-    Pearson.chisq <- sum(rp^2)
-    prat <- Pearson.chisq/rdf
-    pval <- pchisq(Pearson.chisq, df=rdf, lower.tail=FALSE)
-    c(chisq=Pearson.chisq,ratio=prat,rdf=rdf,p=pval)
-}
-
-
-overdisp_fun(so.ls1)
-
-
-library(lme4)
-mod2 <- glmer(Shrub_Oak ~ Treat_Type + l.other + l.Mineral + offset(l.TFT) + (1|Site/Plot_No),
-              data = ls.all3,
-              family = poisson)
-
-mod2_sr <- simulateResiduals(mod2, n = 1000, plot = T)
-testZeroInflation(mod2_sr)
-testDispersion(mod2_sr)
-
-#still bad, can't find this poisson log normal family distro of which the literature speaks - unless its the quasipoisson distro, which says can't work with a glmer....
-```
-
-
-
-# testing nbinom2 distro
-```{r}
-m1 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-              ziformula = ~1,
-                 family = nbinom2)
-AIC(m1) #3312
-
-m2 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-              ziformula = ~1,
-                 family = nbinom2)
-AIC(m2) #3311
-
-m3 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-              ziformula = ~1,
-                 family = nbinom2)
-AIC(m3) #3312
-
-lrtest(m2, m3)
-
-m4 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-              ziformula = ~1,
-                 family = nbinom2)
-AIC(m4) #3311
-
-m5 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-              ziformula = ~1,
-                 family = nbinom2)
-AIC(m5) #3316
-
-lrtest(m4, m5)
-
-m6 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-              ziformula = ~Region,
-                 family = nbinom1)
-AIC(m6) #3310
-
-m7 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-              ziformula = ~1,
-                 family = nbinom2)
-AIC(m7) #3317
-
-lrtest(m6, m7)
-
-m8 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.other + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ls.all3,
-              ziformula = ~1,
-                 family = nbinom2)
-AIC(m8) #3315
-
-lrtest(m8, m6)
-
-m6_sr <- simulateResiduals(m6, n=1000, plot = TRUE)
-testResiduals(m6_sr) #fails dispersion
-
-rm(m1, m2, m3, m4, m5, m7, m8)
-
-# nbinom 1 distro seems to be better, Region might be better than 1 for zi; but dispersion issues are present no matter what
-```
-
-
+### I've deleted more models than you've imagined.  
+Genpois with zi ~1 seems like the closest I'm going to get
 
 
 

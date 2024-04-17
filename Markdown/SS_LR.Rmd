@@ -138,7 +138,7 @@ tapply(ss.all2$PIRI, ss.all2$Treat_Type, summary)
 
 
 # Pitch pine GLMM
-
+Best Model AIC: 723
 
 
 
@@ -233,11 +233,11 @@ summary(ss.m4) #722.6
 
 check_collinearity(ss.m4) # all with low collinearity
 
-#checking nbinom2
-ss.m4a <- glmmTMB(PIRI ~ Treat_Type + l.SO + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ss.all2,
-                 family = nbinom2)
-AIC(ss.m4a) #higher with nbinom 1 & 2
+# #checking nbinom2
+# ss.m4a <- glmmTMB(PIRI ~ Treat_Type + l.SO + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
+#                  data = ss.all2,
+#                  family = nbinom2)
+# AIC(ss.m4a) #higher with nbinom 1 & 2
 ```
 
 
@@ -351,6 +351,7 @@ ggsave(filename = "SS_PIRI_SO.tiff", path = "Plots/PIRI_GLMM", width = 6, height
 
 
 # Shrub oak GLMM
+Best Model AIC: 1845
 
 ### Check to see SO is present in very region and TT
 ```{r}
@@ -360,98 +361,10 @@ tapply(ss.all2$Shrub_Oak, ss.all2$Treat_Type, summary)
 ```
 
 
+#### Best distribution is nbinom1 with zero inflation
 
 
-
-Begin model elimination - did this previously with poission, but had distribution issues
-```{r}
-so.ss1 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.BA_piri + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ss.all2,
-                 family = nbinom1)
-AIC(so.ss1) #1853.6
-
-#test piri BA
-so.ss2 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.BA_HA + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ss.all2,
-                 family = nbinom1)
-AIC(so.ss2) #1852.2
-
-# test total ba
-so.ss3 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.Mineral + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ss.all2,
-                 family = nbinom1)
-AIC(so.ss3) #1850.4
-
-# test mineral
-so.ss4 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + avgLD_l + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ss.all2,
-                 family = nbinom1)
-AIC(so.ss4) #1848.5
-
-# test litter depth
-so.ss5 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.other + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ss.all2,
-                 family = nbinom1)
-AIC(so.ss5) #1847
-
-# test other seedling
-so.ss6 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ss.all2,
-                 family = nbinom1)
-AIC(so.ss6) #1846.3
-
-lrtest(so.ss5, so.ss6) # p = .25
-
-# test PIRI seedling
-so.ss7 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.Veg_Total + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ss.all2,
-                 family = nbinom1)
-AIC(so.ss7) #1848.8
-
-lrtest(so.ss6, so.ss7) # p = 0.03, so l.PIRI is important
-
-# add PIRI back in, test veg cover
-so.ss8 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ss.all2,
-                 family = nbinom1)
-AIC(so.ss8) #1847.3
-
-lrtest(so.ss6, so.ss8) # p = 0.08
-
-rm(so.ss1,
-   so.ss2,
-   so.ss3,
-   so.ss4,
-   so.ss5,
-   so.ss6,
-   so.ss7)
-```
-
-
-Best model, then test
-```{r}
-so.ss8 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ss.all2,
-                 family = nbinom1)
-summary(so.ss8)
-
-check_collinearity(so.ss8)
-
-so.ss8_sr <- simulateResiduals(so.ss8, n = 1000, plot = TRUE) #passes KS, quantile deviations signficant
-
-testResiduals(so.ss8_sr)
-testQuantiles(so.ss8_sr) # p < 0.000000000000002ish
-
-
-#try again with nbinom2
-so.ss9 <- glmmTMB(Shrub_Oak ~ Treat_Type + l.PIRI + offset(l.TFT) + (1|Site/Plot_No),
-                 data = ss.all2,
-                 family = nbinom2)
-summary(so.ss9) #1867.6
-
-so.ss9_sr <- simulateResiduals(so.ss9, n = 1000, plot = TRUE)
-testResiduals(so.ss9_sr) # fails dispersion
-```
+Begin model elimination - did this previously with poission, but had distribution issues. Then did with nbinom1, better, but best results using zi ~Region
 
 #### Testing the effect on the model of zero inflation
 ```{r}
@@ -552,8 +465,9 @@ emmeans(so.ss8a, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'respon
 FallRx, MowRx, and SpringRx significantly different than control; none of the treatments significantly different from each other
 
 
-#### Test nbinom2 distro
-```{r}
+#### Test nbinom2 distro (hidden)
+Nbinom2 distro has better but still significant quantile issues, dispersion is worse and borderline significant
+```{r, include=FALSE, eval=FALSE}
 so.ss8nb2 <- glmmTMB(Shrub_Oak ~ Treat_Type + offset(l.TFT) + (1|Site/Plot_No),
                  data = ss.all2,
                  ziformula = ~Region,
@@ -574,53 +488,24 @@ emmeans(so.ss8nb2, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'resp
 ##### Use information from emmeans (mean + SD) to create boxplots etc
 
 #### Now graph
+Need to figure out better use of emmeans (potentially)
 ```{r, fig.align='center'}
-so.p1 <- ggpredict(so.ss8a, terms = c("l.TFT", "Treat_Type"))
 
+so.ss1.plot <- emmeans(so.ss8a, specs = pairwise ~ Treat_Type, adjust = 'Tukey', type = 'response')
 
-ggplot(so.p1, aes(x, predicted, color = group))+
-  geom_line(linewidth = 1.25) +
-  scale_color_manual(values = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15"))+
+plot <- plot(so.ss1.plot, horizontal=FALSE, comparisons=TRUE, color = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15")) + theme_bw()
+
+plot+
   theme_classic()+
   theme(panel.background = element_blank()) +
   theme(axis.text = element_text(size = 14), axis.title = element_text(size = 20), legend.position = "right", legend.text = element_text(size = 14), legend.title = element_text(size = 18)) +
-  labs(x = "Time from Treatment (log transformed)",
-       y = "Shrub Oak Stems \n (corrected for time from treatment)",
+  labs(x = "Shrub Oak Stems \n (corrected for time from treatment)",
+       z = "Treatment Type",
        color = "Treatment Type")
-
-# this should really be a boxplot?, not sure how this should be visulaized, as TFT isn't really a variable but a factor in the model
-
-
-
-ggplot(so.p1, aes(x, predicted, color = group))+
-  geom_boxplot() +
-  scale_color_manual(values = c("#D8B70A",  "#02401B", "#A2A475", "#81A88D", "#972D15"))+
-  theme_classic()+
-  theme(panel.background = element_blank()) +
-  theme(axis.text = element_text(size = 14), axis.title = element_text(size = 20), legend.position = "right", legend.text = element_text(size = 14), legend.title = element_text(size = 18)) +
-  labs(x=NULL,
-       y = "Shrub Oak Small Seedlings \n (corrected for time from treatment)",
-       color = "Treatment Type")
-
 ```
 
 
-```{r, eval=FALSE,include=FALSE}
-#This is SJPLOT package - have switched to ggplot2
 
-# SS SO plot 1 ------------------- PIRI vs. TT
-
-plot_model(test1, 
-                       type = 'pred', 
-                       terms = c('l.PIRI', 'Treat_Type'),
-                       axis.title = c("Pitch pine small seedling counts (log transformed)", "Total Count of Shrub Oak"),
-                       title = "Predicted Counts of Shrub Oak \n Seedlings <50cm",
-           legend.title = "Treatment Type",
-           line.size = 1,
-           value.offset = 'Treat_Type',
-           ci.lvl = NA,
-           colors = c("#D8B70A", "#02401B", "#A2A475", "#81A88D", "#972D15")) 
-```
 
 
 
